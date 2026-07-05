@@ -40,12 +40,22 @@ CREATE TABLE IF NOT EXISTS staff (
   faculty_id INT REFERENCES faculties(id) ON DELETE SET NULL,
   role VARCHAR(50) DEFAULT 'invigilator',
   staff_type VARCHAR(20) DEFAULT 'lecturer',
+  bank_name VARCHAR(100),
+  bank_branch VARCHAR(100),
+  account_number VARCHAR(50),
+  account_type VARCHAR(20),
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 DO $$ BEGIN
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='staff' AND column_name='staff_type') THEN
     ALTER TABLE staff ADD COLUMN staff_type VARCHAR(20) DEFAULT 'lecturer';
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='staff' AND column_name='bank_name') THEN
+    ALTER TABLE staff ADD COLUMN bank_name VARCHAR(100);
+    ALTER TABLE staff ADD COLUMN bank_branch VARCHAR(100);
+    ALTER TABLE staff ADD COLUMN account_number VARCHAR(50);
+    ALTER TABLE staff ADD COLUMN account_type VARCHAR(20);
   END IF;
 END $$;
 

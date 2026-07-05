@@ -59,7 +59,7 @@ router.get('/:id', async (req, res) => {
 });
 
 router.post('/', authAdmin, async (req, res) => {
-  const { name, email, phone, department, faculty_id, role } = req.body;
+  const { name, email, phone, department, faculty_id, role, bank_name, bank_branch, account_number, account_type } = req.body;
   if (!name) return res.status(400).json({ error: 'Name is required' });
 
   try {
@@ -75,9 +75,9 @@ router.post('/', authAdmin, async (req, res) => {
 
     const staff_type = req.body.staff_type || 'lecturer';
     const { rows } = await db.query(
-      `INSERT INTO staff (name, staff_code, email, phone, department, faculty_id, role, staff_type)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *`,
-      [name, staffCode, email, phone, department, faculty_id, role || 'invigilator', staff_type]
+      `INSERT INTO staff (name, staff_code, email, phone, department, faculty_id, role, staff_type, bank_name, bank_branch, account_number, account_type)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING *`,
+      [name, staffCode, email, phone, department, faculty_id, role || 'invigilator', staff_type, bank_name, bank_branch, account_number, account_type]
     );
     res.status(201).json(rows[0]);
   } catch (err) {
@@ -85,13 +85,43 @@ router.post('/', authAdmin, async (req, res) => {
   }
 });
 
+router.post('/bulk', authAdmin, async (req, res) => {
+  const { staff: staffList } = req.body;
+  if (!staffList?.length) return res.status(400).json({ error: 'No staff provided' });
+
+  try {
+    const { rows: maxCode } = await db.query(
+      "SELECT staff_code FROM staff WHERE staff_code LIKE 'CABE%' ORDER BY staff_code DESC LIMIT 1"
+    );
+    let nextNum = 1000;
+    if (maxCode.length) nextNum = parseInt(maxCode[0].staff_code.replace('CABE', '')) + 1;
+
+    let added = 0;
+    for (const s of staffList) {
+      const existing = await db.query('SELECT id FROM staff WHERE LOWER(name)=LOWER($1) AND staff_type=$2', [s.name, s.staff_type || 'it_staff']);
+      if (existing.rows.length) continue;
+      const code = `CABE${String(nextNum++).padStart(4, '0')}`;
+      await db.query(
+        `INSERT INTO staff (name, staff_code, phone, staff_type, role, bank_name, bank_branch, account_number, account_type)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
+        [s.name, code, s.phone, s.staff_type || 'it_staff', s.role || 'it_support', s.bank_name, s.bank_branch, s.account_number, s.account_type]
+      );
+      added++;
+    }
+    res.json({ message: `Added ${added} staff members` });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 router.put('/:id', authAdmin, async (req, res) => {
-  const { name, email, phone, department, faculty_id, role, staff_type } = req.body;
+  const { name, email, phone, department, faculty_id, role, staff_type, bank_name, bank_branch, account_number, account_type } = req.body;
   try {
     const { rows } = await db.query(
-      `UPDATE staff SET name=$1, email=$2, phone=$3, department=$4, faculty_id=$5, role=$6, staff_type=$7
-       WHERE id=$8 RETURNING *`,
-      [name, email, phone, department, faculty_id, role, staff_type || 'lecturer', req.params.id]
+      `UPDATE staff SET name=$1, email=$2, phone=$3, department=$4, faculty_id=$5, role=$6, staff_type=$7,
+       bank_name=$8, bank_branch=$9, account_number=$10, account_type=$11
+       WHERE id=$12 RETURNING *`,
+      [name, email, phone, department, faculty_id, role, staff_type || 'lecturer', bank_name, bank_branch, account_number, account_type, req.params.id]
     );
     if (!rows.length) return res.status(404).json({ error: 'Not found' });
     res.json(rows[0]);
