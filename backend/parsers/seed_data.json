@@ -76,7 +76,17 @@
     "TB \u2013 GF [100]",
     "TB \u2013 SF [170]",
     "TB \u2013 TF [150]",
-    "TB-FF [160]"
+    "TB-FF [160]",
+    "GF1",
+    "GF2",
+    "GF4",
+    "FF2",
+    "FF4",
+    "GF3",
+    "ONLINE",
+    "FF5",
+    "FF3",
+    "KNUST LIBRARY"
   ],
   "staff": [
     "A Abdulai",
@@ -2763,2130 +2773,6 @@
       "exam_type": "written"
     },
     {
-      "faculty": "Art",
-      "course_code": "CET 452",
-      "course_name": "CET 154",
-      "examiner": "",
-      "year_group": "",
-      "venue": "",
-      "day": "monday",
-      "date": "2026-07-06",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "CET 154",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "",
-      "day": "monday",
-      "date": "2026-07-06",
-      "session": 4,
-      "session_time": [
-        "13:30",
-        "14:30"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "BI 274",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "",
-      "day": "monday",
-      "date": "2026-07-06",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "CET 254",
-      "course_name": "TYPEFACES: DEVELOPMENT",
-      "examiner": "",
-      "year_group": "",
-      "venue": "",
-      "day": "monday",
-      "date": "2026-07-06",
-      "session": 3,
-      "session_time": [
-        "11:45",
-        "12:45"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "TDT 250",
-      "course_name": "TECHNOLOGY",
-      "examiner": "",
-      "year_group": "",
-      "venue": "",
-      "day": "monday",
-      "date": "2026-07-06",
-      "session": 2,
-      "session_time": [
-        "10:00",
-        "11:00"
-      ],
-      "students": 10,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "TFD 462",
-      "course_name": "TEXTILES",
-      "examiner": "",
-      "year_group": "",
-      "venue": "",
-      "day": "monday",
-      "date": "2026-07-06",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 57,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "CET 458",
-      "course_name": "CERAMICS",
-      "examiner": "",
-      "year_group": "",
-      "venue": "",
-      "day": "monday",
-      "date": "2026-07-06",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 18,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "PAS 258",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "",
-      "day": "monday",
-      "date": "2026-07-06",
-      "session": 4,
-      "session_time": [
-        "13:30",
-        "14:30"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "FAS 462",
-      "course_name": "FASHION                                                       PAINTING AND SCULP",
-      "examiner": "",
-      "year_group": "",
-      "venue": "",
-      "day": "monday",
-      "date": "2026-07-06",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "PAP 364",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "",
-      "day": "monday",
-      "date": "2026-07-06",
-      "session": 5,
-      "session_time": [
-        "15:15",
-        "16:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "DAD 460",
-      "course_name": "POSTCOLONIAL AFRICA",
-      "examiner": "",
-      "year_group": "",
-      "venue": "",
-      "day": "monday",
-      "date": "2026-07-06",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "DAD 272/274",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "",
-      "day": "monday",
-      "date": "2026-07-06",
-      "session": 6,
-      "session_time": [
-        "17:00",
-        "18:00"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "BI 462",
-      "course_name": "FAPS 158",
-      "examiner": "",
-      "year_group": "",
-      "venue": "",
-      "day": "monday",
-      "date": "2026-07-06",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 240,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "FAPS 158",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "",
-      "day": "monday",
-      "date": "2026-07-06",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 240,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "DAD 376",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "",
-      "day": "monday",
-      "date": "2026-07-06",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "SOC 254",
-      "course_name": "PRINCIPLES AND PRACTICES OF",
-      "examiner": "",
-      "year_group": "",
-      "venue": "",
-      "day": "monday",
-      "date": "2026-07-06",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "IRAI 158",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "",
-      "day": "monday",
-      "date": "2026-07-06",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "TDT 150",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "",
-      "day": "monday",
-      "date": "2026-07-06",
-      "session": 3,
-      "session_time": [
-        "11:45",
-        "12:45"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "IRAI 458",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "",
-      "day": "monday",
-      "date": "2026-07-06",
-      "session": 5,
-      "session_time": [
-        "15:15",
-        "16:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "FAS 150",
-      "course_name": "CREATIVE                                                             ADVANCED IN",
-      "examiner": "",
-      "year_group": "",
-      "venue": "",
-      "day": "monday",
-      "date": "2026-07-06",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "CEA 160",
-      "course_name": "/ATH 152",
-      "examiner": "",
-      "year_group": "",
-      "venue": "",
-      "day": "monday",
-      "date": "2026-07-06",
-      "session": 4,
-      "session_time": [
-        "13:30",
-        "14:30"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "ATH 152",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "",
-      "day": "monday",
-      "date": "2026-07-06",
-      "session": 4,
-      "session_time": [
-        "13:30",
-        "14:30"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "IRAI 164",
-      "course_name": "HISTORY OF GLOBAL ART",
-      "examiner": "",
-      "year_group": "",
-      "venue": "",
-      "day": "monday",
-      "date": "2026-07-06",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "BI 262",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "",
-      "day": "monday",
-      "date": "2026-07-06",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 156,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "IRAI 258",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "",
-      "day": "monday",
-      "date": "2026-07-06",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "PAP 452",
-      "course_name": "/ PAS 458                                                                 IRAI 2",
-      "examiner": "",
-      "year_group": "",
-      "venue": "",
-      "day": "monday",
-      "date": "2026-07-06",
-      "session": 2,
-      "session_time": [
-        "10:00",
-        "11:00"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "PAS 458",
-      "course_name": "IRAI 252",
-      "examiner": "",
-      "year_group": "",
-      "venue": "",
-      "day": "monday",
-      "date": "2026-07-06",
-      "session": 2,
-      "session_time": [
-        "10:00",
-        "11:00"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "IRAI 252",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "",
-      "day": "monday",
-      "date": "2026-07-06",
-      "session": 5,
-      "session_time": [
-        "15:15",
-        "16:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "MPDT 262",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "",
-      "day": "monday",
-      "date": "2026-07-06",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "DAD 364",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "",
-      "day": "monday",
-      "date": "2026-07-06",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 130,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "MPDT 152",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "",
-      "day": "monday",
-      "date": "2026-07-06",
-      "session": 3,
-      "session_time": [
-        "11:45",
-        "12:45"
-      ],
-      "students": 126,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "ENGL 158",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "tuesday",
-      "date": "2026-07-07",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "TDT 450",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "tuesday",
-      "date": "2026-07-07",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "ATH 254",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "tuesday",
-      "date": "2026-07-07",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "CEA 260",
-      "course_name": "/ CET 264                                                            AESTHETICS ",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "tuesday",
-      "date": "2026-07-07",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "CET 264",
-      "course_name": "AESTHETICS AND CRITICISMS",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "tuesday",
-      "date": "2026-07-07",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "BI 492",
-      "course_name": "METHODOLGY I",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "tuesday",
-      "date": "2026-07-07",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "FAS 250",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "tuesday",
-      "date": "2026-07-07",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "MPDT 264",
-      "course_name": "APPLICATION",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "tuesday",
-      "date": "2026-07-07",
-      "session": 3,
-      "session_time": [
-        "11:45",
-        "12:45"
-      ],
-      "students": 65,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "DAD 474",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "tuesday",
-      "date": "2026-07-07",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 44,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "DAD 358",
-      "course_name": "PAP/PAS 354",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "tuesday",
-      "date": "2026-07-07",
-      "session": 3,
-      "session_time": [
-        "11:45",
-        "12:45"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "PAS 354",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "tuesday",
-      "date": "2026-07-07",
-      "session": 5,
-      "session_time": [
-        "15:15",
-        "16:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "TFD 270",
-      "course_name": "SEMINAR IV",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "tuesday",
-      "date": "2026-07-07",
-      "session": 3,
-      "session_time": [
-        "11:45",
-        "12:45"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "IRAI 460",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "tuesday",
-      "date": "2026-07-07",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 105,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "IRAI 466",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "tuesday",
-      "date": "2026-07-07",
-      "session": 2,
-      "session_time": [
-        "10:00",
-        "11:00"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "BI 266",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "tuesday",
-      "date": "2026-07-07",
-      "session": 4,
-      "session_time": [
-        "13:30",
-        "14:30"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "TDT 256",
-      "course_name": "CEA 258",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "tuesday",
-      "date": "2026-07-07",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "CEA 258",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "tuesday",
-      "date": "2026-07-07",
-      "session": 6,
-      "session_time": [
-        "17:00",
-        "18:00"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "CET 454",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "tuesday",
-      "date": "2026-07-07",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "IRAI 260",
-      "course_name": "BI 284",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "tuesday",
-      "date": "2026-07-07",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "BI 284",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "tuesday",
-      "date": "2026-07-07",
-      "session": 2,
-      "session_time": [
-        "10:00",
-        "11:00"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "IRAI 454",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "tuesday",
-      "date": "2026-07-07",
-      "session": 3,
-      "session_time": [
-        "11:45",
-        "12:45"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "DAD 352/358",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "tuesday",
-      "date": "2026-07-07",
-      "session": 3,
-      "session_time": [
-        "11:45",
-        "12:45"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "IRAI 264",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "tuesday",
-      "date": "2026-07-07",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "PAP 258",
-      "course_name": "/FASC 258",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "tuesday",
-      "date": "2026-07-07",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "FASC 258",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "tuesday",
-      "date": "2026-07-07",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "PAP 460",
-      "course_name": "/PAS 452                                                          DAD 266 INTROD",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "tuesday",
-      "date": "2026-07-07",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "PAS 452",
-      "course_name": "DAD 266 INTRODUCTION",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "tuesday",
-      "date": "2026-07-07",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "DAD 266",
-      "course_name": "INTRODUCTION",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "tuesday",
-      "date": "2026-07-07",
-      "session": 3,
-      "session_time": [
-        "11:45",
-        "12:45"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "BI 452",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "wednesday",
-      "date": "2026-07-08",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "DAD 360",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "wednesday",
-      "date": "2026-07-08",
-      "session": 2,
-      "session_time": [
-        "10:00",
-        "11:00"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "FAPS 152",
-      "course_name": "ENGL 264                                      COPY WRITING                      ",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "wednesday",
-      "date": "2026-07-08",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "ENGL 264",
-      "course_name": "COPY WRITING                                      IRAI 152",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "wednesday",
-      "date": "2026-07-08",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "IRAI 152",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "wednesday",
-      "date": "2026-07-08",
-      "session": 5,
-      "session_time": [
-        "15:15",
-        "16:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "DAD 158",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "wednesday",
-      "date": "2026-07-08",
-      "session": 4,
-      "session_time": [
-        "13:30",
-        "14:30"
-      ],
-      "students": 156,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "MPDT 154",
-      "course_name": "/",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "wednesday",
-      "date": "2026-07-08",
-      "session": 2,
-      "session_time": [
-        "10:00",
-        "11:00"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "FAS 160",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "wednesday",
-      "date": "2026-07-08",
-      "session": 6,
-      "session_time": [
-        "17:00",
-        "18:00"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "TDT 452",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "wednesday",
-      "date": "2026-07-08",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "CET 162",
-      "course_name": "APPAREL CONSTRUCTION",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "wednesday",
-      "date": "2026-07-08",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "BI 464",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "wednesday",
-      "date": "2026-07-08",
-      "session": 3,
-      "session_time": [
-        "11:45",
-        "12:45"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "BI 152",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "wednesday",
-      "date": "2026-07-08",
-      "session": 5,
-      "session_time": [
-        "15:15",
-        "16:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "IRAI 154",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "wednesday",
-      "date": "2026-07-08",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "CET 456",
-      "course_name": "POLLUTION",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "wednesday",
-      "date": "2026-07-08",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 225,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "DAD 464",
-      "course_name": "SET B",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "wednesday",
-      "date": "2026-07-08",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "ENGL 264",
-      "course_name": "FAPS 164",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "wednesday",
-      "date": "2026-07-08",
-      "session": 3,
-      "session_time": [
-        "11:45",
-        "12:45"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "FAPS 164",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "wednesday",
-      "date": "2026-07-08",
-      "session": 4,
-      "session_time": [
-        "13:30",
-        "14:30"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "FAS 452",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "wednesday",
-      "date": "2026-07-08",
-      "session": 6,
-      "session_time": [
-        "17:00",
-        "18:00"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "FAS 154",
-      "course_name": "INTRODUCTION                                                                    ",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "wednesday",
-      "date": "2026-07-08",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "IRAI 456",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "thursday",
-      "date": "2026-07-09",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "FAPS 160",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "thursday",
-      "date": "2026-07-09",
-      "session": 4,
-      "session_time": [
-        "13:30",
-        "14:30"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "MATH 152",
-      "course_name": "DRAWING II",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "thursday",
-      "date": "2026-07-09",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 131,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "IRAI 268",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "thursday",
-      "date": "2026-07-09",
-      "session": 5,
-      "session_time": [
-        "15:15",
-        "16:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "BI 454",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "thursday",
-      "date": "2026-07-09",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "MPDT 160",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "thursday",
-      "date": "2026-07-09",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "IRAI 162",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "thursday",
-      "date": "2026-07-09",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "IRAI 160",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "thursday",
-      "date": "2026-07-09",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "BI 264",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "thursday",
-      "date": "2026-07-09",
-      "session": 5,
-      "session_time": [
-        "15:15",
-        "16:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "TDT 458",
-      "course_name": "MANUFACTURING",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "thursday",
-      "date": "2026-07-09",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "DAD 256",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "thursday",
-      "date": "2026-07-09",
-      "session": 3,
-      "session_time": [
-        "11:45",
-        "12:45"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "ILS 152",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "thursday",
-      "date": "2026-07-09",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "FAS 252",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "thursday",
-      "date": "2026-07-09",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 134,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "MJT 458",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "thursday",
-      "date": "2026-07-09",
-      "session": 3,
-      "session_time": [
-        "11:45",
-        "12:45"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "PAS 254",
-      "course_name": "PAP 356/PAS 356",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "thursday",
-      "date": "2026-07-09",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 56,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "PAP 356",
-      "course_name": "/PAS 356",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "thursday",
-      "date": "2026-07-09",
-      "session": 2,
-      "session_time": [
-        "10:00",
-        "11:00"
-      ],
-      "students": 56,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "PAS 356",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "thursday",
-      "date": "2026-07-09",
-      "session": 2,
-      "session_time": [
-        "10:00",
-        "11:00"
-      ],
-      "students": 56,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "TDT 454",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "thursday",
-      "date": "2026-07-09",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "IRAI 462",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "thursday",
-      "date": "2026-07-09",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "BI 252",
-      "course_name": "METAL INTEGRATION",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "thursday",
-      "date": "2026-07-09",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "IRAI 262",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "thursday",
-      "date": "2026-07-09",
-      "session": 4,
-      "session_time": [
-        "13:30",
-        "14:30"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "IRAI 266",
-      "course_name": "CEA 256",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "thursday",
-      "date": "2026-07-09",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "CEA 256",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "thursday",
-      "date": "2026-07-09",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "FC 182",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "friday",
-      "date": "2026-07-10",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "BI 162",
-      "course_name": "COMMUNICATION",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "friday",
-      "date": "2026-07-10",
-      "session": 4,
-      "session_time": [
-        "13:30",
-        "14:30"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "FAPS 162",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "friday",
-      "date": "2026-07-10",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "BI 282",
-      "course_name": "PRINTING II",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "friday",
-      "date": "2026-07-10",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 134,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "TDT 254",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "friday",
-      "date": "2026-07-10",
-      "session": 3,
-      "session_time": [
-        "11:45",
-        "12:45"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "DAD 156",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "friday",
-      "date": "2026-07-10",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 54,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "ATH 254",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "friday",
-      "date": "2026-07-10",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "CET 252",
-      "course_name": "AESTHETICS AND",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "friday",
-      "date": "2026-07-10",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "CET 156",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "friday",
-      "date": "2026-07-10",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 26,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "TDT 456",
-      "course_name": "IRAI 256        SOLID STATE PHYSICS",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "friday",
-      "date": "2026-07-10",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "IRAI 256",
-      "course_name": "SOLID STATE PHYSICS",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "friday",
-      "date": "2026-07-10",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "ATE 252",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "FFW",
-      "day": "friday",
-      "date": "2026-07-10",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "IRAI 156",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "GFW",
-      "day": "friday",
-      "date": "2026-07-10",
-      "session": 4,
-      "session_time": [
-        "13:30",
-        "14:30"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "IRAI 166",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "GFW",
-      "day": "friday",
-      "date": "2026-07-10",
-      "session": 2,
-      "session_time": [
-        "10:00",
-        "11:00"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "DAD 264",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "GFW",
-      "day": "friday",
-      "date": "2026-07-10",
-      "session": 3,
-      "session_time": [
-        "11:45",
-        "12:45"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "IRAI 254",
-      "course_name": "BI 276",
-      "examiner": "",
-      "year_group": "",
-      "venue": "GFW",
-      "day": "friday",
-      "date": "2026-07-10",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 110,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Art",
-      "course_code": "BI 276",
-      "course_name": "",
-      "examiner": "",
-      "year_group": "",
-      "venue": "GFW",
-      "day": "friday",
-      "date": "2026-07-10",
-      "session": 2,
-      "session_time": [
-        "10:00",
-        "11:00"
-      ],
-      "students": 110,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
       "faculty": "Education",
       "course_code": "ICTJ 252",
       "course_name": "Data Communication and Computer Networking Dr (Mrs.) Rebbeca Essel",
@@ -6450,6 +4336,2029 @@
       ],
       "students": 0,
       "invigilators": [],
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "monday",
+      "date": "2026-07-06",
+      "session": 1,
+      "session_time": [
+        "8:15",
+        "9:15"
+      ],
+      "venue": "GF1",
+      "course_code": "MGT.",
+      "course_name": "ENTREPRENEURIAL SKILLS II/PRINCIPLES OF ENTREPRENEURSHIP",
+      "students": 0,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "monday",
+      "date": "2026-07-06",
+      "session": 1,
+      "session_time": [
+        "8:15",
+        "9:15"
+      ],
+      "venue": "GF2",
+      "course_code": "TFD 462",
+      "course_name": "TEXTILES",
+      "students": 57,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "monday",
+      "date": "2026-07-06",
+      "session": 1,
+      "session_time": [
+        "8:15",
+        "9:15"
+      ],
+      "venue": "GF2",
+      "course_code": "CET 458",
+      "course_name": "CERAMICS",
+      "students": 18,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "monday",
+      "date": "2026-07-06",
+      "session": 1,
+      "session_time": [
+        "8:15",
+        "9:15"
+      ],
+      "venue": "GF2",
+      "course_code": "FAS 462",
+      "course_name": "FASHION",
+      "students": 61,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "monday",
+      "date": "2026-07-06",
+      "session": 1,
+      "session_time": [
+        "8:15",
+        "9:15"
+      ],
+      "venue": "GF4",
+      "course_code": "BI 462",
+      "course_name": "PRINTING PLANT MGT",
+      "students": 43,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "monday",
+      "date": "2026-07-06",
+      "session": 1,
+      "session_time": [
+        "8:15",
+        "9:15"
+      ],
+      "venue": "FF2",
+      "course_code": "IRAI 158",
+      "course_name": "MATERIALS AND TECHNIQUES IN LEATHERWORK",
+      "students": 156,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "monday",
+      "date": "2026-07-06",
+      "session": 1,
+      "session_time": [
+        "8:15",
+        "9:15"
+      ],
+      "venue": "FF4",
+      "course_code": "IRAI 258",
+      "course_name": "LEATHER PROCESSING MATERIALS",
+      "students": 101,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "monday",
+      "date": "2026-07-06",
+      "session": 1,
+      "session_time": [
+        "8:15",
+        "9:15"
+      ],
+      "venue": "FFW",
+      "course_code": "DAD 364",
+      "course_name": "BRAND MANAGEMENT",
+      "students": 74,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "monday",
+      "date": "2026-07-06",
+      "session": 2,
+      "session_time": [
+        "10:00",
+        "11:00"
+      ],
+      "venue": "GF1",
+      "course_code": "TDT 250",
+      "course_name": "FABRIC DECORATION TECHNIQUES",
+      "students": 62,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "monday",
+      "date": "2026-07-06",
+      "session": 2,
+      "session_time": [
+        "10:00",
+        "11:00"
+      ],
+      "venue": "GF4",
+      "course_code": "FAPS 158",
+      "course_name": "ELEMENTS AND PRINCIPLES OF DESIGN II",
+      "students": 131,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "monday",
+      "date": "2026-07-06",
+      "session": 2,
+      "session_time": [
+        "10:00",
+        "11:00"
+      ],
+      "venue": "FF2",
+      "course_code": "FAS 150",
+      "course_name": "CREATIVE DESIGN PROCESS",
+      "students": 75,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "monday",
+      "date": "2026-07-06",
+      "session": 2,
+      "session_time": [
+        "10:00",
+        "11:00"
+      ],
+      "venue": "FF4",
+      "course_code": "PAP 452/PAS 458",
+      "course_name": "SEMINAR IN SCULPTURE",
+      "students": 130,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "monday",
+      "date": "2026-07-06",
+      "session": 3,
+      "session_time": [
+        "11:45",
+        "12:45"
+      ],
+      "venue": "GF1",
+      "course_code": "CET 452",
+      "course_name": "KILNS AND FURNACE TECHNOLOGY",
+      "students": 10,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "monday",
+      "date": "2026-07-06",
+      "session": 3,
+      "session_time": [
+        "11:45",
+        "12:45"
+      ],
+      "venue": "GF3",
+      "course_code": "DAD 460",
+      "course_name": "INTRODUCTION TO WEB AND APP DESIGN",
+      "students": 240,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "monday",
+      "date": "2026-07-06",
+      "session": 3,
+      "session_time": [
+        "11:45",
+        "12:45"
+      ],
+      "venue": "FF2",
+      "course_code": "TDT 150",
+      "course_name": "INTRODUCTION TO DYEING AND PRINTING",
+      "students": 53,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "monday",
+      "date": "2026-07-06",
+      "session": 3,
+      "session_time": [
+        "11:45",
+        "12:45"
+      ],
+      "venue": "FF4",
+      "course_code": "BI 262",
+      "course_name": "PRINT PRODUCTS AND PROCESSES",
+      "students": 47,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "monday",
+      "date": "2026-07-06",
+      "session": 3,
+      "session_time": [
+        "11:45",
+        "12:45"
+      ],
+      "venue": "FFW",
+      "course_code": "MPDT 262",
+      "course_name": "ENAMELLING",
+      "students": 44,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "monday",
+      "date": "2026-07-06",
+      "session": 4,
+      "session_time": [
+        "13:30",
+        "14:30"
+      ],
+      "venue": "GF1",
+      "course_code": "CET 254",
+      "course_name": "REFRACTORY TECHNOLOGY",
+      "students": 21,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "monday",
+      "date": "2026-07-06",
+      "session": 4,
+      "session_time": [
+        "13:30",
+        "14:30"
+      ],
+      "venue": "GF2",
+      "course_code": "PAS 258",
+      "course_name": "PAINTING AND SCULPTURE HISTORY OF COLONIAL AND POSTCOLONIAL AFRICA",
+      "students": 125,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "monday",
+      "date": "2026-07-06",
+      "session": 4,
+      "session_time": [
+        "13:30",
+        "14:30"
+      ],
+      "venue": "GFW",
+      "course_code": "SOC 254",
+      "course_name": "SOCIAL STRUCTURES II",
+      "students": 28,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "monday",
+      "date": "2026-07-06",
+      "session": 4,
+      "session_time": [
+        "13:30",
+        "14:30"
+      ],
+      "venue": "FF2",
+      "course_code": "IRAI 164",
+      "course_name": "HISTORY OF GHANAIAN HANDICRAFTS",
+      "students": 156,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "monday",
+      "date": "2026-07-06",
+      "session": 4,
+      "session_time": [
+        "13:30",
+        "14:30"
+      ],
+      "venue": "FFW",
+      "course_code": "MPDT 152",
+      "course_name": "METALWORKS FORMING TECHNIQUES II",
+      "students": 54,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "monday",
+      "date": "2026-07-06",
+      "session": 5,
+      "session_time": [
+        "15:15",
+        "16:15"
+      ],
+      "venue": "GF1",
+      "course_code": "BI 274",
+      "course_name": "TYPEFACES: DEVELOPMENT AND CLASSIFICATION (DESIGN)",
+      "students": 47,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "monday",
+      "date": "2026-07-06",
+      "session": 5,
+      "session_time": [
+        "15:15",
+        "16:15"
+      ],
+      "venue": "GF2",
+      "course_code": "PAP 364",
+      "course_name": "THESIS WRITING",
+      "students": 31,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "monday",
+      "date": "2026-07-06",
+      "session": 5,
+      "session_time": [
+        "15:15",
+        "16:15"
+      ],
+      "venue": "GFW",
+      "course_code": "DAD 376",
+      "course_name": "PRINCIPLES AND PRACTICES OF PUBLIC RELATIONS",
+      "students": 74,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "monday",
+      "date": "2026-07-06",
+      "session": 5,
+      "session_time": [
+        "15:15",
+        "16:15"
+      ],
+      "venue": "FF2",
+      "course_code": "IRAI 458",
+      "course_name": "ADVANCED INDIGENOUS LEATHER TECHNOLOGY",
+      "students": 57,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "monday",
+      "date": "2026-07-06",
+      "session": 5,
+      "session_time": [
+        "15:15",
+        "16:15"
+      ],
+      "venue": "FF4",
+      "course_code": "IRAI 252",
+      "course_name": "RATTAN AND BAMBOO WEAVING",
+      "students": 126,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "monday",
+      "date": "2026-07-06",
+      "session": 6,
+      "session_time": [
+        "17:00",
+        "18:00"
+      ],
+      "venue": "GF1",
+      "course_code": "CET 154",
+      "course_name": "INTRO. TO GLASS SCIENCE AND TECHNOLOGY",
+      "students": 16,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "monday",
+      "date": "2026-07-06",
+      "session": 6,
+      "session_time": [
+        "17:00",
+        "18:00"
+      ],
+      "venue": "GF3",
+      "course_code": "DAD 272/274",
+      "course_name": "INTRO TO PRE-PRODUCTION/INTRO TO DIGITAL VIDEO PRODUCTION",
+      "students": 150,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "monday",
+      "date": "2026-07-06",
+      "session": 6,
+      "session_time": [
+        "17:00",
+        "18:00"
+      ],
+      "venue": "FF2",
+      "course_code": "CEA 160/ATH 152",
+      "course_name": "HISTORY OF GLOBAL ART",
+      "students": 132,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "tuesday",
+      "date": "2026-07-07",
+      "session": 1,
+      "session_time": [
+        "8:15",
+        "9:15"
+      ],
+      "venue": "ONLINE",
+      "course_code": "ENGL 158",
+      "course_name": "ONLINE EXAM",
+      "students": 0,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "tuesday",
+      "date": "2026-07-07",
+      "session": 1,
+      "session_time": [
+        "8:15",
+        "9:15"
+      ],
+      "venue": "GF2",
+      "course_code": "BI 492",
+      "course_name": "ENT. & SMALL MGT. IN PUBLISHING",
+      "students": 137,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "tuesday",
+      "date": "2026-07-07",
+      "session": 1,
+      "session_time": [
+        "8:15",
+        "9:15"
+      ],
+      "venue": "GF4",
+      "course_code": "IRAI 460",
+      "course_name": "INDUSTRIAL PRACTICES",
+      "students": 20,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "tuesday",
+      "date": "2026-07-07",
+      "session": 1,
+      "session_time": [
+        "8:15",
+        "9:15"
+      ],
+      "venue": "GFW",
+      "course_code": "TDT 256",
+      "course_name": "NATURAL FIBRES",
+      "students": 54,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "tuesday",
+      "date": "2026-07-07",
+      "session": 1,
+      "session_time": [
+        "8:15",
+        "9:15"
+      ],
+      "venue": "FF2",
+      "course_code": "CET 454",
+      "course_name": "SUSTAINABLE DEVELOPMENT IN CERAMICS II",
+      "students": 18,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "tuesday",
+      "date": "2026-07-07",
+      "session": 1,
+      "session_time": [
+        "8:15",
+        "9:15"
+      ],
+      "venue": "FF5",
+      "course_code": "PAP 460/PAS 452",
+      "course_name": "ART MARKET AND MANAGEMENT II",
+      "students": 140,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "tuesday",
+      "date": "2026-07-07",
+      "session": 2,
+      "session_time": [
+        "10:00",
+        "11:00"
+      ],
+      "venue": "GF1",
+      "course_code": "TDT 450",
+      "course_name": "KNITTING TECHNOLOGY",
+      "students": 57,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "tuesday",
+      "date": "2026-07-07",
+      "session": 2,
+      "session_time": [
+        "10:00",
+        "11:00"
+      ],
+      "venue": "GF2",
+      "course_code": "DAD 474",
+      "course_name": "ADVERTISING DESIGN IV",
+      "students": 65,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "tuesday",
+      "date": "2026-07-07",
+      "session": 2,
+      "session_time": [
+        "10:00",
+        "11:00"
+      ],
+      "venue": "GF4",
+      "course_code": "IRAI 466",
+      "course_name": "PRODUCT DESIGN AND PROJECT WORK",
+      "students": 88,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "tuesday",
+      "date": "2026-07-07",
+      "session": 2,
+      "session_time": [
+        "10:00",
+        "11:00"
+      ],
+      "venue": "FF2",
+      "course_code": "IRAI 260",
+      "course_name": "TRADITIONAL TEXTILES",
+      "students": 69,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "tuesday",
+      "date": "2026-07-07",
+      "session": 3,
+      "session_time": [
+        "11:45",
+        "12:45"
+      ],
+      "venue": "GF1",
+      "course_code": "CEA 260/CET 264",
+      "course_name": "RESEARCH METHODOLOGY I",
+      "students": 40,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "tuesday",
+      "date": "2026-07-07",
+      "session": 3,
+      "session_time": [
+        "11:45",
+        "12:45"
+      ],
+      "venue": "GF2",
+      "course_code": "MPDT 264",
+      "course_name": "RESEARCH METHODOLOGY",
+      "students": 44,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "tuesday",
+      "date": "2026-07-07",
+      "session": 3,
+      "session_time": [
+        "11:45",
+        "12:45"
+      ],
+      "venue": "FF2",
+      "course_code": "BI 284",
+      "course_name": "LIBRARY STUDIES",
+      "students": 68,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "tuesday",
+      "date": "2026-07-07",
+      "session": 3,
+      "session_time": [
+        "11:45",
+        "12:45"
+      ],
+      "venue": "FF5",
+      "course_code": "PAP 258/FASC 258",
+      "course_name": "SEMINAR IN PAINTING II / SEMINAR IN SCULPTURE II",
+      "students": 145,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "tuesday",
+      "date": "2026-07-07",
+      "session": 4,
+      "session_time": [
+        "13:30",
+        "14:30"
+      ],
+      "venue": "GF3",
+      "course_code": "DAD 358",
+      "course_name": "ISSUES IN PROFESSIONAL PRACTICE",
+      "students": 202,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "tuesday",
+      "date": "2026-07-07",
+      "session": 4,
+      "session_time": [
+        "13:30",
+        "14:30"
+      ],
+      "venue": "FF2",
+      "course_code": "IRAI 454",
+      "course_name": "WOOD CARVING AND CONSTRUCTION",
+      "students": 45,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "tuesday",
+      "date": "2026-07-07",
+      "session": 4,
+      "session_time": [
+        "13:30",
+        "14:30"
+      ],
+      "venue": "FF5",
+      "course_code": "DAD 266",
+      "course_name": "INTRODUCTION TO MARKETING",
+      "students": 105,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "tuesday",
+      "date": "2026-07-07",
+      "session": 5,
+      "session_time": [
+        "15:15",
+        "16:15"
+      ],
+      "venue": "GF1",
+      "course_code": "FAS 250",
+      "course_name": "FASHION DESIGN APPLICATION",
+      "students": 65,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "tuesday",
+      "date": "2026-07-07",
+      "session": 5,
+      "session_time": [
+        "15:15",
+        "16:15"
+      ],
+      "venue": "GF3",
+      "course_code": "TFD 270",
+      "course_name": "RESEARCH METHODOLOGY",
+      "students": 105,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "tuesday",
+      "date": "2026-07-07",
+      "session": 5,
+      "session_time": [
+        "15:15",
+        "16:15"
+      ],
+      "venue": "GFW",
+      "course_code": "BI 266",
+      "course_name": "MATERIAL TECHNOLOGY II (PRINTING)",
+      "students": 47,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "tuesday",
+      "date": "2026-07-07",
+      "session": 5,
+      "session_time": [
+        "15:15",
+        "16:15"
+      ],
+      "venue": "FF3",
+      "course_code": "IRAI 264",
+      "course_name": "RESEARCH REPORT WRITING",
+      "students": 139,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "tuesday",
+      "date": "2026-07-07",
+      "session": 6,
+      "session_time": [
+        "17:00",
+        "18:00"
+      ],
+      "venue": "GF1",
+      "course_code": "ATH 254",
+      "course_name": "AESTHETICS AND CRITICISMS",
+      "students": 40,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "tuesday",
+      "date": "2026-07-07",
+      "session": 6,
+      "session_time": [
+        "17:00",
+        "18:00"
+      ],
+      "venue": "GF3",
+      "course_code": "PAP/PAS 354",
+      "course_name": "SEMINAR IV",
+      "students": 125,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "tuesday",
+      "date": "2026-07-07",
+      "session": 6,
+      "session_time": [
+        "17:00",
+        "18:00"
+      ],
+      "venue": "GFW",
+      "course_code": "CEA 258",
+      "course_name": "ORIENTAL AND CLASSICAL HISTORY",
+      "students": 29,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "tuesday",
+      "date": "2026-07-07",
+      "session": 6,
+      "session_time": [
+        "17:00",
+        "18:00"
+      ],
+      "venue": "FF2",
+      "course_code": "DAD 352/358",
+      "course_name": "ADVANCED GRAPHIC DESIGN/DIGITAL VIDEO PRODUCTION",
+      "students": 130,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "wednesday",
+      "date": "2026-07-08",
+      "session": 1,
+      "session_time": [
+        "8:15",
+        "9:15"
+      ],
+      "venue": "GF2",
+      "course_code": "FAPS 152",
+      "course_name": "SEMINAR II",
+      "students": 131,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "wednesday",
+      "date": "2026-07-08",
+      "session": 1,
+      "session_time": [
+        "8:15",
+        "9:15"
+      ],
+      "venue": "GFW",
+      "course_code": "TDT 452",
+      "course_name": "TEXTILE TESTING",
+      "students": 57,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "wednesday",
+      "date": "2026-07-08",
+      "session": 1,
+      "session_time": [
+        "8:15",
+        "9:15"
+      ],
+      "venue": "FF2",
+      "course_code": "CET 456",
+      "course_name": "POLLUTION CONTROL IN CERAMIC INDUSTRIES",
+      "students": 18,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "wednesday",
+      "date": "2026-07-08",
+      "session": 1,
+      "session_time": [
+        "8:15",
+        "9:15"
+      ],
+      "venue": "FF4",
+      "course_code": "DAD 464",
+      "course_name": "BASIC ACCOUNTING",
+      "students": 65,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "wednesday",
+      "date": "2026-07-08",
+      "session": 2,
+      "session_time": [
+        "10:00",
+        "11:00"
+      ],
+      "venue": "GF2",
+      "course_code": "ENGL 264 SET A",
+      "course_name": "LITERATURE IN ENGLISH II INDUSTRIAL ART (CET, CEA, FAS, MPDT & TDT)",
+      "students": 200,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "wednesday",
+      "date": "2026-07-08",
+      "session": 2,
+      "session_time": [
+        "10:00",
+        "11:00"
+      ],
+      "venue": "FF2",
+      "course_code": "ENGL 264 SET A",
+      "course_name": "LITERATURE IN ENGLISH II COMMUNICATION DESIGN",
+      "students": 225,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "wednesday",
+      "date": "2026-07-08",
+      "session": 2,
+      "session_time": [
+        "10:00",
+        "11:00"
+      ],
+      "venue": "FFW",
+      "course_code": "FAS 154",
+      "course_name": "INTRODUCTION TO PATTERN MAKING",
+      "students": 76,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "wednesday",
+      "date": "2026-07-08",
+      "session": 3,
+      "session_time": [
+        "11:45",
+        "12:45"
+      ],
+      "venue": "GF1",
+      "course_code": "BI 452",
+      "course_name": "EDITORIAL MANAGEMENT",
+      "students": 65,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "wednesday",
+      "date": "2026-07-08",
+      "session": 3,
+      "session_time": [
+        "11:45",
+        "12:45"
+      ],
+      "venue": "GF3",
+      "course_code": "ENGL 264 SET B",
+      "course_name": "LITERATURE IN ENGLISH II DIAT",
+      "students": 100,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "wednesday",
+      "date": "2026-07-08",
+      "session": 3,
+      "session_time": [
+        "11:45",
+        "12:45"
+      ],
+      "venue": "FF2",
+      "course_code": "ENGL 264 SET B",
+      "course_name": "LITERATURE IN ENGLISH II PUBLISHING STUDIES",
+      "students": 125,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "wednesday",
+      "date": "2026-07-08",
+      "session": 3,
+      "session_time": [
+        "11:45",
+        "12:45"
+      ],
+      "venue": "FFW",
+      "course_code": "ENGL 264 SET B",
+      "course_name": "LITERATURE IN ENGLISH II FINE ART & CURATORIAL PRACTICE",
+      "students": 130,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "wednesday",
+      "date": "2026-07-08",
+      "session": 4,
+      "session_time": [
+        "13:30",
+        "14:30"
+      ],
+      "venue": "GF1",
+      "course_code": "DAD 360",
+      "course_name": "CREATIVE STRATEGY AND COPY WRITING",
+      "students": 202,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "wednesday",
+      "date": "2026-07-08",
+      "session": 4,
+      "session_time": [
+        "13:30",
+        "14:30"
+      ],
+      "venue": "GF4",
+      "course_code": "MPDT 154",
+      "course_name": "ISOMETRIC AND ORTHOGRAPHIC PROJECTIONS",
+      "students": 0,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "wednesday",
+      "date": "2026-07-08",
+      "session": 4,
+      "session_time": [
+        "13:30",
+        "14:30"
+      ],
+      "venue": "GFW",
+      "course_code": "CET 162",
+      "course_name": "TECHNICAL DRAWING II",
+      "students": 60,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "wednesday",
+      "date": "2026-07-08",
+      "session": 4,
+      "session_time": [
+        "13:30",
+        "14:30"
+      ],
+      "venue": "FF2",
+      "course_code": "IRAI 154",
+      "course_name": "TRADITIONAL WOOD CARVING",
+      "students": 156,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "wednesday",
+      "date": "2026-07-08",
+      "session": 5,
+      "session_time": [
+        "15:15",
+        "16:15"
+      ],
+      "venue": "GF1",
+      "course_code": "DAD 158",
+      "course_name": "COMPUTER GRAPHICS",
+      "students": 231,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "wednesday",
+      "date": "2026-07-08",
+      "session": 5,
+      "session_time": [
+        "15:15",
+        "16:15"
+      ],
+      "venue": "FF2",
+      "course_code": "BI 464",
+      "course_name": "PRINT QUALITY MANAGEMENT",
+      "students": 43,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "wednesday",
+      "date": "2026-07-08",
+      "session": 5,
+      "session_time": [
+        "15:15",
+        "16:15"
+      ],
+      "venue": "FFW",
+      "course_code": "FAPS 164",
+      "course_name": "INDIGENOUS AFRICAN VISUAL CULTURE",
+      "students": 131,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "wednesday",
+      "date": "2026-07-08",
+      "session": 6,
+      "session_time": [
+        "17:00",
+        "18:00"
+      ],
+      "venue": "GF1",
+      "course_code": "IRAI 152",
+      "course_name": "COMPLEMENTARY MATERIALS IN RATTAN AND BAMBOO",
+      "students": 156,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "wednesday",
+      "date": "2026-07-08",
+      "session": 6,
+      "session_time": [
+        "17:00",
+        "18:00"
+      ],
+      "venue": "GFW",
+      "course_code": "FAS 160",
+      "course_name": "APPAREL CONSTRUCTION TECHNIQUES",
+      "students": 76,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "wednesday",
+      "date": "2026-07-08",
+      "session": 6,
+      "session_time": [
+        "17:00",
+        "18:00"
+      ],
+      "venue": "FF2",
+      "course_code": "BI 152",
+      "course_name": "INTRODUCTION TO PUBLISHING",
+      "students": 134,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "wednesday",
+      "date": "2026-07-08",
+      "session": 6,
+      "session_time": [
+        "17:00",
+        "18:00"
+      ],
+      "venue": "FFW",
+      "course_code": "FAS 452",
+      "course_name": "FASHION PROMOTION AND STYLING",
+      "students": 61,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "thursday",
+      "date": "2026-07-09",
+      "session": 1,
+      "session_time": [
+        "8:15",
+        "9:15"
+      ],
+      "venue": "GF1",
+      "course_code": "IRAI 456",
+      "course_name": "POTTERY STUDIO PRACTICE",
+      "students": 27,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "thursday",
+      "date": "2026-07-09",
+      "session": 1,
+      "session_time": [
+        "8:15",
+        "9:15"
+      ],
+      "venue": "GF4",
+      "course_code": "IRAI 162",
+      "course_name": "METAL INTEGRATED DESIGN",
+      "students": 156,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "thursday",
+      "date": "2026-07-09",
+      "session": 2,
+      "session_time": [
+        "10:00",
+        "11:00"
+      ],
+      "venue": "GF3",
+      "course_code": "MPDT 160",
+      "course_name": "3D COMPUTER DESIGN",
+      "students": 54,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "thursday",
+      "date": "2026-07-09",
+      "session": 2,
+      "session_time": [
+        "10:00",
+        "11:00"
+      ],
+      "venue": "GF4",
+      "course_code": "TDT 458",
+      "course_name": "TEXTILE FINISHING",
+      "students": 57,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "thursday",
+      "date": "2026-07-09",
+      "session": 2,
+      "session_time": [
+        "10:00",
+        "11:00"
+      ],
+      "venue": "GFW",
+      "course_code": "FAS 252",
+      "course_name": "CONCEPT DEVELOPMENT",
+      "students": 62,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "thursday",
+      "date": "2026-07-09",
+      "session": 2,
+      "session_time": [
+        "10:00",
+        "11:00"
+      ],
+      "venue": "FF2",
+      "course_code": "DAD 468",
+      "course_name": "EVENT MANAGEMENT",
+      "students": 60,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "thursday",
+      "date": "2026-07-09",
+      "session": 2,
+      "session_time": [
+        "10:00",
+        "11:00"
+      ],
+      "venue": "FF5",
+      "course_code": "IRAI 462",
+      "course_name": "METAL INTEGRATION PROJECTS",
+      "students": 32,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "thursday",
+      "date": "2026-07-09",
+      "session": 2,
+      "session_time": [
+        "10:00",
+        "11:00"
+      ],
+      "venue": "KNUST LIBRARY",
+      "course_code": "IRAI 266",
+      "course_name": "CRADLE-TO-CRADLE PRODUCT DESIGN",
+      "students": 139,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "thursday",
+      "date": "2026-07-09",
+      "session": 3,
+      "session_time": [
+        "11:45",
+        "12:45"
+      ],
+      "venue": "GF2",
+      "course_code": "MATH 152",
+      "course_name": "CALCULUS WITH ANALYSIS",
+      "students": 20,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "thursday",
+      "date": "2026-07-09",
+      "session": 3,
+      "session_time": [
+        "11:45",
+        "12:45"
+      ],
+      "venue": "GF3",
+      "course_code": "BI 454",
+      "course_name": "APPLIED MANAGEMENT CASES",
+      "students": 65,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "thursday",
+      "date": "2026-07-09",
+      "session": 3,
+      "session_time": [
+        "11:45",
+        "12:45"
+      ],
+      "venue": "GF4",
+      "course_code": "ILS 152",
+      "course_name": "INFORMATION LITERACY SKILLS",
+      "students": 134,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "thursday",
+      "date": "2026-07-09",
+      "session": 3,
+      "session_time": [
+        "11:45",
+        "12:45"
+      ],
+      "venue": "FF2",
+      "course_code": "PAP 356/PAS 356",
+      "course_name": "INTRODUCTION TO MUSEUM STUDIES/HISTORY OF SCULPTURE IV",
+      "students": 1,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "thursday",
+      "date": "2026-07-09",
+      "session": 3,
+      "session_time": [
+        "11:45",
+        "12:45"
+      ],
+      "venue": "KNUST LIBRARY",
+      "course_code": "CEA 256",
+      "course_name": "COMPUTER AIDED DESIGN",
+      "students": 29,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "thursday",
+      "date": "2026-07-09",
+      "session": 4,
+      "session_time": [
+        "13:30",
+        "14:30"
+      ],
+      "venue": "GF4",
+      "course_code": "IRAI 160",
+      "course_name": "FIBRES AND FABRICS MANUFACTURING",
+      "students": 156,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "thursday",
+      "date": "2026-07-09",
+      "session": 1,
+      "session_time": [
+        "8:15",
+        "9:15"
+      ],
+      "venue": "FF2",
+      "course_code": "PAS 254",
+      "course_name": "GLOBAL HISTORY OF MODERN AND CONTEMPORARY ART",
+      "students": 125,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "thursday",
+      "date": "2026-07-09",
+      "session": 4,
+      "session_time": [
+        "13:30",
+        "14:30"
+      ],
+      "venue": "FF5",
+      "course_code": "IRAI 262",
+      "course_name": "TRADITIONAL METAL FORMING TECHNIQUES",
+      "students": 71,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "thursday",
+      "date": "2026-07-09",
+      "session": 5,
+      "session_time": [
+        "15:15",
+        "16:15"
+      ],
+      "venue": "GF1",
+      "course_code": "FAPS 160",
+      "course_name": "HUMAN ANATOMICAL DRAWING II",
+      "students": 131,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "thursday",
+      "date": "2026-07-09",
+      "session": 5,
+      "session_time": [
+        "15:15",
+        "16:15"
+      ],
+      "venue": "GF4",
+      "course_code": "DAD 256",
+      "course_name": "GRAPHIC DESIGN PRODUCTION",
+      "students": 105,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "thursday",
+      "date": "2026-07-09",
+      "session": 5,
+      "session_time": [
+        "15:15",
+        "16:15"
+      ],
+      "venue": "FF2",
+      "course_code": "MJT 458",
+      "course_name": "GEM INFORMATION AND LAPIDARY II",
+      "students": 56,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "thursday",
+      "date": "2026-07-09",
+      "session": 5,
+      "session_time": [
+        "15:15",
+        "16:15"
+      ],
+      "venue": "FF3",
+      "course_code": "TDT 454",
+      "course_name": "SYNTHETIC FIBRE SPINNING",
+      "students": 57,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "thursday",
+      "date": "2026-07-09",
+      "session": 6,
+      "session_time": [
+        "17:00",
+        "18:00"
+      ],
+      "venue": "GF1",
+      "course_code": "IRAI 268",
+      "course_name": "ADVANCED MANAGEMENT CONCEPTS",
+      "students": 139,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "thursday",
+      "date": "2026-07-09",
+      "session": 6,
+      "session_time": [
+        "17:00",
+        "18:00"
+      ],
+      "venue": "GF4",
+      "course_code": "BI 264",
+      "course_name": "PRODUCT DESIGN AND DEVELOPMENT (PRINTING)",
+      "students": 48,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "friday",
+      "date": "2026-07-10",
+      "session": 1,
+      "session_time": [
+        "8:15",
+        "9:15"
+      ],
+      "venue": "GF3",
+      "course_code": "DAD 156",
+      "course_name": "VISUAL COMMUNICATION II",
+      "students": 231,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "friday",
+      "date": "2026-07-10",
+      "session": 1,
+      "session_time": [
+        "8:15",
+        "9:15"
+      ],
+      "venue": "FF3",
+      "course_code": "MGT. 454",
+      "course_name": "FINANCE",
+      "students": 137,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "friday",
+      "date": "2026-07-10",
+      "session": 1,
+      "session_time": [
+        "8:15",
+        "9:15"
+      ],
+      "venue": "FFW",
+      "course_code": "IRAI 254",
+      "course_name": "UPHOLSTERING AND FINISHING TECHNOLOGY",
+      "students": 100,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "friday",
+      "date": "2026-07-10",
+      "session": 2,
+      "session_time": [
+        "10:00",
+        "11:00"
+      ],
+      "venue": "GF1",
+      "course_code": "BI 282",
+      "course_name": "LANGUAGE AND THE EDITOR",
+      "students": 114,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "friday",
+      "date": "2026-07-10",
+      "session": 2,
+      "session_time": [
+        "10:00",
+        "11:00"
+      ],
+      "venue": "GF4",
+      "course_code": "TDT 456",
+      "course_name": "NON-WOVEN FABRICS",
+      "students": 57,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "friday",
+      "date": "2026-07-10",
+      "session": 2,
+      "session_time": [
+        "10:00",
+        "11:00"
+      ],
+      "venue": "FF2",
+      "course_code": "MATH S 252",
+      "course_name": "CALCULUS WITH SEVERAL VARIABLES",
+      "students": 10,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "friday",
+      "date": "2026-07-10",
+      "session": 2,
+      "session_time": [
+        "10:00",
+        "11:00"
+      ],
+      "venue": "FF4",
+      "course_code": "IRAI 166",
+      "course_name": "PRODUCT DESIGN BASICS",
+      "students": 156,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "friday",
+      "date": "2026-07-10",
+      "session": 3,
+      "session_time": [
+        "11:45",
+        "12:45"
+      ],
+      "venue": "GF1",
+      "course_code": "FAPS 162",
+      "course_name": "INTRO. TO NEW MEDIA ART TECHNOLOGY II",
+      "students": 131,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "friday",
+      "date": "2026-07-10",
+      "session": 3,
+      "session_time": [
+        "11:45",
+        "12:45"
+      ],
+      "venue": "GF4",
+      "course_code": "IRAI 256",
+      "course_name": "INDIGENOUS KILNS AND FURNACES",
+      "students": 94,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "friday",
+      "date": "2026-07-10",
+      "session": 3,
+      "session_time": [
+        "11:45",
+        "12:45"
+      ],
+      "venue": "FFW",
+      "course_code": "BI 276",
+      "course_name": "PRINT MEDIA REPRODUCTION THEORY",
+      "students": 45,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "friday",
+      "date": "2026-07-10",
+      "session": 4,
+      "session_time": [
+        "13:30",
+        "14:30"
+      ],
+      "venue": "GF1",
+      "course_code": "BI 162",
+      "course_name": "INTRODUCTION TO PRINTING II",
+      "students": 134,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "friday",
+      "date": "2026-07-10",
+      "session": 4,
+      "session_time": [
+        "13:30",
+        "14:30"
+      ],
+      "venue": "GF4",
+      "course_code": "CET 252",
+      "course_name": "WHITEWARES II",
+      "students": 21,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "friday",
+      "date": "2026-07-10",
+      "session": 4,
+      "session_time": [
+        "13:30",
+        "14:30"
+      ],
+      "venue": "GF4",
+      "course_code": "CET 156",
+      "course_name": "SOLID STATE PHYSICS",
+      "students": 16,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "friday",
+      "date": "2026-07-10",
+      "session": 4,
+      "session_time": [
+        "13:30",
+        "14:30"
+      ],
+      "venue": "FF3",
+      "course_code": "IRAI 156",
+      "course_name": "CLAY FORMING TECHNIQUES",
+      "students": 156,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "friday",
+      "date": "2026-07-10",
+      "session": 5,
+      "session_time": [
+        "15:15",
+        "16:15"
+      ],
+      "venue": "GF1",
+      "course_code": "FC 182",
+      "course_name": "FRENCH FOR COMMUNICATION",
+      "students": 26,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "friday",
+      "date": "2026-07-10",
+      "session": 5,
+      "session_time": [
+        "15:15",
+        "16:15"
+      ],
+      "venue": "GF2",
+      "course_code": "TDT 254",
+      "course_name": "BASIC WEAVING CALCULATIONS",
+      "students": 54,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "friday",
+      "date": "2026-07-10",
+      "session": 5,
+      "session_time": [
+        "15:15",
+        "16:15"
+      ],
+      "venue": "GF4",
+      "course_code": "ATH 254",
+      "course_name": "AESTHETICS AND CRITICISM II",
+      "students": 26,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "friday",
+      "date": "2026-07-10",
+      "session": 5,
+      "session_time": [
+        "15:15",
+        "16:15"
+      ],
+      "venue": "GFW",
+      "course_code": "ATE 252",
+      "course_name": "ART EDUCATION",
+      "students": 82,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "friday",
+      "date": "2026-07-10",
+      "session": 6,
+      "session_time": [
+        "17:00",
+        "18:00"
+      ],
+      "venue": "FF5",
+      "course_code": "DAD 264",
+      "course_name": "VISUAL COMMUNICATION",
+      "students": 110,
+      "examiner": "",
+      "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "faculty": "Art",
+      "day": "thursday",
+      "date": "2026-07-09",
+      "session": 1,
+      "session_time": [
+        "8:15",
+        "9:15"
+      ],
+      "venue": "FF5",
+      "course_code": "BI 252",
+      "course_name": "PRINCIPLES AND PRACTICES OF COPYEDITING (ADMIN)",
+      "students": 42,
+      "examiner": "",
+      "year_group": "",
       "exam_type": "written"
     }
   ]
