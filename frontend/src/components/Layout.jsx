@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import api from '../api';
+import toast from 'react-hot-toast';
 
 const NAV = [
   { to: '/', label: 'Dashboard', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0h4' },
@@ -10,6 +12,7 @@ const NAV = [
 
 export default function Layout() {
   const [open, setOpen] = useState(false);
+  const [showPwModal, setShowPwModal] = useState(false);
   const nav = useNavigate();
 
   const logout = () => {
@@ -48,6 +51,7 @@ export default function Layout() {
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-white/10">
           <a href="/lookup" target="_blank" className="block text-xs text-blue-300 hover:text-white mb-3">Staff Lookup Portal</a>
           <a href="/public/timetable" target="_blank" className="block text-xs text-blue-300 hover:text-white mb-3">Public Timetable</a>
+          <button onClick={() => setShowPwModal(true)} className="w-full text-left text-xs text-blue-300 hover:text-white mb-3">Change Password</button>
           <button onClick={logout} className="w-full text-left text-sm text-red-300 hover:text-red-200">Logout</button>
         </div>
       </aside>
@@ -68,6 +72,62 @@ export default function Layout() {
         <main className="p-4 lg:p-6">
           <Outlet />
         </main>
+      </div>
+
+      {showPwModal && <ChangePasswordModal onClose={() => setShowPwModal(false)} />}
+    </div>
+  );
+}
+
+function ChangePasswordModal({ onClose }) {
+  const [current, setCurrent] = useState('');
+  const [newPw, setNewPw] = useState('');
+  const [confirm, setConfirm] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const submit = async (e) => {
+    e.preventDefault();
+    if (newPw !== confirm) return toast.error('Passwords do not match');
+    if (newPw.length < 6) return toast.error('Minimum 6 characters');
+    setLoading(true);
+    try {
+      await api.put('/auth/change-password', { current_password: current, new_password: newPw });
+      toast.success('Password changed!');
+      onClose();
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="bg-white rounded-xl w-full max-w-sm p-6" onClick={e => e.stopPropagation()}>
+        <h2 className="text-lg font-black mb-4">Change Password</h2>
+        <form onSubmit={submit} className="space-y-3">
+          <div>
+            <label className="text-xs font-medium text-gray-600">Current Password</label>
+            <input type="password" value={current} onChange={e => setCurrent(e.target.value)}
+              className="w-full border rounded-lg px-3 py-2 text-sm mt-1" required />
+          </div>
+          <div>
+            <label className="text-xs font-medium text-gray-600">New Password</label>
+            <input type="password" value={newPw} onChange={e => setNewPw(e.target.value)}
+              className="w-full border rounded-lg px-3 py-2 text-sm mt-1" required />
+          </div>
+          <div>
+            <label className="text-xs font-medium text-gray-600">Confirm New Password</label>
+            <input type="password" value={confirm} onChange={e => setConfirm(e.target.value)}
+              className="w-full border rounded-lg px-3 py-2 text-sm mt-1" required />
+          </div>
+          <div className="flex gap-3 pt-2">
+            <button type="submit" disabled={loading} className="btn-brand flex-1">
+              {loading ? 'Saving...' : 'Change Password'}
+            </button>
+            <button type="button" onClick={onClose} className="btn-ghost flex-1">Cancel</button>
+          </div>
+        </form>
       </div>
     </div>
   );
