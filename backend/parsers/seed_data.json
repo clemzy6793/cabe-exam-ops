@@ -252,7 +252,7 @@
         "08:15",
         "09:15"
       ],
-      "students": 130,
+      "students": 125,
       "invigilators": [
         "G. Nani",
         "M. Mate",
@@ -277,7 +277,7 @@
         "08:15",
         "09:15"
       ],
-      "students": 138,
+      "students": 133,
       "invigilators": [
         "M. Owusu Yeboah",
         "Seth Mensah Kontor",
@@ -300,7 +300,7 @@
         "08:15",
         "09:15"
       ],
-      "students": 146,
+      "students": 141,
       "invigilators": [
         "A. Adjei-Twum",
         "John Mate-Kole",
@@ -323,7 +323,7 @@
         "08:15",
         "09:15"
       ],
-      "students": 181,
+      "students": 176,
       "invigilators": [
         "W.M. Adolwine",
         "E.P. Tudzi",
@@ -347,7 +347,7 @@
         "08:15",
         "09:15"
       ],
-      "students": 110,
+      "students": 104,
       "invigilators": [
         "C. A. Akuffo",
         "D. K. Obiri-Okae",
@@ -369,7 +369,7 @@
         "10:00",
         "11:00"
       ],
-      "students": 123,
+      "students": 118,
       "invigilators": [
         "A. Adjei-Twum",
         "E.P. Tudzi",
@@ -392,7 +392,7 @@
         "10:00",
         "11:00"
       ],
-      "students": 130,
+      "students": 125,
       "invigilators": [],
       "exam_type": "written"
     },
@@ -410,7 +410,7 @@
         "10:00",
         "11:00"
       ],
-      "students": 112,
+      "students": 106,
       "invigilators": [
         "A. I. Baffoe-Ashun",
         "C. A. Akuffo",
@@ -433,7 +433,7 @@
         "10:00",
         "11:00"
       ],
-      "students": 0,
+      "students": 130,
       "invigilators": [],
       "exam_type": "written"
     },
@@ -451,7 +451,7 @@
         "10:00",
         "11:00"
       ],
-      "students": 155,
+      "students": 150,
       "invigilators": [
         "J.C. Danku",
         "S. Daitey",
@@ -478,7 +478,7 @@
         "10:00",
         "11:00"
       ],
-      "students": 0,
+      "students": 130,
       "invigilators": [],
       "exam_type": "written"
     },
@@ -496,7 +496,7 @@
         "11:45",
         "12:45"
       ],
-      "students": 107,
+      "students": 104,
       "invigilators": [
         "G. Acquah",
         "S. Lumor",
@@ -521,7 +521,7 @@
         "11:45",
         "12:45"
       ],
-      "students": 125,
+      "students": 120,
       "invigilators": [
         "M. Mate",
         "S. Daitey",
@@ -546,7 +546,7 @@
         "11:45",
         "12:45"
       ],
-      "students": 103,
+      "students": 100,
       "invigilators": [
         "M. Owusu Yeboah",
         "Esther Juliet Akonnor",
@@ -570,7 +570,7 @@
         "11:45",
         "12:45"
       ],
-      "students": 125,
+      "students": 118,
       "invigilators": [
         "C. A. Akuffo",
         "D. K. Obiri-Okae",
@@ -592,7 +592,7 @@
         "11:45",
         "12:45"
       ],
-      "students": 0,
+      "students": 100,
       "invigilators": [],
       "exam_type": "written"
     },
@@ -610,7 +610,7 @@
         "11:45",
         "12:45"
       ],
-      "students": 125,
+      "students": 121,
       "invigilators": [],
       "exam_type": "CBE"
     },
@@ -628,7 +628,7 @@
         "13:30",
         "14:30"
       ],
-      "students": 130,
+      "students": 125,
       "invigilators": [
         "D. Osei-Asibey",
         "V. Acheamfour",
@@ -653,7 +653,7 @@
         "13:30",
         "14:30"
       ],
-      "students": 145,
+      "students": 138,
       "invigilators": [
         "A. I. Baffoe-Ashun",
         "V. Sakyi-Adjei",
@@ -676,7 +676,7 @@
         "13:30",
         "14:30"
       ],
-      "students": 149,
+      "students": 144,
       "invigilators": [],
       "exam_type": "written"
     },
@@ -694,7 +694,7 @@
         "13:30",
         "14:30"
       ],
-      "students": 133,
+      "students": 128,
       "invigilators": [
         "W.M. Adolwine",
         "E. Lamptey",
@@ -717,7 +717,7 @@
         "13:30",
         "14:30"
       ],
-      "students": 138,
+      "students": 133,
       "invigilators": [
         "J. Frimpong-Asante",
         "A. Adjei-Twum",
@@ -740,7 +740,7 @@
         "15:15",
         "16:15"
       ],
-      "students": 125,
+      "students": 120,
       "invigilators": [
         "V. Acheamfour",
         "N. N. K. Ashley",
@@ -765,7 +765,7 @@
         "15:15",
         "16:15"
       ],
-      "students": 150,
+      "students": 144,
       "invigilators": [
         "M. Mate",
         "S. Lumor",
@@ -787,7 +787,7 @@
         "15:15",
         "16:15"
       ],
-      "students": 155,
+      "students": 148,
       "invigilators": [
         "G. Acquah",
         "S. Daitey",
@@ -809,7 +809,7 @@
         "15:15",
         "16:15"
       ],
-      "students": 181,
+      "students": 176,
       "invigilators": [
         "M. Owusu Yeboah",
         "Vincent Bi",
@@ -832,7 +832,7 @@
         "15:15",
         "16:15"
       ],
-      "students": 167,
+      "students": 162,
       "invigilators": [
         "J. Frimpong-Asante",
         "E. Lamptey",
@@ -855,7 +855,7 @@
         "17:00",
         "18:00"
       ],
-      "students": 0,
+      "students": 180,
       "invigilators": [],
       "exam_type": "CBE"
     },
@@ -873,7 +873,7 @@
         "17:00",
         "18:00"
       ],
-      "students": 190,
+      "students": 0,
       "invigilators": [],
       "exam_type": "written"
     },
@@ -891,7 +891,7 @@
         "08:15",
         "09:15"
       ],
-      "students": 130,
+      "students": 125,
       "invigilators": [
         "A. Adade-Boateng",
         "S. Awuni",
@@ -916,7 +916,7 @@
         "08:15",
         "09:15"
       ],
-      "students": 110,
+      "students": 104,
       "invigilators": [],
       "exam_type": "written"
     },
@@ -934,7 +934,7 @@
         "08:15",
         "09:15"
       ],
-      "students": 107,
+      "students": 104,
       "invigilators": [
         "J. C. Danku",
         "S. Lumor",
@@ -960,7 +960,7 @@
         "08:15",
         "09:15"
       ],
-      "students": 181,
+      "students": 176,
       "invigilators": [
         "M. Owusu Yeboah",
         "E.P. Tudzi",
@@ -988,7 +988,7 @@
         "10:00",
         "11:00"
       ],
-      "students": 125,
+      "students": 120,
       "invigilators": [
         "E. Kissi",
         "V. Acheamfour",
@@ -1013,7 +1013,7 @@
         "10:00",
         "11:00"
       ],
-      "students": 138,
+      "students": 133,
       "invigilators": [
         "M. Owusu Yeboah",
         "E.P. Tudzi",
@@ -1036,7 +1036,7 @@
         "10:00",
         "11:00"
       ],
-      "students": 123,
+      "students": 118,
       "invigilators": [
         "J. Frimpong-Asante",
         "Praise Dzebu",
@@ -1059,7 +1059,7 @@
         "10:00",
         "11:00"
       ],
-      "students": 125,
+      "students": 118,
       "invigilators": [
         "V. Sakyi-Adjei",
         "C. Akuffo",
@@ -1081,7 +1081,7 @@
         "10:00",
         "11:00"
       ],
-      "students": 0,
+      "students": 180,
       "invigilators": [],
       "exam_type": "written"
     },
@@ -1117,7 +1117,7 @@
         "10:00",
         "11:00"
       ],
-      "students": 0,
+      "students": 130,
       "invigilators": [],
       "exam_type": "CBE"
     },
@@ -1135,7 +1135,7 @@
         "11:45",
         "12:45"
       ],
-      "students": 0,
+      "students": 180,
       "invigilators": [],
       "exam_type": "written"
     },
@@ -1153,7 +1153,7 @@
         "11:45",
         "12:45"
       ],
-      "students": 155,
+      "students": 150,
       "invigilators": [
         "A. Adade-Boateng",
         "S. Lumor",
@@ -1180,7 +1180,7 @@
         "13:30",
         "14:30"
       ],
-      "students": 107,
+      "students": 104,
       "invigilators": [
         "B. Simons",
         "M. Adesi",
@@ -1202,7 +1202,7 @@
         "13:30",
         "14:30"
       ],
-      "students": 98,
+      "students": 93,
       "invigilators": [
         "E. Kissi",
         "V. Acheamfour",
@@ -1224,7 +1224,7 @@
         "13:30",
         "14:30"
       ],
-      "students": 105,
+      "students": 106,
       "invigilators": [],
       "exam_type": "written"
     },
@@ -1242,7 +1242,7 @@
         "13:30",
         "14:30"
       ],
-      "students": 0,
+      "students": 180,
       "invigilators": [],
       "exam_type": "written"
     },
@@ -1260,7 +1260,7 @@
         "15:15",
         "16:15"
       ],
-      "students": 138,
+      "students": 133,
       "invigilators": [],
       "exam_type": "written"
     },
@@ -1278,7 +1278,7 @@
         "15:15",
         "16:15"
       ],
-      "students": 125,
+      "students": 120,
       "invigilators": [
         "J. K. Hackman",
         "S. Daitey",
@@ -1304,7 +1304,7 @@
         "15:15",
         "16:15"
       ],
-      "students": 0,
+      "students": 180,
       "invigilators": [],
       "exam_type": "written"
     },
@@ -1322,7 +1322,7 @@
         "15:15",
         "16:15"
       ],
-      "students": 0,
+      "students": 190,
       "invigilators": [],
       "exam_type": "written"
     },
@@ -1340,7 +1340,7 @@
         "15:15",
         "16:15"
       ],
-      "students": 0,
+      "students": 190,
       "invigilators": [],
       "exam_type": "written"
     },
@@ -1358,7 +1358,7 @@
         "08:15",
         "09:15"
       ],
-      "students": 125,
+      "students": 120,
       "invigilators": [
         "G. Acquah",
         "M. Adesi",
@@ -1382,7 +1382,7 @@
         "08:15",
         "09:15"
       ],
-      "students": 123,
+      "students": 118,
       "invigilators": [],
       "exam_type": "written"
     },
@@ -1400,7 +1400,7 @@
         "08:15",
         "09:15"
       ],
-      "students": 103,
+      "students": 100,
       "invigilators": [
         "E.P. Tudzi",
         "Seth Mensah Kontor",
@@ -1424,7 +1424,7 @@
         "08:15",
         "09:15"
       ],
-      "students": 15,
+      "students": 12,
       "invigilators": [],
       "exam_type": "written"
     },
@@ -1442,7 +1442,7 @@
         "08:15",
         "09:15"
       ],
-      "students": 112,
+      "students": 106,
       "invigilators": [
         "C. A. Akuffo",
         "D. K. Obiri-Okae",
@@ -1465,7 +1465,7 @@
         "08:15",
         "09:15"
       ],
-      "students": 0,
+      "students": 100,
       "invigilators": [],
       "exam_type": "CBE"
     },
@@ -1483,7 +1483,7 @@
         "08:15",
         "09:15"
       ],
-      "students": 125,
+      "students": 130,
       "invigilators": [],
       "exam_type": "written"
     },
@@ -1501,7 +1501,7 @@
         "10:00",
         "11:00"
       ],
-      "students": 150,
+      "students": 144,
       "invigilators": [
         "A. Adade-Boateng",
         "I. Gyasi",
@@ -1524,7 +1524,7 @@
         "10:00",
         "11:00"
       ],
-      "students": 112,
+      "students": 106,
       "invigilators": [],
       "exam_type": "written"
     },
@@ -1542,7 +1542,7 @@
         "10:00",
         "11:00"
       ],
-      "students": 0,
+      "students": 135,
       "invigilators": [],
       "exam_type": "CBE"
     },
@@ -1560,7 +1560,7 @@
         "10:00",
         "11:00"
       ],
-      "students": 0,
+      "students": 135,
       "invigilators": [],
       "exam_type": "written"
     },
@@ -1578,7 +1578,7 @@
         "11:45",
         "12:45"
       ],
-      "students": 146,
+      "students": 141,
       "invigilators": [
         "K.O. Asiama",
         "Praise Dzebu",
@@ -1601,7 +1601,7 @@
         "11:45",
         "12:45"
       ],
-      "students": 107,
+      "students": 104,
       "invigilators": [
         "D. Owusu-Manu",
         "S. Daitey",
@@ -1627,7 +1627,7 @@
         "11:45",
         "12:45"
       ],
-      "students": 176,
+      "students": 171,
       "invigilators": [
         "A. Adjei-Twum",
         "E. Lamptey",
@@ -1655,7 +1655,7 @@
         "13:30",
         "14:30"
       ],
-      "students": 125,
+      "students": 120,
       "invigilators": [
         "M. Mate",
         "A Abdulai",
@@ -1680,7 +1680,7 @@
         "13:30",
         "14:30"
       ],
-      "students": 138,
+      "students": 133,
       "invigilators": [
         "K.O. Asiama",
         "Nelly Pankah",
@@ -1707,7 +1707,7 @@
         "13:30",
         "14:30"
       ],
-      "students": 110,
+      "students": 104,
       "invigilators": [],
       "exam_type": "written"
     },
@@ -1766,7 +1766,7 @@
         "15:15",
         "16:15"
       ],
-      "students": 130,
+      "students": 125,
       "invigilators": [
         "G. Acquah",
         "N. N. K. Ashley",
@@ -1791,7 +1791,7 @@
         "15:15",
         "16:15"
       ],
-      "students": 145,
+      "students": 138,
       "invigilators": [
         "C. A. Akuffo",
         "D. K. Obiri-Okae",
@@ -1814,7 +1814,7 @@
         "15:15",
         "16:15"
       ],
-      "students": 153,
+      "students": 148,
       "invigilators": [],
       "exam_type": "written"
     },
@@ -1832,7 +1832,7 @@
         "15:15",
         "16:15"
       ],
-      "students": 149,
+      "students": 144,
       "invigilators": [
         "M. Owusu Yeboah",
         "Vincent Bi",
@@ -1859,7 +1859,7 @@
         "17:00",
         "18:00"
       ],
-      "students": 0,
+      "students": 190,
       "invigilators": [],
       "exam_type": "CBE"
     },
@@ -1877,7 +1877,7 @@
         "17:00",
         "18:00"
       ],
-      "students": 0,
+      "students": 180,
       "invigilators": [],
       "exam_type": "CBE"
     },
@@ -1895,7 +1895,7 @@
         "08:15",
         "09:15"
       ],
-      "students": 123,
+      "students": 118,
       "invigilators": [],
       "exam_type": "written"
     },
@@ -1933,7 +1933,7 @@
         "08:15",
         "09:15"
       ],
-      "students": 130,
+      "students": 125,
       "invigilators": [
         "K. Agyekum",
         "I. Gyasi",
@@ -1960,7 +1960,7 @@
         "08:15",
         "09:15"
       ],
-      "students": 0,
+      "students": 140,
       "invigilators": [],
       "exam_type": "written"
     },
@@ -1996,7 +1996,7 @@
         "10:00",
         "11:00"
       ],
-      "students": 145,
+      "students": 138,
       "invigilators": [
         "C. A. Akuffo",
         "A. I. Baffoe-Ashun",
@@ -2018,7 +2018,7 @@
         "10:00",
         "11:00"
       ],
-      "students": 125,
+      "students": 118,
       "invigilators": [
         "D. K. Obiri-Okae",
         "V. Sakyi-Adjei",
@@ -2040,7 +2040,7 @@
         "10:00",
         "11:00"
       ],
-      "students": 0,
+      "students": 130,
       "invigilators": [],
       "exam_type": "written"
     },
@@ -2058,7 +2058,7 @@
         "10:00",
         "11:00"
       ],
-      "students": 0,
+      "students": 135,
       "invigilators": [],
       "exam_type": "written"
     },
@@ -2076,7 +2076,7 @@
         "11:45",
         "12:45"
       ],
-      "students": 110,
+      "students": 104,
       "invigilators": [
         "A. I. Baffoe-Ashun",
         "C. A. Akuffo",
@@ -2099,7 +2099,7 @@
         "11:45",
         "12:45"
       ],
-      "students": 155,
+      "students": 150,
       "invigilators": [
         "G. Acquah",
         "B. Duodu",
@@ -2126,7 +2126,7 @@
         "13:30",
         "14:30"
       ],
-      "students": 130,
+      "students": 125,
       "invigilators": [
         "B. Duodu",
         "S. Lumor",
@@ -2151,7 +2151,7 @@
         "13:30",
         "14:30"
       ],
-      "students": 123,
+      "students": 118,
       "invigilators": [
         "E. Lamptey",
         "John Mate-Kole",
@@ -2174,7 +2174,7 @@
         "13:30",
         "14:30"
       ],
-      "students": 167,
+      "students": 162,
       "invigilators": [
         "W.M. Adolwine",
         "Vincent Bi",
@@ -2202,7 +2202,7 @@
         "13:30",
         "14:30"
       ],
-      "students": 35,
+      "students": 138,
       "invigilators": [],
       "exam_type": "written"
     },
@@ -2220,7 +2220,7 @@
         "13:30",
         "14:30"
       ],
-      "students": 120,
+      "students": 115,
       "invigilators": [
         "M. Mate",
         "I. Gyasi",
@@ -2242,7 +2242,7 @@
         "15:15",
         "16:15"
       ],
-      "students": 112,
+      "students": 106,
       "invigilators": [
         "C. A. Akuffo",
         "D. K. Obiri-Okae",
@@ -2266,7 +2266,7 @@
         "15:15",
         "16:15"
       ],
-      "students": 138,
+      "students": 133,
       "invigilators": [],
       "exam_type": "written"
     },
@@ -2284,7 +2284,7 @@
         "15:15",
         "16:15"
       ],
-      "students": 0,
+      "students": 190,
       "invigilators": [],
       "exam_type": "CBE"
     },
@@ -2329,7 +2329,7 @@
         "08:15",
         "09:15"
       ],
-      "students": 130,
+      "students": 125,
       "invigilators": [
         "A. Acheampong",
         "S. Daitey",
@@ -2376,7 +2376,7 @@
         "08:15",
         "09:15"
       ],
-      "students": 167,
+      "students": 162,
       "invigilators": [],
       "exam_type": "written"
     },
@@ -2394,7 +2394,7 @@
         "08:15",
         "09:15"
       ],
-      "students": 0,
+      "students": 100,
       "invigilators": [],
       "exam_type": "CBE"
     },
@@ -2412,7 +2412,7 @@
         "08:15",
         "09:15"
       ],
-      "students": 0,
+      "students": 130,
       "invigilators": [],
       "exam_type": "written"
     },
@@ -2430,7 +2430,7 @@
         "10:00",
         "11:00"
       ],
-      "students": 125,
+      "students": 120,
       "invigilators": [
         "A. Acheampong",
         "V. Acheamfour",
@@ -2455,7 +2455,7 @@
         "10:00",
         "11:00"
       ],
-      "students": 110,
+      "students": 104,
       "invigilators": [
         "C. A. Akuffo",
         "D. K. Obiri-Okae",
@@ -2479,7 +2479,7 @@
         "10:00",
         "11:00"
       ],
-      "students": 176,
+      "students": 171,
       "invigilators": [],
       "exam_type": "written"
     },
@@ -2517,7 +2517,7 @@
         "10:00",
         "11:00"
       ],
-      "students": 0,
+      "students": 135,
       "invigilators": [],
       "exam_type": "written"
     },
@@ -2535,7 +2535,7 @@
         "10:00",
         "11:00"
       ],
-      "students": 0,
+      "students": 135,
       "invigilators": [],
       "exam_type": "written"
     },
@@ -2553,7 +2553,7 @@
         "11:45",
         "12:45"
       ],
-      "students": 125,
+      "students": 118,
       "invigilators": [
         "D. K. Obiri-Okae",
         "V. Sakyi-Adjei",
@@ -2576,7 +2576,7 @@
         "11:45",
         "12:45"
       ],
-      "students": 145,
+      "students": 138,
       "invigilators": [
         "A. I. Baffoe-Ashun",
         "C. A. Akuffo",
@@ -2598,7 +2598,7 @@
         "11:45",
         "12:45"
       ],
-      "students": 146,
+      "students": 141,
       "invigilators": [],
       "exam_type": "written"
     },
@@ -2616,7 +2616,7 @@
         "11:45",
         "12:45"
       ],
-      "students": 0,
+      "students": 190,
       "invigilators": [],
       "exam_type": "CBE"
     },
@@ -2634,7 +2634,7 @@
         "11:45",
         "12:45"
       ],
-      "students": 0,
+      "students": 190,
       "invigilators": [],
       "exam_type": "written"
     },
@@ -2652,7 +2652,7 @@
         "13:30",
         "14:30"
       ],
-      "students": 130,
+      "students": 125,
       "invigilators": [
         "I. Abu",
         "V. Acheamfour"
@@ -2673,7 +2673,7 @@
         "13:30",
         "14:30"
       ],
-      "students": 135,
+      "students": 128,
       "invigilators": [],
       "exam_type": "written"
     },
@@ -2691,7 +2691,7 @@
         "13:30",
         "14:30"
       ],
-      "students": 112,
+      "students": 106,
       "invigilators": [
         "D. K. Obiri-Okae",
         "V. Sakyi-Adjei",
@@ -2715,7 +2715,7 @@
         "13:30",
         "14:30"
       ],
-      "students": 155,
+      "students": 150,
       "invigilators": [
         "G. Acquah",
         "B. Simons",
