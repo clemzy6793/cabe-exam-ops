@@ -3,7 +3,7 @@ const db = require('../db');
 const { authAdmin } = require('../middleware/auth');
 
 router.get('/', async (req, res) => {
-  const { search, faculty_id } = req.query;
+  const { search, faculty_id, staff_type } = req.query;
   let sql = `
     SELECT s.*, f.name AS faculty_name, f.code AS faculty_code,
       (SELECT COUNT(*)::int FROM exam_assignments ea WHERE ea.staff_id = s.id) AS assignment_count
@@ -19,6 +19,10 @@ router.get('/', async (req, res) => {
   if (faculty_id) {
     params.push(faculty_id);
     sql += ` AND s.faculty_id = $${params.length}`;
+  }
+  if (staff_type) {
+    params.push(staff_type);
+    sql += ` AND s.staff_type = $${params.length}`;
   }
   sql += ' ORDER BY s.name';
 
@@ -69,10 +73,11 @@ router.post('/', authAdmin, async (req, res) => {
     }
     const staffCode = `CABE${String(nextNum).padStart(4, '0')}`;
 
+    const staff_type = req.body.staff_type || 'lecturer';
     const { rows } = await db.query(
-      `INSERT INTO staff (name, staff_code, email, phone, department, faculty_id, role)
-       VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *`,
-      [name, staffCode, email, phone, department, faculty_id, role || 'invigilator']
+      `INSERT INTO staff (name, staff_code, email, phone, department, faculty_id, role, staff_type)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *`,
+      [name, staffCode, email, phone, department, faculty_id, role || 'invigilator', staff_type]
     );
     res.status(201).json(rows[0]);
   } catch (err) {
@@ -81,12 +86,12 @@ router.post('/', authAdmin, async (req, res) => {
 });
 
 router.put('/:id', authAdmin, async (req, res) => {
-  const { name, email, phone, department, faculty_id, role } = req.body;
+  const { name, email, phone, department, faculty_id, role, staff_type } = req.body;
   try {
     const { rows } = await db.query(
-      `UPDATE staff SET name=$1, email=$2, phone=$3, department=$4, faculty_id=$5, role=$6
-       WHERE id=$7 RETURNING *`,
-      [name, email, phone, department, faculty_id, role, req.params.id]
+      `UPDATE staff SET name=$1, email=$2, phone=$3, department=$4, faculty_id=$5, role=$6, staff_type=$7
+       WHERE id=$8 RETURNING *`,
+      [name, email, phone, department, faculty_id, role, staff_type || 'lecturer', req.params.id]
     );
     if (!rows.length) return res.status(404).json({ error: 'Not found' });
     res.json(rows[0]);

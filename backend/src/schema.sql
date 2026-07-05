@@ -39,8 +39,15 @@ CREATE TABLE IF NOT EXISTS staff (
   department VARCHAR(100),
   faculty_id INT REFERENCES faculties(id) ON DELETE SET NULL,
   role VARCHAR(50) DEFAULT 'invigilator',
+  staff_type VARCHAR(20) DEFAULT 'lecturer',
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='staff' AND column_name='staff_type') THEN
+    ALTER TABLE staff ADD COLUMN staff_type VARCHAR(20) DEFAULT 'lecturer';
+  END IF;
+END $$;
 
 CREATE TABLE IF NOT EXISTS exams (
   id SERIAL PRIMARY KEY,
