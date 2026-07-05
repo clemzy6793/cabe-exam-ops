@@ -1,0 +1,24 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #f1f5f9;
+}
+
+.btn-brand {
+  @apply bg-brand text-white px-4 py-2 rounded-lg font-semibold hover:bg-brand-light transition-colors;
+}
+.btn-accent {
+  @apply bg-accent text-brand-dark px-4 py-2 rounded-lg font-semibold hover:bg-accent-light transition-colors;
+}
+.btn-ghost {
+  @apply border border-gray-300 px-4 py-2 rounded-lg font-semibold hover:bg-gray-50 transition-colors;
+}
+.btn-danger {
+  @apply bg-red-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-600 transition-colors;
+}
+.card {
+  @apply bg-white rounded-xl shadow-sm border border-gray-100 p-5;
+}
