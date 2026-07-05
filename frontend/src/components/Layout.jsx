@@ -184,12 +184,46 @@ function ChangePasswordModal({ onClose }) {
 
 function AccountsModal({ onClose }) {
   const [accounts, setAccounts] = useState([]);
-  const [showAdd, setShowAdd] = useState(false);
+  const [tab, setTab] = useState('accounts');
   const [form, setForm] = useState({ name: '', email: '', password: '', role: 'reviewer' });
   const [loading, setLoading] = useState(false);
+  const [itStaff, setItStaff] = useState([]);
+  const [selectedStaff, setSelectedStaff] = useState([]);
+  const [staffPw, setStaffPw] = useState('');
 
-  const load = () => api.get('/auth/accounts').then(r => setAccounts(r.data)).catch(() => {});
+  const load = () => {
+    api.get('/auth/accounts').then(r => setAccounts(r.data)).catch(() => {});
+    api.get('/staff', { params: { staff_type: 'it_staff' } }).then(r => setItStaff(r.data)).catch(() => {});
+  };
   useEffect(() => { load(); }, []);
+
+  const existingEmails = accounts.map(a => a.email.toLowerCase());
+  const availableStaff = itStaff.filter(s => {
+    const loginEmail = (s.email || `${s.phone}@staff.cabe`).toLowerCase();
+    return !existingEmails.includes(loginEmail);
+  });
+
+  const toggleStaff = (id) => setSelectedStaff(prev =>
+    prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+  );
+
+  const addFromStaff = async () => {
+    if (!selectedStaff.length) return toast.error('Select at least one staff');
+    if (!staffPw || staffPw.length < 6) return toast.error('Set a password (min 6 chars)');
+    setLoading(true);
+    try {
+      const { data } = await api.post('/auth/accounts/from-staff', { staff_ids: selectedStaff, password: staffPw });
+      toast.success(`${data.created} reviewer account(s) created`);
+      setSelectedStaff([]);
+      setStaffPw('');
+      setTab('accounts');
+      load();
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const addAccount = async (e) => {
     e.preventDefault();
@@ -199,8 +233,8 @@ function AccountsModal({ onClose }) {
     try {
       await api.post('/auth/accounts', form);
       toast.success('Account created');
-      setShowAdd(false);
       setForm({ name: '', email: '', password: '', role: 'reviewer' });
+      setTab('accounts');
       load();
     } catch (err) {
       toast.error(err.response?.data?.error || 'Failed');
@@ -222,54 +256,114 @@ function AccountsModal({ onClose }) {
 
   return (
     <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={onClose}>
-      <div className="bg-white rounded-xl w-full max-w-md max-h-[80vh] overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
-        <div className="p-4 border-b flex items-center justify-between">
+      <div className="bg-white rounded-xl w-full max-w-md max-h-[85vh] overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
+        <div className="p-4 border-b">
           <h2 className="text-lg font-black">Manage Accounts</h2>
-          <button onClick={() => setShowAdd(!showAdd)} className="btn-brand text-xs px-3 py-1.5">
-            {showAdd ? 'Cancel' : '+ Add Reviewer'}
-          </button>
+          <div className="flex gap-1 mt-3">
+            {[
+              { key: 'accounts', label: 'Accounts' },
+              { key: 'from_staff', label: 'From IT Staff' },
+              { key: 'new', label: 'New Account' },
+            ].map(t => (
+              <button key={t.key} onClick={() => setTab(t.key)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                  tab === t.key ? 'bg-brand text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}>{t.label}</button>
+            ))}
+          </div>
         </div>
 
-        {showAdd && (
-          <form onSubmit={addAccount} className="p-4 border-b bg-gray-50 space-y-2">
-            <div className="grid grid-cols-2 gap-2">
-              <input placeholder="Name" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                className="border rounded-lg px-3 py-2 text-sm" required />
-              <input placeholder="Email" type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-                className="border rounded-lg px-3 py-2 text-sm" required />
+        <div className="overflow-y-auto flex-1">
+          {tab === 'accounts' && (
+            <div className="divide-y">
+              {accounts.map(a => (
+                <div key={a.id} className="px-4 py-3 flex items-center justify-between">
+                  <div>
+                    <div className="font-medium text-sm">{a.name}</div>
+                    <div className="text-xs text-gray-400">{a.email}</div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${
+                      a.role === 'admin' || a.role === 'superadmin' ? 'bg-brand/10 text-brand' : 'bg-amber-100 text-amber-700'
+                    }`}>{a.role}</span>
+                    {a.role === 'reviewer' && (
+                      <button onClick={() => deleteAccount(a.id)} className="text-xs text-red-400 hover:text-red-600">Del</button>
+                    )}
+                  </div>
+                </div>
+              ))}
+              {accounts.length === 0 && <p className="text-center text-gray-400 py-8 text-sm">No accounts</p>}
             </div>
-            <div className="grid grid-cols-2 gap-2">
-              <input placeholder="Password" type="password" value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-                className="border rounded-lg px-3 py-2 text-sm" required />
-              <select value={form.role} onChange={e => setForm(f => ({ ...f, role: e.target.value }))}
-                className="border rounded-lg px-3 py-2 text-sm">
-                <option value="reviewer">Reviewer</option>
-                <option value="admin">Admin</option>
-              </select>
-            </div>
-            <button type="submit" disabled={loading} className="btn-brand text-sm w-full py-2">
-              {loading ? 'Creating...' : 'Create Account'}
-            </button>
-          </form>
-        )}
+          )}
 
-        <div className="overflow-y-auto flex-1 divide-y">
-          {accounts.map(a => (
-            <div key={a.id} className="px-4 py-3 flex items-center justify-between">
+          {tab === 'from_staff' && (
+            <div className="p-4 space-y-3">
+              <p className="text-xs text-gray-500">Select IT staff to give reviewer access. They'll log in with their email (or phone@staff.cabe) and the password you set below.</p>
               <div>
-                <div className="font-medium text-sm">{a.name}</div>
-                <div className="text-xs text-gray-400">{a.email}</div>
+                <label className="text-xs font-medium text-gray-600">Shared password for selected staff</label>
+                <input type="text" placeholder="e.g. Review2026" value={staffPw} onChange={e => setStaffPw(e.target.value)}
+                  className="w-full border rounded-lg px-3 py-2 text-sm mt-1" />
               </div>
-              <div className="flex items-center gap-2">
-                <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${
-                  a.role === 'admin' ? 'bg-brand/10 text-brand' : 'bg-amber-100 text-amber-700'
-                }`}>{a.role}</span>
-                {a.role === 'reviewer' && (
-                  <button onClick={() => deleteAccount(a.id)} className="text-xs text-red-400 hover:text-red-600">Del</button>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-gray-600">{selectedStaff.length} selected of {availableStaff.length} available</span>
+                <button onClick={() => setSelectedStaff(availableStaff.map(s => s.id))} className="text-xs text-cyan-600 hover:underline">Select All</button>
+              </div>
+              <div className="space-y-1 max-h-[40vh] overflow-y-auto">
+                {availableStaff.map(s => (
+                  <button key={s.id} onClick={() => toggleStaff(s.id)}
+                    className={`w-full text-left p-2.5 rounded-lg border-2 transition-colors ${
+                      selectedStaff.includes(s.id)
+                        ? 'border-cyan-500 bg-cyan-50'
+                        : 'border-gray-100 hover:border-gray-200'
+                    }`}>
+                    <div className="font-medium text-sm">{s.name}</div>
+                    <div className="text-xs text-gray-400">{s.staff_code} | {s.email || s.phone}</div>
+                  </button>
+                ))}
+                {availableStaff.length === 0 && (
+                  <p className="text-center text-gray-400 py-4 text-sm">All IT staff already have accounts</p>
                 )}
               </div>
+              {availableStaff.length > 0 && (
+                <button onClick={addFromStaff} disabled={!selectedStaff.length || !staffPw || loading}
+                  className="btn-brand w-full py-2 text-sm disabled:opacity-40">
+                  {loading ? 'Creating...' : `Create ${selectedStaff.length} Reviewer Account(s)`}
+                </button>
+              )}
             </div>
-          ))}
+          )}
+
+          {tab === 'new' && (
+            <form onSubmit={addAccount} className="p-4 space-y-3">
+              <p className="text-xs text-gray-500">Create an account for someone not in the staff list.</p>
+              <div>
+                <label className="text-xs font-medium text-gray-600">Name</label>
+                <input placeholder="Full name" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                  className="w-full border rounded-lg px-3 py-2 text-sm mt-1" required />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-gray-600">Email (login username)</label>
+                <input placeholder="email@example.com" type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+                  className="w-full border rounded-lg px-3 py-2 text-sm mt-1" required />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-gray-600">Password</label>
+                <input placeholder="Min 6 characters" type="password" value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
+                  className="w-full border rounded-lg px-3 py-2 text-sm mt-1" required />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-gray-600">Role</label>
+                <select value={form.role} onChange={e => setForm(f => ({ ...f, role: e.target.value }))}
+                  className="w-full border rounded-lg px-3 py-2 text-sm mt-1">
+                  <option value="reviewer">Reviewer</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </div>
+              <button type="submit" disabled={loading} className="btn-brand text-sm w-full py-2">
+                {loading ? 'Creating...' : 'Create Account'}
+              </button>
+            </form>
+          )}
         </div>
 
         <div className="p-3 border-t">

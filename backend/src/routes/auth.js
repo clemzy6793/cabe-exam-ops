@@ -71,6 +71,27 @@ router.post('/accounts', authAdmin, async (req, res) => {
   }
 });
 
+router.post('/accounts/from-staff', authAdmin, async (req, res) => {
+  const { staff_ids, password } = req.body;
+  if (!staff_ids?.length || !password) return res.status(400).json({ error: 'Staff and password required' });
+  if (password.length < 6) return res.status(400).json({ error: 'Minimum 6 characters' });
+
+  const hash = await bcrypt.hash(password, 10);
+  let created = 0, skipped = 0;
+  for (const sid of staff_ids) {
+    const { rows: [staff] } = await db.query('SELECT name, email, phone FROM staff WHERE id=$1', [sid]);
+    if (!staff) continue;
+    const loginEmail = staff.email || `${staff.phone}@staff.cabe`;
+    const { rows: existing } = await db.query('SELECT 1 FROM admins WHERE LOWER(email)=LOWER($1)', [loginEmail]);
+    if (existing.length) { skipped++; continue; }
+    await db.query(
+      'INSERT INTO admins (name, email, password_hash, role) VALUES ($1,$2,$3,$4)',
+      [staff.name, loginEmail, hash, 'reviewer']);
+    created++;
+  }
+  res.json({ created, skipped });
+});
+
 router.delete('/accounts/:id', authAdmin, async (req, res) => {
   try {
     const { rows } = await db.query('SELECT role FROM admins WHERE id=$1', [req.params.id]);
