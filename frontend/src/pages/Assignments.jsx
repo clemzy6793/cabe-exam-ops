@@ -10,8 +10,12 @@ const DAYS = [
   { date: '2026-07-10', label: 'Fri 10th' },
 ];
 
+const TIMES = ['8:15-9:15','10:00-11:00','11:45-12:45','1:30-2:30','3:15-4:15','5:00-6:00'];
+
 export default function Assignments() {
   const [date, setDate] = useState('2026-07-06');
+  const [faculties, setFaculties] = useState([]);
+  const [facultyId, setFacultyId] = useState('all');
   const [exams, setExams] = useState([]);
   const [staff, setStaff] = useState([]);
   const [assignModal, setAssignModal] = useState(null);
@@ -19,12 +23,18 @@ export default function Assignments() {
   const [bulkModal, setBulkModal] = useState(false);
 
   const load = () => {
-    api.get('/timetable/exams', { params: { date } }).then(r => setExams(r.data));
+    const params = { date };
+    if (facultyId !== 'all') params.faculty_id = facultyId;
+    api.get('/timetable/exams', { params }).then(r => setExams(r.data));
     api.get('/assignments/unassigned', { params: { date } }).then(r => setUnassigned(r.data));
   };
 
-  useEffect(() => { load(); }, [date]);
-  useEffect(() => { api.get('/staff').then(r => setStaff(r.data)); }, []);
+  useEffect(() => {
+    api.get('/timetable/faculties').then(r => setFaculties(r.data));
+    api.get('/staff').then(r => setStaff(r.data));
+  }, []);
+
+  useEffect(() => { load(); }, [date, facultyId]);
 
   const assign = async (exam_id, staff_id) => {
     try {
@@ -53,6 +63,8 @@ export default function Assignments() {
     if (!grouped[key]) grouped[key] = [];
     grouped[key].push(e);
   });
+
+  const selectedFaculty = faculties.find(f => f.id === Number(facultyId));
 
   return (
     <div className="space-y-4">
@@ -94,16 +106,44 @@ export default function Assignments() {
         ))}
       </div>
 
+      {/* Faculty selector */}
+      <div className="flex gap-2 overflow-x-auto">
+        <button onClick={() => setFacultyId('all')}
+          className={`px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap ${
+            facultyId === 'all' ? 'bg-amber-500 text-white' : 'bg-white border text-gray-600 hover:bg-gray-50'
+          }`}>
+          All Faculties
+        </button>
+        {faculties.map(f => (
+          <button key={f.id} onClick={() => setFacultyId(String(f.id))}
+            className={`px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap ${
+              facultyId === String(f.id) ? 'bg-amber-500 text-white' : 'bg-white border text-gray-600 hover:bg-gray-50'
+            }`}>
+            {f.code || f.name}
+          </button>
+        ))}
+      </div>
+
+      {/* Faculty header */}
+      {facultyId !== 'all' && selectedFaculty && (
+        <div className="card bg-amber-50 border-l-4 border-l-amber-500">
+          <p className="font-bold text-amber-800 text-sm">{selectedFaculty.name}</p>
+          <p className="text-xs text-amber-600">{exams.length} exam(s) on this day</p>
+        </div>
+      )}
+
       {/* Session groups */}
       {[1,2,3,4,5,6].map(sn => {
         const sessionExams = grouped[sn];
         if (!sessionExams?.length) return null;
-        const times = ['8:15-9:15','10:00-11:00','11:45-12:45','1:30-2:30','3:15-4:15','5:00-6:00'];
         return (
           <div key={sn} className="card p-0 overflow-hidden">
-            <div className="bg-brand/5 px-4 py-2 border-b">
-              <span className="font-bold text-brand text-sm">Session {sn}</span>
-              <span className="text-gray-500 text-xs ml-2">{times[sn-1]}</span>
+            <div className="bg-brand/5 px-4 py-2 border-b flex items-center justify-between">
+              <div>
+                <span className="font-bold text-brand text-sm">Session {sn}</span>
+                <span className="text-gray-500 text-xs ml-2">{TIMES[sn-1]}</span>
+              </div>
+              <span className="text-xs text-gray-400">{sessionExams.length} exam(s)</span>
             </div>
             <div className="divide-y">
               {sessionExams.map(e => (
@@ -111,7 +151,10 @@ export default function Assignments() {
                   <div className="flex items-start justify-between gap-2">
                     <div>
                       <div className="font-bold text-sm">{e.course_code} <span className="font-normal text-gray-500">{e.course_name}</span></div>
-                      <div className="text-xs text-gray-400 mt-0.5">{e.venue} {e.student_count > 0 ? `| ${e.student_count} students` : ''}</div>
+                      <div className="text-xs text-gray-400 mt-0.5">
+                        {e.venue} {e.student_count > 0 ? `| ${e.student_count} students` : ''}
+                        {facultyId === 'all' && e.faculty_code && <span className="ml-1 text-amber-600 font-semibold">({e.faculty_code})</span>}
+                      </div>
                     </div>
                     <button onClick={() => setAssignModal(e)} className="btn-brand text-xs px-3 py-1">+ Assign</button>
                   </div>
@@ -133,11 +176,17 @@ export default function Assignments() {
         );
       })}
 
+      {exams.length === 0 && (
+        <div className="card text-center py-12">
+          <p className="text-gray-400 text-sm">No exams found for this day{facultyId !== 'all' ? ' and faculty' : ''}</p>
+        </div>
+      )}
+
       {/* Bulk Assign IT Staff Modal */}
       {bulkModal && (
         <BulkAssignModal
           date={date}
-          exams={exams}
+          faculties={faculties}
           staff={staff.filter(s => s.staff_type === 'it_staff')}
           onClose={() => setBulkModal(false)}
           onDone={() => { setBulkModal(false); load(); }}
@@ -189,12 +238,20 @@ export default function Assignments() {
   );
 }
 
-function BulkAssignModal({ date, exams, staff, onClose, onDone }) {
+function BulkAssignModal({ date, faculties, staff, onClose, onDone }) {
   const [selectedStaff, setSelectedStaff] = useState([]);
   const [selectedExams, setSelectedExams] = useState([]);
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
+  const [bulkFacultyId, setBulkFacultyId] = useState('all');
+  const [exams, setExams] = useState([]);
+
+  useEffect(() => {
+    const params = { date };
+    if (bulkFacultyId !== 'all') params.faculty_id = bulkFacultyId;
+    api.get('/timetable/exams', { params }).then(r => setExams(r.data));
+  }, [date, bulkFacultyId]);
 
   const toggleStaff = (id) => setSelectedStaff(prev =>
     prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
@@ -213,14 +270,13 @@ function BulkAssignModal({ date, exams, staff, onClose, onDone }) {
         exam_ids: selectedExams,
       });
       setResult(data);
+      setStep(3);
     } catch (err) {
       toast.error(err.response?.data?.error || 'Failed');
     } finally {
       setLoading(false);
     }
   };
-
-  const times = ['8:15-9:15','10:00-11:00','11:45-12:45','1:30-2:30','3:15-4:15','5:00-6:00'];
 
   return (
     <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={onClose}>
@@ -229,7 +285,7 @@ function BulkAssignModal({ date, exams, staff, onClose, onDone }) {
           <h3 className="font-black text-lg text-gray-900">Bulk Assign IT Staff</h3>
           <p className="text-xs text-gray-500 mt-0.5">
             {step === 1 && 'Step 1: Select IT staff members'}
-            {step === 2 && 'Step 2: Select exam rooms/sessions'}
+            {step === 2 && 'Step 2: Select faculty & exam sessions'}
             {step === 3 && 'Done!'}
           </p>
           <div className="flex gap-1 mt-2">
@@ -265,16 +321,48 @@ function BulkAssignModal({ date, exams, staff, onClose, onDone }) {
 
           {step === 2 && (
             <div>
+              {/* Faculty filter inside bulk modal */}
+              <div className="flex gap-2 overflow-x-auto mb-4">
+                <button onClick={() => { setBulkFacultyId('all'); setSelectedExams([]); }}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap ${
+                    bulkFacultyId === 'all' ? 'bg-amber-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}>
+                  All Faculties
+                </button>
+                {faculties.map(f => (
+                  <button key={f.id} onClick={() => { setBulkFacultyId(String(f.id)); setSelectedExams([]); }}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap ${
+                      bulkFacultyId === String(f.id) ? 'bg-amber-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}>
+                    {f.code || f.name}
+                  </button>
+                ))}
+              </div>
+
               <div className="flex items-center justify-between mb-3">
                 <span className="text-sm font-semibold text-gray-700">{selectedExams.length} exams selected</span>
                 <button onClick={selectAllExams} className="text-xs text-cyan-600 hover:underline">Select All</button>
               </div>
+
               {[1,2,3,4,5,6].map(sn => {
                 const sessionExams = exams.filter(e => e.session_number === sn);
                 if (!sessionExams.length) return null;
+                const allSelected = sessionExams.every(e => selectedExams.includes(e.id));
+                const toggleSession = () => {
+                  if (allSelected) {
+                    setSelectedExams(prev => prev.filter(id => !sessionExams.some(e => e.id === id)));
+                  } else {
+                    setSelectedExams(prev => [...new Set([...prev, ...sessionExams.map(e => e.id)])]);
+                  }
+                };
                 return (
                   <div key={sn} className="mb-3">
-                    <div className="text-xs font-bold text-brand mb-1">Session {sn} ({times[sn-1]})</div>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs font-bold text-brand">Session {sn} ({TIMES[sn-1]})</span>
+                      <button onClick={toggleSession} className="text-[10px] text-cyan-600 hover:underline">
+                        {allSelected ? 'Deselect session' : 'Select session'}
+                      </button>
+                    </div>
                     <div className="space-y-1">
                       {sessionExams.map(e => (
                         <button key={e.id} onClick={() => toggleExam(e.id)}
@@ -285,7 +373,12 @@ function BulkAssignModal({ date, exams, staff, onClose, onDone }) {
                           }`}>
                           <div className="flex justify-between items-center">
                             <span className="font-medium text-sm">{e.course_code} <span className="font-normal text-gray-500">{e.course_name}</span></span>
-                            <span className="text-[10px] text-gray-400">{e.venue}</span>
+                            <div className="text-right">
+                              <span className="text-[10px] text-gray-400">{e.venue}</span>
+                              {bulkFacultyId === 'all' && e.faculty_code && (
+                                <span className="text-[10px] text-amber-600 font-semibold ml-1">({e.faculty_code})</span>
+                              )}
+                            </div>
                           </div>
                         </button>
                       ))}
@@ -293,6 +386,8 @@ function BulkAssignModal({ date, exams, staff, onClose, onDone }) {
                   </div>
                 );
               })}
+
+              {exams.length === 0 && <p className="text-center text-gray-400 py-8 text-sm">No exams found</p>}
             </div>
           )}
 
@@ -320,7 +415,7 @@ function BulkAssignModal({ date, exams, staff, onClose, onDone }) {
             <>
               <button onClick={onClose} className="btn-ghost flex-1">Cancel</button>
               <button onClick={() => setStep(2)} disabled={!selectedStaff.length}
-                className="btn-brand flex-1 disabled:opacity-40">Next — Select Exams</button>
+                className="btn-brand flex-1 disabled:opacity-40">Next — Select Faculty & Exams</button>
             </>
           )}
           {step === 2 && (
