@@ -72,10 +72,10 @@
     "PUB",
     "PUB/ LRM1",
     "PUB/LRM1",
-    "TB \u2013 FF [160]",
-    "TB \u2013 GF [100]",
-    "TB \u2013 SF [170]",
-    "TB \u2013 TF [150]",
+    "TB – FF [160]",
+    "TB – GF [100]",
+    "TB – SF [170]",
+    "TB – TF [150]",
     "TB-FF [160]",
     "GF1",
     "GF2",
@@ -269,7 +269,7 @@
       "course_name": "LAND ECONOMICS",
       "examiner": "F.D. Issah",
       "year_group": "RE I (133)",
-      "venue": "TB \u2013 FF [160]",
+      "venue": "TB – FF [160]",
       "day": "monday",
       "date": "2026-07-06",
       "session": 1,
@@ -292,7 +292,7 @@
       "course_name": "REAL ESTATE ECONOMICS II",
       "examiner": "F.D. Issah",
       "year_group": "LE I (141)",
-      "venue": "TB \u2013 SF [170]",
+      "venue": "TB – SF [170]",
       "day": "monday",
       "date": "2026-07-06",
       "session": 1,
@@ -402,7 +402,7 @@
       "course_name": "ENVIRONMENTAL DESIGN",
       "examiner": "Desma",
       "year_group": "MARC I (106)",
-      "venue": "TB \u2013 TF [150]",
+      "venue": "TB – TF [150]",
       "day": "monday",
       "date": "2026-07-06",
       "session": 2,
@@ -488,7 +488,7 @@
       "course_name": "CONSTRUCTION OF METAL STRUCTURES",
       "examiner": "A. Dansoh",
       "year_group": "CTM IV (104)",
-      "venue": "TB \u2013 SF [170], TB \u2013 FF [160]",
+      "venue": "TB – SF [170], TB – FF [160]",
       "day": "monday",
       "date": "2026-07-06",
       "session": 3,
@@ -538,7 +538,7 @@
       "course_name": "LAND USE PLANNING AND ADMINISTRATION II",
       "examiner": "M. Owusu Yeboah",
       "year_group": "LE III (100)",
-      "venue": "TB \u2013 GF [100], BT Workshop [90]",
+      "venue": "TB – GF [100], BT Workshop [90]",
       "day": "monday",
       "date": "2026-07-06",
       "session": 3,
@@ -645,7 +645,7 @@
       "course_name": "SETTLEMENT PLANNING & DESIGN",
       "examiner": "A. I. Baffoe-Ashun",
       "year_group": "ARC I (138)",
-      "venue": "TB \u2013 FF [160]",
+      "venue": "TB – FF [160]",
       "day": "monday",
       "date": "2026-07-06",
       "session": 4,
@@ -668,7 +668,7 @@
       "course_name": "FINANCIAL MATHEMATICS II",
       "examiner": "A. Adjei-Twum",
       "year_group": "LE I (144)",
-      "venue": "TB \u2013 SF [170], TB \u2013 TF [150]",
+      "venue": "TB – SF [170], TB – TF [150]",
       "day": "monday",
       "date": "2026-07-06",
       "session": 4,
@@ -757,7 +757,7 @@
       "course_name": "PLANT AND MATERIALS MANAGEMENT",
       "examiner": "E. Kissi",
       "year_group": "CTM II (144)",
-      "venue": "TB \u2013 FF [160]",
+      "venue": "TB – FF [160]",
       "day": "monday",
       "date": "2026-07-06",
       "session": 5,
@@ -779,7 +779,7 @@
       "course_name": "CONSTRUCTION RESOURCE MANAGEMENT",
       "examiner": "I. Abu",
       "year_group": "QSCE II (148)",
-      "venue": "TB \u2013 SF [170]",
+      "venue": "TB – SF [170]",
       "day": "monday",
       "date": "2026-07-06",
       "session": 5,
@@ -908,7 +908,7 @@
       "course_name": "RESEARCH METHODOLOGY",
       "examiner": "V. K. Quagraine",
       "year_group": "ARC III (104)",
-      "venue": "TB \u2013 FF [160]",
+      "venue": "TB – FF [160]",
       "day": "tuesday",
       "date": "2026-07-07",
       "session": 1,
@@ -926,7 +926,7 @@
       "course_name": "CONSTRUCTION HEALTH AND SAFETY",
       "examiner": "E. Adinyira",
       "year_group": "CTM IV (104)",
-      "venue": "TB \u2013 SF [170], TB \u2013 TF [150]",
+      "venue": "TB – SF [170], TB – TF [150]",
       "day": "tuesday",
       "date": "2026-07-07",
       "session": 1,
@@ -1028,7 +1028,7 @@
       "course_name": "REAL ESTATE INVESTMENT ANALYSIS",
       "examiner": "F. Gyamfi-Yeboah",
       "year_group": "RE III (118)",
-      "venue": "TB \u2013 SF [170]",
+      "venue": "TB – SF [170]",
       "day": "tuesday",
       "date": "2026-07-07",
       "session": 2,
@@ -1051,7 +1051,7 @@
       "course_name": "INTRODUCTION TO BUILDING SYSTEMS",
       "examiner": "T. E. Kwofie",
       "year_group": "ARC II (118)",
-      "venue": "TB \u2013 TF [150]",
+      "venue": "TB – TF [150]",
       "day": "tuesday",
       "date": "2026-07-07",
       "session": 2,
@@ -1216,7 +1216,7 @@
       "course_name": "ELEMENTARY STRUCTURAL ANALYSIS",
       "examiner": "A. B. Marful",
       "year_group": "ARC II (106)",
-      "venue": "TB \u2013 FF [160]",
+      "venue": "TB – FF [160]",
       "day": "tuesday",
       "date": "2026-07-07",
       "session": 4,
@@ -1252,7 +1252,7 @@
       "course_name": "ESTATE MANAGEMENT II",
       "examiner": "B. Adjei",
       "year_group": "RE IV (133)",
-      "venue": "New Blk FF [135], TB \u2013 GF [100], LE Hall [100]",
+      "venue": "New Blk FF [135], TB – GF [100], LE Hall [100]",
       "day": "tuesday",
       "date": "2026-07-07",
       "session": 5,
@@ -1270,7 +1270,7 @@
       "course_name": "BUILDING MAINTENANCE",
       "examiner": "J. K. Hackman",
       "year_group": "CTM III (115)",
-      "venue": "TB \u2013 FF [160], TB \u2013 SF [170]",
+      "venue": "TB – FF [160], TB – SF [170]",
       "day": "tuesday",
       "date": "2026-07-07",
       "session": 5,
@@ -1374,7 +1374,7 @@
       "course_name": "ADVANCED VALUATION II",
       "examiner": "J. Ayitey",
       "year_group": "LE III (100)",
-      "venue": "TB \u2013 FF [160], LE Hall [100], TB \u2013 TF [150]",
+      "venue": "TB – FF [160], LE Hall [100], TB – TF [150]",
       "day": "wednesday",
       "date": "2026-07-08",
       "session": 1,
@@ -1392,7 +1392,7 @@
       "course_name": "INTRODUCTORY STATISTICS II",
       "examiner": "D. Benteh",
       "year_group": "LE II (100)",
-      "venue": "TB \u2013 GF [100], BT Workshop [90]",
+      "venue": "TB – GF [100], BT Workshop [90]",
       "day": "wednesday",
       "date": "2026-07-08",
       "session": 1,
@@ -1570,7 +1570,7 @@
       "course_name": "PRINCIPLES OF FORESTRY AND AGRICULTURE",
       "examiner": "S.D.E.K. Addo",
       "year_group": "LE I (141)",
-      "venue": "TB \u2013 FF [160]",
+      "venue": "TB – FF [160]",
       "day": "wednesday",
       "date": "2026-07-08",
       "session": 3,
@@ -1593,7 +1593,7 @@
       "course_name": "ENTERPRENEURSHIP MANAGEMENT",
       "examiner": "D. Owusu-Manu",
       "year_group": "CTM IV (104)",
-      "venue": "TB \u2013 SF [170], TB \u2013 TF [150]",
+      "venue": "TB – SF [170], TB – TF [150]",
       "day": "wednesday",
       "date": "2026-07-08",
       "session": 3,
@@ -1672,7 +1672,7 @@
       "course_name": "CIVIL PROCEDURE & ALTERNATIVE DISPUTE RESOLUTION",
       "examiner": "W.M. Adolwine",
       "year_group": "LE IV (133)",
-      "venue": "TB \u2013 SF [170], TB \u2013 FF [160]",
+      "venue": "TB – SF [170], TB – FF [160]",
       "day": "wednesday",
       "date": "2026-07-08",
       "session": 4,
@@ -1783,7 +1783,7 @@
       "course_name": "INTRO TO LIGHTING AND ACOUSTICS",
       "examiner": "S. Amos-Abanyie",
       "year_group": "ARC I (138)",
-      "venue": "TB \u2013 FF [160]",
+      "venue": "TB – FF [160]",
       "day": "wednesday",
       "date": "2026-07-08",
       "session": 5,
@@ -1806,7 +1806,7 @@
       "course_name": "BUILDING SERVICES AND EQUIPMENT II",
       "examiner": "S. Akunyumu",
       "year_group": "CTM II (144)",
-      "venue": "TB \u2013 SF [170], TB \u2013 TF [150]",
+      "venue": "TB – SF [170], TB – TF [150]",
       "day": "wednesday",
       "date": "2026-07-08",
       "session": 5,
@@ -1887,7 +1887,7 @@
       "course_name": "RESEARCH METHODS II",
       "examiner": "A. Adjei-Twum",
       "year_group": "LE III (71)",
-      "venue": "New Blk Bsmt [90], New Blk GF [130], TB \u2013 SF [170]",
+      "venue": "New Blk Bsmt [90], New Blk GF [130], TB – SF [170]",
       "day": "thursday",
       "date": "2026-07-09",
       "session": 1,
@@ -1988,7 +1988,7 @@
       "course_name": "ARCHITECTURAL HISTORY & APPRECIATION I",
       "examiner": "A.I. Baffoe-Ashun/ M. Panta",
       "year_group": "ARC I (138)",
-      "venue": "TB \u2013 SF [170]",
+      "venue": "TB – SF [170]",
       "day": "thursday",
       "date": "2026-07-09",
       "session": 2,
@@ -2143,7 +2143,7 @@
       "course_name": "ENVIRONMENT AND DEVELOPMENT",
       "examiner": "J.K. Kidido",
       "year_group": "RE III (118)",
-      "venue": "TB \u2013 FF [160]",
+      "venue": "TB – FF [160]",
       "day": "thursday",
       "date": "2026-07-09",
       "session": 4,
@@ -2166,7 +2166,7 @@
       "course_name": "PRINCIPLES OF ACCOUNTING II",
       "examiner": "I. Brobbey",
       "year_group": "RE II (162)",
-      "venue": "TB \u2013 SF [170], TB \u2013 GF [100], BT Workshop [90]",
+      "venue": "TB – SF [170], TB – GF [100], BT Workshop [90]",
       "day": "thursday",
       "date": "2026-07-09",
       "session": 4,
@@ -2258,7 +2258,7 @@
       "course_name": "ETHICS AND PROFESSIONAL PRACTICE II",
       "examiner": "E.P. Tudzi",
       "year_group": "RE IV (128)",
-      "venue": "TB \u2013 FF [160], TB \u2013 SF [170]",
+      "venue": "TB – FF [160], TB – SF [170]",
       "day": "thursday",
       "date": "2026-07-09",
       "session": 5,
@@ -2447,7 +2447,7 @@
       "course_name": "DESIGN ECONOMICS",
       "examiner": "D. Duah",
       "year_group": "ARC III (104)",
-      "venue": "TB \u2013 SF [170]",
+      "venue": "TB – SF [170]",
       "day": "friday",
       "date": "2026-07-10",
       "session": 2,
@@ -2471,7 +2471,7 @@
       "course_name": "BUILDING STRUCTURES AND QUANTITIES II",
       "examiner": "M. Adesi/H.K. Boafo",
       "year_group": "RE III (118)",
-      "venue": "TB \u2013 TF [150], NCB FF LH3 (180)",
+      "venue": "TB – TF [150], NCB FF LH3 (180)",
       "day": "friday",
       "date": "2026-07-10",
       "session": 2,
@@ -2568,7 +2568,7 @@
       "course_name": "INTRO TO TIMBER FRAMING SYSTEM",
       "examiner": "S. O. Afram/ D. Opoku",
       "year_group": "ARC I (138)",
-      "venue": "TB \u2013 TF [150]",
+      "venue": "TB – TF [150]",
       "day": "friday",
       "date": "2026-07-10",
       "session": 3,
@@ -2590,7 +2590,7 @@
       "course_name": "FUNDAMENTALS OF BUILDING CONSTRUCTION II",
       "examiner": "J. Frimpong-Asante/A.O.A Darkwa",
       "year_group": "LE I (141)",
-      "venue": "TB \u2013 SF [170], TB \u2013 FF [160]",
+      "venue": "TB – SF [170], TB – FF [160]",
       "day": "friday",
       "date": "2026-07-10",
       "session": 3,
@@ -2761,1572 +2761,6 @@
       "examiner": "M. Adesi/H.K. Boafo",
       "year_group": "RE",
       "venue": "NCB TF EXH 1 (220), NCB FF EXH  (250)",
-      "day": "friday",
-      "date": "2026-07-10",
-      "session": 5,
-      "session_time": [
-        "15:15",
-        "16:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "ICTJ 252",
-      "course_name": "Data Communication and Computer Networking Dr (Mrs.) Rebbeca Essel",
-      "examiner": "",
-      "year_group": "Year 2",
-      "venue": "LRM1",
-      "day": "monday",
-      "date": "2026-07-06",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 25,
-      "invigilators": [],
-      "exam_type": "CBE"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "SSJ 252",
-      "course_name": "Socio-Economic Development in Ghana",
-      "examiner": "Dr. Yaw Boateng Ampadu",
-      "year_group": "Year 2",
-      "venue": "PUB",
-      "day": "monday",
-      "date": "2026-07-06",
-      "session": 3,
-      "session_time": [
-        "11:45",
-        "12:45"
-      ],
-      "students": 42,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "LLSJ 252",
-      "course_name": "Teaching Reading and Writing for JHS",
-      "examiner": "Dr. Yaw Boateng Ampadu",
-      "year_group": "Year 2",
-      "venue": "PUB/ LRM1",
-      "day": "monday",
-      "date": "2026-07-06",
-      "session": 5,
-      "session_time": [
-        "15:15",
-        "16:15"
-      ],
-      "students": 80,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "VAJ 252",
-      "course_name": "Idea Development",
-      "examiner": "Prof. Joe Adu-Agyem",
-      "year_group": "Year 2",
-      "venue": "LRM 1",
-      "day": "monday",
-      "date": "2026-07-06",
-      "session": 3,
-      "session_time": [
-        "11:45",
-        "12:45"
-      ],
-      "students": 8,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "BIOL 152",
-      "course_name": "Cell Function",
-      "examiner": "Dr. Martin Gyekye Ampofo",
-      "year_group": "Year 1",
-      "venue": "NCBGFLH2",
-      "day": "monday",
-      "date": "2026-07-06",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "ICT 152",
-      "course_name": "Introduction to ICT",
-      "examiner": "William Baffour Kyei",
-      "year_group": "Year 1",
-      "venue": "NCBFFLH1",
-      "day": "monday",
-      "date": "2026-07-06",
-      "session": 3,
-      "session_time": [
-        "11:45",
-        "12:45"
-      ],
-      "students": 88,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "EDU 152",
-      "course_name": "STS Inclusive School-Based Inquiry Dr Isaac Agyekumhene Ossei Dr (Mrs.) Rebbeca Essel",
-      "examiner": "Benjamin Adu Amankwa",
-      "year_group": "Year 1",
-      "venue": "NCBGFLH1/NCBGFLH2",
-      "day": "monday",
-      "date": "2026-07-06",
-      "session": 3,
-      "session_time": [
-        "11:45",
-        "12:45"
-      ],
-      "students": 151,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "CHEM 154",
-      "course_name": "Chemistry of Alkanols, Phenols, carbonyls and amines",
-      "examiner": "Prof. Joe Adu-Agyem",
-      "year_group": "",
-      "venue": "LRM3",
-      "day": "monday",
-      "date": "2026-07-06",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 20,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "BIOL 172",
-      "course_name": "Diversity of Living Things MEDU 158 Fundamentals of Programming",
-      "examiner": "Prof. Joe Adu-Agyem",
-      "year_group": "",
-      "venue": "LRM1",
-      "day": "monday",
-      "date": "2026-07-06",
-      "session": 5,
-      "session_time": [
-        "15:15",
-        "16:15"
-      ],
-      "students": 18,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "CSM 152",
-      "course_name": "Information Technology II",
-      "examiner": "Prof. Theophilus Osei-Anto",
-      "year_group": "",
-      "venue": "LRM3",
-      "day": "monday",
-      "date": "2026-07-06",
-      "session": 5,
-      "session_time": [
-        "15:15",
-        "16:15"
-      ],
-      "students": 6,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "ME 206",
-      "course_name": "Thermodynamics and Heat Transfer Dr Isaac Agyekumhene Ossei",
-      "examiner": "",
-      "year_group": "",
-      "venue": "LRM 2",
-      "day": "monday",
-      "date": "2026-07-06",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 25,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "ATE 160",
-      "course_name": "Printing Technology and Publication Finishing",
-      "examiner": "Prof. (Mrs.) Nana Afia Opoku-Asare",
-      "year_group": "",
-      "venue": "PUB",
-      "day": "monday",
-      "date": "2026-07-06",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "ATE 166",
-      "course_name": "Basketry",
-      "examiner": "William Baffour Kyei",
-      "year_group": "",
-      "venue": "LRM1",
-      "day": "monday",
-      "date": "2026-07-06",
-      "session": 5,
-      "session_time": [
-        "15:15",
-        "16:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "LLSJ352",
-      "course_name": "Literacy across Curriculum for JHS",
-      "examiner": "Benjamin Adu Amankwa",
-      "year_group": "Year 3",
-      "venue": "NCBGFLH1",
-      "day": "monday",
-      "date": "2026-07-06",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 83,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "VAJ 356",
-      "course_name": "Studio Practice in Textile Design",
-      "examiner": "Prof. (Mrs.) Nana Afia Opoku-Asare",
-      "year_group": "Year 3",
-      "venue": "LRM 3",
-      "day": "monday",
-      "date": "2026-07-06",
-      "session": 3,
-      "session_time": [
-        "11:45",
-        "12:45"
-      ],
-      "students": 8,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "HISJ 352",
-      "course_name": "Economic History of Ghana \u2013 The Post- Independence Era",
-      "examiner": "Miss Veronica Boateng",
-      "year_group": "Year 3",
-      "venue": "NCBGFLH1",
-      "day": "monday",
-      "date": "2026-07-06",
-      "session": 5,
-      "session_time": [
-        "15:15",
-        "16:15"
-      ],
-      "students": 55,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "ICTJ 352",
-      "course_name": "Tech Leadership &Mgt",
-      "examiner": "Dr. Patrick Swanzy",
-      "year_group": "",
-      "venue": "PUB",
-      "day": "monday",
-      "date": "2026-07-06",
-      "session": 3,
-      "session_time": [
-        "11:45",
-        "12:45"
-      ],
-      "students": 17,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "EDU 452",
-      "course_name": "School Administration and Management",
-      "examiner": "Prof. Theophilus Osei-Anto",
-      "year_group": "Year 4",
-      "venue": "PUB",
-      "day": "monday",
-      "date": "2026-07-06",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "ICTJ 454",
-      "course_name": "Legal And Security Issues In ICT",
-      "examiner": "Benjamin Adu Amankwa",
-      "year_group": "Year 4",
-      "venue": "LRM 2",
-      "day": "monday",
-      "date": "2026-07-06",
-      "session": 5,
-      "session_time": [
-        "15:15",
-        "16:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "JGED 252",
-      "course_name": "Psychological Basis for differentiated assessment for JHS Dr (Mrs.) Rebbeca Essel",
-      "examiner": "",
-      "year_group": "Year 2",
-      "venue": "NCBGFLH1",
-      "day": "tuesday",
-      "date": "2026-07-07",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 80,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "PHY 152",
-      "course_name": "Geometrical Optics and Waves",
-      "examiner": "Dr. Yaw Boateng Ampadu",
-      "year_group": "Year 1",
-      "venue": "LRM2",
-      "day": "tuesday",
-      "date": "2026-07-07",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 15,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "ATE 154",
-      "course_name": "Art History: Precolonial art to post-modern",
-      "examiner": "Dr. Patrick Swanzy",
-      "year_group": "Year 1",
-      "venue": "LRM 1",
-      "day": "tuesday",
-      "date": "2026-07-07",
-      "session": 2,
-      "session_time": [
-        "10:00",
-        "11:00"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "LLS 152/ENGL 158",
-      "course_name": "Communicative Skills ONLINE",
-      "examiner": "",
-      "year_group": "Year 1",
-      "venue": "",
-      "day": "tuesday",
-      "date": "2026-07-07",
-      "session": 3,
-      "session_time": [
-        "11:45",
-        "12:45"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "CBE"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "LLS 152/ENGL 158",
-      "course_name": "Communicative Skills ONLINE",
-      "examiner": "",
-      "year_group": "Year 1",
-      "venue": "",
-      "day": "tuesday",
-      "date": "2026-07-07",
-      "session": 4,
-      "session_time": [
-        "13:30",
-        "14:30"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "CBE"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "LLS 152/ENGL 158",
-      "course_name": "Communicative Skills ONLINE",
-      "examiner": "",
-      "year_group": "Year 1",
-      "venue": "",
-      "day": "tuesday",
-      "date": "2026-07-07",
-      "session": 5,
-      "session_time": [
-        "15:15",
-        "16:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "CBE"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "MATH 152",
-      "course_name": "Learning, Teaching & Applying geometry and Handling data",
-      "examiner": "Miss Veronica Boateng",
-      "year_group": "Year 1",
-      "venue": "PUB/LRM1",
-      "day": "tuesday",
-      "date": "2026-07-07",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 88,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "MEDU 154",
-      "course_name": "Vectors and Mechanics",
-      "examiner": "Prof. Theophilus Osei-Anto",
-      "year_group": "Year 1",
-      "venue": "LRM3",
-      "day": "tuesday",
-      "date": "2026-07-07",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 18,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "CSM 157",
-      "course_name": "Introduction to Probability and Statistics",
-      "examiner": "Prof. Joe Adu-Agyem",
-      "year_group": "Year 1",
-      "venue": "PUB/LRM1",
-      "day": "tuesday",
-      "date": "2026-07-07",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 6,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "STR 152",
-      "course_name": "Programming and Problem Solving Dr Isaac Agyekumhene Ossei",
-      "examiner": "",
-      "year_group": "Year 1",
-      "venue": "LRM 4",
-      "day": "tuesday",
-      "date": "2026-07-07",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 10,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "CHEM 170",
-      "course_name": "Practical Chemistry II",
-      "examiner": "William Baffour Kyei",
-      "year_group": "Year 1",
-      "venue": "LRM1",
-      "day": "tuesday",
-      "date": "2026-07-07",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 20,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "VAJ 352",
-      "course_name": "Studio Practice in Picture Making",
-      "examiner": "Dr. Patrick Swanzy",
-      "year_group": "Year 3",
-      "venue": "LRM2",
-      "day": "tuesday",
-      "date": "2026-07-07",
-      "session": 4,
-      "session_time": [
-        "13:30",
-        "14:30"
-      ],
-      "students": 8,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "ICTJ 452",
-      "course_name": "Laboratory Management and Pc Maintenance",
-      "examiner": "Prof. Theophilus Osei-Anto",
-      "year_group": "Year 4",
-      "venue": "NCBGFLH2",
-      "day": "tuesday",
-      "date": "2026-07-07",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 25,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "SSJ 452",
-      "course_name": "Regional Integration and International Relations",
-      "examiner": "William Baffour Kyei",
-      "year_group": "Year 4",
-      "venue": "LRM 1",
-      "day": "tuesday",
-      "date": "2026-07-07",
-      "session": 5,
-      "session_time": [
-        "15:15",
-        "16:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "VAJ 452",
-      "course_name": "Studio Practice and Basketry",
-      "examiner": "Benjamin Adu Amankwa",
-      "year_group": "Year 4",
-      "venue": "NCBGFLH2",
-      "day": "tuesday",
-      "date": "2026-07-07",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "MATHJ 252",
-      "course_name": "Teaching and assessing JHS Mathematics (Intro.) Dr (Mrs.) Rebbeca Essel",
-      "examiner": "Prof. Joe Adu-Agyem",
-      "year_group": "Year 2",
-      "venue": "PUB",
-      "day": "wednesday",
-      "date": "2026-07-08",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 26,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "HISJ 252",
-      "course_name": "Political History of Ghana After Independence 42",
-      "examiner": "Miss Veronica Boateng",
-      "year_group": "Year 2",
-      "venue": "PUB",
-      "day": "wednesday",
-      "date": "2026-07-08",
-      "session": 5,
-      "session_time": [
-        "15:15",
-        "16:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "SCIJ 252",
-      "course_name": "Introduction to Mechanics (Physics)",
-      "examiner": "William Baffour Kyei",
-      "year_group": "Year 2",
-      "venue": "LRM 3",
-      "day": "wednesday",
-      "date": "2026-07-08",
-      "session": 5,
-      "session_time": [
-        "15:15",
-        "16:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "ISC 152",
-      "course_name": "Integrated Science",
-      "examiner": "",
-      "year_group": "Year 1",
-      "venue": "COS-Computer based exams.",
-      "day": "wednesday",
-      "date": "2026-07-08",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 88,
-      "invigilators": [],
-      "exam_type": "CBE"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "ME 164",
-      "course_name": "Static and Dynamics of Solid Mechanics",
-      "examiner": "Miss Veronica Boateng",
-      "year_group": "Year 1",
-      "venue": "PUB",
-      "day": "wednesday",
-      "date": "2026-07-08",
-      "session": 2,
-      "session_time": [
-        "10:00",
-        "11:00"
-      ],
-      "students": 25,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "EDU 152",
-      "course_name": "Growth Development and learning",
-      "examiner": "Miss Veronica Boateng",
-      "year_group": "Year 1",
-      "venue": "PUB/LRM1",
-      "day": "wednesday",
-      "date": "2026-07-08",
-      "session": 4,
-      "session_time": [
-        "13:30",
-        "14:30"
-      ],
-      "students": 88,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "ATE 170",
-      "course_name": "Bead Making",
-      "examiner": "Miss Veronica Boateng",
-      "year_group": "Year 1",
-      "venue": "PUB",
-      "day": "wednesday",
-      "date": "2026-07-08",
-      "session": 5,
-      "session_time": [
-        "15:15",
-        "16:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "BCHEM 152",
-      "course_name": "Biochemistry LMR 2",
-      "examiner": "Dr. Yaw Boateng Ampadu",
-      "year_group": "Year 1",
-      "venue": "",
-      "day": "wednesday",
-      "date": "2026-07-08",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 25,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "PHY 154",
-      "course_name": "Experimental physics II",
-      "examiner": "William Baffour Kyei",
-      "year_group": "Year 1",
-      "venue": "PUB",
-      "day": "wednesday",
-      "date": "2026-07-08",
-      "session": 3,
-      "session_time": [
-        "11:45",
-        "12:45"
-      ],
-      "students": 15,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "ATE 150",
-      "course_name": "Drawing 2D Composition",
-      "examiner": "Prof. (Mrs.) Nana Afia Opoku-Asare",
-      "year_group": "Year 1",
-      "venue": "LRM 3",
-      "day": "wednesday",
-      "date": "2026-07-08",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "STE 152",
-      "course_name": "Electronics",
-      "examiner": "William Baffour Kyei",
-      "year_group": "Year 1",
-      "venue": "PUB",
-      "day": "wednesday",
-      "date": "2026-07-08",
-      "session": 3,
-      "session_time": [
-        "11:45",
-        "12:45"
-      ],
-      "students": 48,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "ME 174",
-      "course_name": "Product Design and Manufacturing Dr (Mrs.) Rebbeca Essel",
-      "examiner": "Prof. Joe Adu-Agyem",
-      "year_group": "Year 1",
-      "venue": "PUB",
-      "day": "wednesday",
-      "date": "2026-07-08",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 5,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "CSM 297",
-      "course_name": "Database Concepts and Technologies I LMR2",
-      "examiner": "William Baffour Kyei",
-      "year_group": "Year 1",
-      "venue": "",
-      "day": "wednesday",
-      "date": "2026-07-08",
-      "session": 4,
-      "session_time": [
-        "13:30",
-        "14:30"
-      ],
-      "students": 6,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "CHEM 156",
-      "course_name": "Basic Physical chemistry II LMR1",
-      "examiner": "Miss Veronica Boateng",
-      "year_group": "Year 1",
-      "venue": "",
-      "day": "wednesday",
-      "date": "2026-07-08",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 20,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "ATE 162",
-      "course_name": "Painting: Human Figure",
-      "examiner": "William Baffour Kyei",
-      "year_group": "Year 1",
-      "venue": "PUB",
-      "day": "wednesday",
-      "date": "2026-07-08",
-      "session": 3,
-      "session_time": [
-        "11:45",
-        "12:45"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "SSJ 352",
-      "course_name": "Assessment Techniques in Social Studies",
-      "examiner": "Miss Veronica Boateng",
-      "year_group": "Year 3",
-      "venue": "PUB",
-      "day": "wednesday",
-      "date": "2026-07-08",
-      "session": 2,
-      "session_time": [
-        "10:00",
-        "11:00"
-      ],
-      "students": 55,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "ATE 168",
-      "course_name": "Ceramics Raw Materials and Production Technology",
-      "examiner": "Prof. Theophilus Osei-Anto",
-      "year_group": "Year 3",
-      "venue": "LRM 3",
-      "day": "wednesday",
-      "date": "2026-07-08",
-      "session": 3,
-      "session_time": [
-        "11:45",
-        "12:45"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "VAJ 354",
-      "course_name": "Studio Practice in Leather",
-      "examiner": "Dr. Yaw Boateng Ampadu",
-      "year_group": "Year 3",
-      "venue": "LRM 2",
-      "day": "wednesday",
-      "date": "2026-07-08",
-      "session": 5,
-      "session_time": [
-        "15:15",
-        "16:15"
-      ],
-      "students": 8,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "SCIJ 352",
-      "course_name": "Teaching Strategies and Assessment",
-      "examiner": "Benjamin Adu Amankwa",
-      "year_group": "Year 3",
-      "venue": "NCBGFLH1",
-      "day": "wednesday",
-      "date": "2026-07-08",
-      "session": 2,
-      "session_time": [
-        "10:00",
-        "11:00"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "ISCJ 454",
-      "course_name": "Properties Of Matter and Electromagnetism ONLINE",
-      "examiner": "",
-      "year_group": "Year 4",
-      "venue": "COS-Computer-based exams.",
-      "day": "wednesday",
-      "date": "2026-07-08",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "CBE"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "SSJ 454",
-      "course_name": "Youth and National Development",
-      "examiner": "Dr. Patrick Swanzy",
-      "year_group": "Year 4",
-      "venue": "LRM1/LRM2",
-      "day": "wednesday",
-      "date": "2026-07-08",
-      "session": 3,
-      "session_time": [
-        "11:45",
-        "12:45"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "MATHJ 454",
-      "course_name": "Teaching And Assessing Junior High Mathematics (Advanced)",
-      "examiner": "Benjamin Adu Amankwa",
-      "year_group": "Year 4",
-      "venue": "LRM 1",
-      "day": "wednesday",
-      "date": "2026-07-08",
-      "session": 5,
-      "session_time": [
-        "15:15",
-        "16:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "VAJ 254",
-      "course_name": "Composition And Creative Expressions",
-      "examiner": "Prof. (Mrs.) Nana Afia Opoku-Asare",
-      "year_group": "Year 2",
-      "venue": "LRM 3",
-      "day": "thursday",
-      "date": "2026-07-09",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "SSJ 254",
-      "course_name": "Governance And Citizenship",
-      "examiner": "Dr. Yaw Boateng Ampadu",
-      "year_group": "Year 2",
-      "venue": "PUB",
-      "day": "thursday",
-      "date": "2026-07-09",
-      "session": 3,
-      "session_time": [
-        "11:45",
-        "12:45"
-      ],
-      "students": 42,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "VAJ 258",
-      "course_name": "Curriculum Studies in Visual Arts",
-      "examiner": "William Baffour Kyei",
-      "year_group": "Year 2",
-      "venue": "LRM2",
-      "day": "thursday",
-      "date": "2026-07-09",
-      "session": 4,
-      "session_time": [
-        "13:30",
-        "14:30"
-      ],
-      "students": 8,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "CHEM 152",
-      "course_name": "Coordination Chemistry Dr (Mrs.) Rebbeca Essel",
-      "examiner": "",
-      "year_group": "Year 1",
-      "venue": "LRM 2",
-      "day": "thursday",
-      "date": "2026-07-09",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 20,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "ATE 152",
-      "course_name": "Basic Design",
-      "examiner": "Miss Veronica Boateng",
-      "year_group": "Year 1",
-      "venue": "LRM 2",
-      "day": "thursday",
-      "date": "2026-07-09",
-      "session": 2,
-      "session_time": [
-        "10:00",
-        "11:00"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "GST 152",
-      "course_name": "Intersection of Physical activity, Sports, Music and Dance",
-      "examiner": "Prof. Theophilus Osei-Anto",
-      "year_group": "Year 1",
-      "venue": "NCBGFLH1",
-      "day": "thursday",
-      "date": "2026-07-09",
-      "session": 3,
-      "session_time": [
-        "11:45",
-        "12:45"
-      ],
-      "students": 88,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "EDTE 152",
-      "course_name": "Foundations and Development of Science Education",
-      "examiner": "Prof. Theophilus Osei-Anto",
-      "year_group": "Year 1",
-      "venue": "NCBFFLH1",
-      "day": "thursday",
-      "date": "2026-07-09",
-      "session": 4,
-      "session_time": [
-        "13:30",
-        "14:30"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "ATE 164",
-      "course_name": "Textile Raw Materials and Processing",
-      "examiner": "Benjamin Adu Amankwa",
-      "year_group": "Year 1",
-      "venue": "LRM3",
-      "day": "thursday",
-      "date": "2026-07-09",
-      "session": 5,
-      "session_time": [
-        "15:15",
-        "16:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "BIOL 194",
-      "course_name": "Human Diseases and Infections",
-      "examiner": "Prof. Theophilus Osei-Anto",
-      "year_group": "Year 1",
-      "venue": "PUB",
-      "day": "thursday",
-      "date": "2026-07-09",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "MEDU 152/MATH 151",
-      "course_name": "Calculus",
-      "examiner": "Miss Veronica Boateng",
-      "year_group": "Year 1",
-      "venue": "LRM 3",
-      "day": "thursday",
-      "date": "2026-07-09",
-      "session": 4,
-      "session_time": [
-        "13:30",
-        "14:30"
-      ],
-      "students": 58,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "ATE 174",
-      "course_name": "Production Technology: Sculpture",
-      "examiner": "Dr. Patrick Swanzy",
-      "year_group": "Year 1",
-      "venue": "LRM 2",
-      "day": "thursday",
-      "date": "2026-07-09",
-      "session": 5,
-      "session_time": [
-        "15:15",
-        "16:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "CSM 154",
-      "course_name": "Programming with Python I (Structured)",
-      "examiner": "Miss Veronica Boateng",
-      "year_group": "Year 1",
-      "venue": "PUB",
-      "day": "thursday",
-      "date": "2026-07-09",
-      "session": 4,
-      "session_time": [
-        "13:30",
-        "14:30"
-      ],
-      "students": 6,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "PHY 156",
-      "course_name": "Properties of Matter",
-      "examiner": "William Baffour Kyei",
-      "year_group": "Year 1",
-      "venue": "PUB",
-      "day": "thursday",
-      "date": "2026-07-09",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 15,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "ME 270",
-      "course_name": "Manufacturing Technology",
-      "examiner": "Prof. Joe Adu-Agyem",
-      "year_group": "Year 1",
-      "venue": "PUB",
-      "day": "thursday",
-      "date": "2026-07-09",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 5,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "MATHJ 352",
-      "course_name": "Learning, Teaching, Applying & Handling Data 16 Dr Isaac Agyekumhene Ossei",
-      "examiner": "",
-      "year_group": "Year 3",
-      "venue": "LRM 2",
-      "day": "thursday",
-      "date": "2026-07-09",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "EDU 354",
-      "course_name": "Guidance & Counselling for Junior High Schools",
-      "examiner": "William Baffour Kyei",
-      "year_group": "Year 3",
-      "venue": "PUB/LRM1",
-      "day": "thursday",
-      "date": "2026-07-09",
-      "session": 5,
-      "session_time": [
-        "15:15",
-        "16:15"
-      ],
-      "students": 83,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "MATHJ 452",
-      "course_name": "Learning Teaching and Applying Analytical Geometry",
-      "examiner": "Benjamin Adu Amankwa",
-      "year_group": "Year 4",
-      "venue": "LRM 1",
-      "day": "thursday",
-      "date": "2026-07-09",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 29,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "HSJ 454",
-      "course_name": "History of Gender and Culture in Ghana",
-      "examiner": "William Baffour Kyei",
-      "year_group": "Year 4",
-      "venue": "LRM 1",
-      "day": "thursday",
-      "date": "2026-07-09",
-      "session": 2,
-      "session_time": [
-        "10:00",
-        "11:00"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "VAJ 256",
-      "course_name": "Figure\tAnd\tPerspective Drawing Dr (Mrs.) Rebbeca Essel",
-      "examiner": "",
-      "year_group": "Year 2",
-      "venue": "LRM 2",
-      "day": "friday",
-      "date": "2026-07-10",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 8,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "HISJ 254",
-      "course_name": "Socio-Cultural History of Ghana Dr (Mrs.) Rebbeca Essel",
-      "examiner": "Dr. Yaw Boateng Ampadu",
-      "year_group": "Year 2",
-      "venue": "PUB",
-      "day": "friday",
-      "date": "2026-07-10",
-      "session": 3,
-      "session_time": [
-        "11:45",
-        "12:45"
-      ],
-      "students": 42,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "ICTJ 254",
-      "course_name": "Application Development in Education",
-      "examiner": "Dr. Yaw Boateng Ampadu",
-      "year_group": "Year 2",
-      "venue": "PUB",
-      "day": "friday",
-      "date": "2026-07-10",
-      "session": 5,
-      "session_time": [
-        "15:15",
-        "16:15"
-      ],
-      "students": 26,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "MATHJ 254",
-      "course_name": "Euclidean geometry and Trigonometry",
-      "examiner": "Prof. (Mrs.) Nana Afia Opoku-Asare",
-      "year_group": "Year 2",
-      "venue": "LRM3",
-      "day": "friday",
-      "date": "2026-07-10",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "BIOL 154",
-      "course_name": "Population Genetics and Evolution",
-      "examiner": "Miss Veronica Boateng",
-      "year_group": "Year 1",
-      "venue": "LRM 3",
-      "day": "friday",
-      "date": "2026-07-10",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "ATE 172",
-      "course_name": "Design and Construction in Leatherwork",
-      "examiner": "Dr. Yaw Boateng Ampadu",
-      "year_group": "Year 1",
-      "venue": "LRM2",
-      "day": "friday",
-      "date": "2026-07-10",
-      "session": 2,
-      "session_time": [
-        "10:00",
-        "11:00"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "EDU 154",
-      "course_name": "Psychology for Teaching and Learning",
-      "examiner": "Dr. Patrick Swanzy",
-      "year_group": "Year 1",
-      "venue": "NCBFFLH1/ NCBGFLH1",
-      "day": "friday",
-      "date": "2026-07-10",
-      "session": 5,
-      "session_time": [
-        "15:15",
-        "16:15"
-      ],
-      "students": 151,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "MEDU 156",
-      "course_name": "Statistics and Probability I",
-      "examiner": "Prof. Theophilus Osei-Anto",
-      "year_group": "Year 1",
-      "venue": "LRM1",
-      "day": "friday",
-      "date": "2026-07-10",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 18,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "STR 154",
-      "course_name": "Control Systems",
-      "examiner": "Prof. Joe Adu-Agyem",
-      "year_group": "Year 1",
-      "venue": "LRM1",
-      "day": "friday",
-      "date": "2026-07-10",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 9,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "MATH 183",
-      "course_name": "Calculus for Physics II",
-      "examiner": "Benjamin Adu Amankwa",
-      "year_group": "Year 1",
-      "venue": "LRM 1",
-      "day": "friday",
-      "date": "2026-07-10",
-      "session": 2,
-      "session_time": [
-        "10:00",
-        "11:00"
-      ],
-      "students": 16,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "VAJ 358",
-      "course_name": "Assessment Techniques in Visual Arts",
-      "examiner": "Prof. Joe Adu-Agyem",
-      "year_group": "Year 3",
-      "venue": "LRM 2",
-      "day": "friday",
-      "date": "2026-07-10",
-      "session": 5,
-      "session_time": [
-        "15:15",
-        "16:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "HSJ 452",
-      "course_name": "History of Arts, Science and Technology in Ghana. Dr Isaac Agyekumhene Ossei",
-      "examiner": "William Baffour Kyei",
-      "year_group": "Year 4",
-      "venue": "NCBGFLH1",
-      "day": "friday",
-      "date": "2026-07-10",
-      "session": 1,
-      "session_time": [
-        "08:15",
-        "09:15"
-      ],
-      "students": 0,
-      "invigilators": [],
-      "exam_type": "written"
-    },
-    {
-      "faculty": "Education",
-      "course_code": "ISCJ 452",
-      "course_name": "Chemistry Around Us",
-      "examiner": "William Baffour Kyei",
-      "year_group": "Year 4",
-      "venue": "LRM 1",
       "day": "friday",
       "date": "2026-07-10",
       "session": 5,
@@ -6359,6 +4793,1446 @@
       "students": 42,
       "examiner": "",
       "year_group": "",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "ICTJ 252",
+      "course_name": "Data Communication and Computer Networking",
+      "day": "monday",
+      "date": "2026-07-06",
+      "session": 1,
+      "session_time": [
+        "08:15",
+        "09:15"
+      ],
+      "venue": "LRM1",
+      "students": 25,
+      "examiner": "Dr (Mrs.) Rebbeca Essel",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "BIOL 152",
+      "course_name": "Cell Function",
+      "day": "monday",
+      "date": "2026-07-06",
+      "session": 1,
+      "session_time": [
+        "08:15",
+        "09:15"
+      ],
+      "venue": "NCBGFLH2",
+      "students": 0,
+      "examiner": "Dr. Martin Gyekye Ampofo",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "CHEM 154",
+      "course_name": "Chemistry of Alkanols, Phenols, Carbonyls and Amines",
+      "day": "monday",
+      "date": "2026-07-06",
+      "session": 1,
+      "session_time": [
+        "08:15",
+        "09:15"
+      ],
+      "venue": "LRM3",
+      "students": 20,
+      "examiner": "Prof. Joe Adu-Agyem",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "ME 206",
+      "course_name": "Thermodynamics and Heat Transfer",
+      "day": "monday",
+      "date": "2026-07-06",
+      "session": 1,
+      "session_time": [
+        "08:15",
+        "09:15"
+      ],
+      "venue": "LRM 2",
+      "students": 25,
+      "examiner": "Dr Isaac Agyekumhene Ossei",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "ATE 160",
+      "course_name": "Printing Technology and Publication Finishing",
+      "day": "monday",
+      "date": "2026-07-06",
+      "session": 1,
+      "session_time": [
+        "08:15",
+        "09:15"
+      ],
+      "venue": "PUB",
+      "students": 0,
+      "examiner": "Prof. (Mrs.) Nana Afia Opoku-Asare",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "LLSJ 352",
+      "course_name": "Literacy across Curriculum for JHS",
+      "day": "monday",
+      "date": "2026-07-06",
+      "session": 1,
+      "session_time": [
+        "08:15",
+        "09:15"
+      ],
+      "venue": "NCBGFLH1",
+      "students": 83,
+      "examiner": "Benjamin Adu Amankwa",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "EDU 452",
+      "course_name": "School Administration and Management",
+      "day": "monday",
+      "date": "2026-07-06",
+      "session": 1,
+      "session_time": [
+        "08:15",
+        "09:15"
+      ],
+      "venue": "PUB",
+      "students": 0,
+      "examiner": "Prof. Theophilus Osei-Anto",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "SSJ 252",
+      "course_name": "Socio-Economic Development in Ghana",
+      "day": "monday",
+      "date": "2026-07-06",
+      "session": 3,
+      "session_time": [
+        "11:45",
+        "12:45"
+      ],
+      "venue": "PUB",
+      "students": 42,
+      "examiner": "Dr. Yaw Boateng Ampadu",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "VAJ 252",
+      "course_name": "Idea Development",
+      "day": "monday",
+      "date": "2026-07-06",
+      "session": 3,
+      "session_time": [
+        "11:45",
+        "12:45"
+      ],
+      "venue": "LRM 1",
+      "students": 8,
+      "examiner": "Prof. Joe Adu-Agyem",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "ICT 152",
+      "course_name": "Introduction to ICT",
+      "day": "monday",
+      "date": "2026-07-06",
+      "session": 3,
+      "session_time": [
+        "11:45",
+        "12:45"
+      ],
+      "venue": "NCBFFLH1",
+      "students": 88,
+      "examiner": "William Baffour Kyei",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "EDU 152",
+      "course_name": "STS Inclusive School-Based Inquiry",
+      "day": "monday",
+      "date": "2026-07-06",
+      "session": 3,
+      "session_time": [
+        "11:45",
+        "12:45"
+      ],
+      "venue": "NCBGFLH1/NCBGFLH2",
+      "students": 151,
+      "examiner": "Dr Isaac Agyekumhene Ossei",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "VAJ 356",
+      "course_name": "Studio Practice in Textile Design",
+      "day": "monday",
+      "date": "2026-07-06",
+      "session": 3,
+      "session_time": [
+        "11:45",
+        "12:45"
+      ],
+      "venue": "LRM 3",
+      "students": 8,
+      "examiner": "Dr. Millicent Mantey",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "ICTJ 352",
+      "course_name": "Tech Leadership & Mgt",
+      "day": "monday",
+      "date": "2026-07-06",
+      "session": 3,
+      "session_time": [
+        "11:45",
+        "12:45"
+      ],
+      "venue": "PUB",
+      "students": 17,
+      "examiner": "Dr. Patrick Swanzy",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "LLSJ 252",
+      "course_name": "Teaching Reading and Writing for JHS",
+      "day": "monday",
+      "date": "2026-07-06",
+      "session": 5,
+      "session_time": [
+        "15:15",
+        "16:15"
+      ],
+      "venue": "PUB/LRM1",
+      "students": 80,
+      "examiner": "Dr. Patrick Swanzy",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "BIOL 172",
+      "course_name": "Diversity of Living Things",
+      "day": "monday",
+      "date": "2026-07-06",
+      "session": 5,
+      "session_time": [
+        "15:15",
+        "16:15"
+      ],
+      "venue": "LRM3",
+      "students": 20,
+      "examiner": "Prof. Theophilus Osei-Anto",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "MEDU 158",
+      "course_name": "Fundamentals of Programming",
+      "day": "monday",
+      "date": "2026-07-06",
+      "session": 5,
+      "session_time": [
+        "15:15",
+        "16:15"
+      ],
+      "venue": "LRM1",
+      "students": 18,
+      "examiner": "Prof. Joe Adu-Agyem",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "CSM 152",
+      "course_name": "Information Technology II",
+      "day": "monday",
+      "date": "2026-07-06",
+      "session": 5,
+      "session_time": [
+        "15:15",
+        "16:15"
+      ],
+      "venue": "LRM3",
+      "students": 6,
+      "examiner": "Prof. Theophilus Osei-Anto",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "ATE 166",
+      "course_name": "Basketry",
+      "day": "monday",
+      "date": "2026-07-06",
+      "session": 5,
+      "session_time": [
+        "15:15",
+        "16:15"
+      ],
+      "venue": "LRM1",
+      "students": 0,
+      "examiner": "William Baffour Kyei",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "HISJ 352",
+      "course_name": "Economic History of Ghana – The Post-Independence Era",
+      "day": "monday",
+      "date": "2026-07-06",
+      "session": 5,
+      "session_time": [
+        "15:15",
+        "16:15"
+      ],
+      "venue": "NCBGFLH1",
+      "students": 55,
+      "examiner": "Miss Veronica Boateng",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "ICTJ 454",
+      "course_name": "Legal And Security Issues In ICT",
+      "day": "monday",
+      "date": "2026-07-06",
+      "session": 5,
+      "session_time": [
+        "15:15",
+        "16:15"
+      ],
+      "venue": "LRM 2",
+      "students": 0,
+      "examiner": "Benjamin Adu Amankwa",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "JGED 252",
+      "course_name": "Psychological Basis for Differentiated Assessment for JHS",
+      "day": "tuesday",
+      "date": "2026-07-07",
+      "session": 1,
+      "session_time": [
+        "08:15",
+        "09:15"
+      ],
+      "venue": "NCBGFLH1",
+      "students": 80,
+      "examiner": "Dr (Mrs.) Rebbeca Essel",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "PHY 152",
+      "course_name": "Geometrical Optics and Waves",
+      "day": "tuesday",
+      "date": "2026-07-07",
+      "session": 1,
+      "session_time": [
+        "08:15",
+        "09:15"
+      ],
+      "venue": "LRM 2",
+      "students": 15,
+      "examiner": "Dr. Yaw Boateng Ampadu",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "MATH 152",
+      "course_name": "Learning, Teaching & Applying Geometry and Handling Data",
+      "day": "tuesday",
+      "date": "2026-07-07",
+      "session": 1,
+      "session_time": [
+        "08:15",
+        "09:15"
+      ],
+      "venue": "PUB/LRM1",
+      "students": 88,
+      "examiner": "Prof. (Mrs.) Nana Afia Opoku-Asare",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "MEDU 154",
+      "course_name": "Vectors and Mechanics",
+      "day": "tuesday",
+      "date": "2026-07-07",
+      "session": 1,
+      "session_time": [
+        "08:15",
+        "09:15"
+      ],
+      "venue": "LRM 3",
+      "students": 18,
+      "examiner": "Prof. Theophilus Osei-Anto",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "CSM 157",
+      "course_name": "Introduction to Probability and Statistics",
+      "day": "tuesday",
+      "date": "2026-07-07",
+      "session": 1,
+      "session_time": [
+        "08:15",
+        "09:15"
+      ],
+      "venue": "PUB/LRM1",
+      "students": 6,
+      "examiner": "Prof. Joe Adu-Agyem",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "STR 152",
+      "course_name": "Programming and Problem Solving",
+      "day": "tuesday",
+      "date": "2026-07-07",
+      "session": 1,
+      "session_time": [
+        "08:15",
+        "09:15"
+      ],
+      "venue": "LRM 4",
+      "students": 10,
+      "examiner": "Dr Isaac Agyekumhene Ossei",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "CHEM 170",
+      "course_name": "Practical Chemistry II",
+      "day": "tuesday",
+      "date": "2026-07-07",
+      "session": 1,
+      "session_time": [
+        "08:15",
+        "09:15"
+      ],
+      "venue": "LRM1",
+      "students": 20,
+      "examiner": "William Baffour Kyei",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "ICTJ 452",
+      "course_name": "Laboratory Management and PC Maintenance",
+      "day": "tuesday",
+      "date": "2026-07-07",
+      "session": 1,
+      "session_time": [
+        "08:15",
+        "09:15"
+      ],
+      "venue": "NCBGFLH2",
+      "students": 25,
+      "examiner": "Prof. Theophilus Osei-Anto",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "VAJ 452",
+      "course_name": "Studio Practice and Basketry",
+      "day": "tuesday",
+      "date": "2026-07-07",
+      "session": 1,
+      "session_time": [
+        "08:15",
+        "09:15"
+      ],
+      "venue": "NCBGFLH2",
+      "students": 0,
+      "examiner": "Benjamin Adu Amankwa",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "ATE 154",
+      "course_name": "Art History: Precolonial Art to Post-Modern",
+      "day": "tuesday",
+      "date": "2026-07-07",
+      "session": 2,
+      "session_time": [
+        "10:00",
+        "11:00"
+      ],
+      "venue": "LRM 1",
+      "students": 0,
+      "examiner": "Dr. Patrick Swanzy",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "LLS 152/ENGL 158",
+      "course_name": "Communicative Skills",
+      "day": "tuesday",
+      "date": "2026-07-07",
+      "session": 3,
+      "session_time": [
+        "11:45",
+        "12:45"
+      ],
+      "venue": "ONLINE",
+      "students": 0,
+      "examiner": "",
+      "faculty": "Education",
+      "exam_type": "CBE"
+    },
+    {
+      "course_code": "LLS 152/ENGL 158",
+      "course_name": "Communicative Skills",
+      "day": "tuesday",
+      "date": "2026-07-07",
+      "session": 4,
+      "session_time": [
+        "13:30",
+        "14:30"
+      ],
+      "venue": "ONLINE",
+      "students": 0,
+      "examiner": "",
+      "faculty": "Education",
+      "exam_type": "CBE"
+    },
+    {
+      "course_code": "VAJ 352",
+      "course_name": "Studio Practice in Picture Making",
+      "day": "tuesday",
+      "date": "2026-07-07",
+      "session": 4,
+      "session_time": [
+        "13:30",
+        "14:30"
+      ],
+      "venue": "LRM2",
+      "students": 8,
+      "examiner": "Dr. Patrick Swanzy",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "SCIJ 254",
+      "course_name": "Biology Around Us",
+      "day": "tuesday",
+      "date": "2026-07-07",
+      "session": 4,
+      "session_time": [
+        "13:30",
+        "14:30"
+      ],
+      "venue": "PUB",
+      "students": 9,
+      "examiner": "Dr (Mrs.) Rebbeca Essel",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "LLS 152/ENGL 158",
+      "course_name": "Communicative Skills",
+      "day": "tuesday",
+      "date": "2026-07-07",
+      "session": 5,
+      "session_time": [
+        "15:15",
+        "16:15"
+      ],
+      "venue": "ONLINE",
+      "students": 0,
+      "examiner": "",
+      "faculty": "Education",
+      "exam_type": "CBE"
+    },
+    {
+      "course_code": "SSJ 452",
+      "course_name": "Regional Integration and International Relations",
+      "day": "tuesday",
+      "date": "2026-07-07",
+      "session": 5,
+      "session_time": [
+        "15:15",
+        "16:15"
+      ],
+      "venue": "LRM 1",
+      "students": 0,
+      "examiner": "Miss Veronica Boateng",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "MATHJ 252",
+      "course_name": "Teaching and Assessing JHS Mathematics (Intro.)",
+      "day": "wednesday",
+      "date": "2026-07-08",
+      "session": 1,
+      "session_time": [
+        "08:15",
+        "09:15"
+      ],
+      "venue": "PUB",
+      "students": 26,
+      "examiner": "Dr (Mrs.) Rebbeca Essel",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "ISC 152",
+      "course_name": "Integrated Science",
+      "day": "wednesday",
+      "date": "2026-07-08",
+      "session": 1,
+      "session_time": [
+        "08:15",
+        "09:15"
+      ],
+      "venue": "COS-Computer based exams.",
+      "students": 88,
+      "examiner": "",
+      "faculty": "Education",
+      "exam_type": "CBE"
+    },
+    {
+      "course_code": "BCHEM 152",
+      "course_name": "Biochemistry",
+      "day": "wednesday",
+      "date": "2026-07-08",
+      "session": 1,
+      "session_time": [
+        "08:15",
+        "09:15"
+      ],
+      "venue": "LMR 2",
+      "students": 25,
+      "examiner": "Dr. Yaw Boateng Ampadu",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "ATE 150",
+      "course_name": "Drawing 2D Composition",
+      "day": "wednesday",
+      "date": "2026-07-08",
+      "session": 1,
+      "session_time": [
+        "08:15",
+        "09:15"
+      ],
+      "venue": "LRM 3",
+      "students": 0,
+      "examiner": "Prof. (Mrs.) Nana Afia Opoku-Asare",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "ME 174",
+      "course_name": "Product Design and Manufacturing",
+      "day": "wednesday",
+      "date": "2026-07-08",
+      "session": 1,
+      "session_time": [
+        "08:15",
+        "09:15"
+      ],
+      "venue": "PUB",
+      "students": 5,
+      "examiner": "Dr (Mrs.) Rebbeca Essel",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "CHEM 156",
+      "course_name": "Basic Physical Chemistry II",
+      "day": "wednesday",
+      "date": "2026-07-08",
+      "session": 1,
+      "session_time": [
+        "08:15",
+        "09:15"
+      ],
+      "venue": "LMR1",
+      "students": 20,
+      "examiner": "Miss Veronica Boateng",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "ISCJ 454",
+      "course_name": "Properties Of Matter and Electromagnetism",
+      "day": "wednesday",
+      "date": "2026-07-08",
+      "session": 1,
+      "session_time": [
+        "08:15",
+        "09:15"
+      ],
+      "venue": "COS-Computer-based exams.",
+      "students": 0,
+      "examiner": "",
+      "faculty": "Education",
+      "exam_type": "CBE"
+    },
+    {
+      "course_code": "ME 164",
+      "course_name": "Static and Dynamics of Solid Mechanics",
+      "day": "wednesday",
+      "date": "2026-07-08",
+      "session": 2,
+      "session_time": [
+        "10:00",
+        "11:00"
+      ],
+      "venue": "PUB",
+      "students": 25,
+      "examiner": "Dr. Yaw Boateng Ampadu",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "SSJ 352",
+      "course_name": "Assessment Techniques in Social Studies",
+      "day": "wednesday",
+      "date": "2026-07-08",
+      "session": 2,
+      "session_time": [
+        "10:00",
+        "11:00"
+      ],
+      "venue": "PUB",
+      "students": 55,
+      "examiner": "Dr. Yaw Boateng Ampadu",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "SCIJ 352",
+      "course_name": "Teaching Strategies and Assessment",
+      "day": "wednesday",
+      "date": "2026-07-08",
+      "session": 2,
+      "session_time": [
+        "10:00",
+        "11:00"
+      ],
+      "venue": "NCBGFLH1",
+      "students": 0,
+      "examiner": "Benjamin Adu Amankwa",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "PHY 154",
+      "course_name": "Experimental Physics II",
+      "day": "wednesday",
+      "date": "2026-07-08",
+      "session": 3,
+      "session_time": [
+        "11:45",
+        "12:45"
+      ],
+      "venue": "PUB",
+      "students": 15,
+      "examiner": "Prof. Joe Adu-Agyem",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "STE 152",
+      "course_name": "Electronics",
+      "day": "wednesday",
+      "date": "2026-07-08",
+      "session": 3,
+      "session_time": [
+        "11:45",
+        "12:45"
+      ],
+      "venue": "PUB",
+      "students": 48,
+      "examiner": "Prof. Joe Adu-Agyem",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "ATE 162",
+      "course_name": "Painting: Human Figure",
+      "day": "wednesday",
+      "date": "2026-07-08",
+      "session": 3,
+      "session_time": [
+        "11:45",
+        "12:45"
+      ],
+      "venue": "PUB",
+      "students": 0,
+      "examiner": "Prof. Joe Adu-Agyem",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "ATE 168",
+      "course_name": "Ceramics Raw Materials and Production Technology",
+      "day": "wednesday",
+      "date": "2026-07-08",
+      "session": 3,
+      "session_time": [
+        "11:45",
+        "12:45"
+      ],
+      "venue": "LRM 3",
+      "students": 0,
+      "examiner": "Prof. Theophilus Osei-Anto",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "SSJ 454",
+      "course_name": "Youth and National Development",
+      "day": "wednesday",
+      "date": "2026-07-08",
+      "session": 3,
+      "session_time": [
+        "11:45",
+        "12:45"
+      ],
+      "venue": "LRM1/LRM2",
+      "students": 0,
+      "examiner": "Benjamin Adu Amankwa",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "EDU 152",
+      "course_name": "Growth, Development and Learning",
+      "day": "wednesday",
+      "date": "2026-07-08",
+      "session": 4,
+      "session_time": [
+        "13:30",
+        "14:30"
+      ],
+      "venue": "PUB/LRM1",
+      "students": 88,
+      "examiner": "Dr. Yaw Boateng Ampadu",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "CSM 297",
+      "course_name": "Database Concepts and Technologies I",
+      "day": "wednesday",
+      "date": "2026-07-08",
+      "session": 4,
+      "session_time": [
+        "13:30",
+        "14:30"
+      ],
+      "venue": "LMR 2",
+      "students": 6,
+      "examiner": "William Baffour Kyei",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "HISJ 252",
+      "course_name": "Political History of Ghana After Independence",
+      "day": "wednesday",
+      "date": "2026-07-08",
+      "session": 5,
+      "session_time": [
+        "15:15",
+        "16:15"
+      ],
+      "venue": "PUB",
+      "students": 42,
+      "examiner": "Dr. Patrick Swanzy",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "SCIJ 252",
+      "course_name": "Introduction to Mechanics (Physics)",
+      "day": "wednesday",
+      "date": "2026-07-08",
+      "session": 5,
+      "session_time": [
+        "15:15",
+        "16:15"
+      ],
+      "venue": "LRM 3",
+      "students": 0,
+      "examiner": "William Baffour Kyei",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "ATE 170",
+      "course_name": "Bead Making",
+      "day": "wednesday",
+      "date": "2026-07-08",
+      "session": 5,
+      "session_time": [
+        "15:15",
+        "16:15"
+      ],
+      "venue": "PUB",
+      "students": 0,
+      "examiner": "Dr. Patrick Swanzy",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "VAJ 354",
+      "course_name": "Studio Practice in Leather",
+      "day": "wednesday",
+      "date": "2026-07-08",
+      "session": 5,
+      "session_time": [
+        "15:15",
+        "16:15"
+      ],
+      "venue": "LRM 2",
+      "students": 8,
+      "examiner": "Dr. Yaw Boateng Ampadu",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "MATHJ 454",
+      "course_name": "Teaching And Assessing Junior High Mathematics (Advanced)",
+      "day": "wednesday",
+      "date": "2026-07-08",
+      "session": 5,
+      "session_time": [
+        "15:15",
+        "16:15"
+      ],
+      "venue": "LRM 1",
+      "students": 0,
+      "examiner": "Benjamin Adu Amankwa",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "VAJ 254",
+      "course_name": "Composition And Creative Expressions",
+      "day": "thursday",
+      "date": "2026-07-09",
+      "session": 1,
+      "session_time": [
+        "08:15",
+        "09:15"
+      ],
+      "venue": "LRM 3",
+      "students": 0,
+      "examiner": "Prof. (Mrs.) Nana Afia Opoku-Asare",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "CHEM 152",
+      "course_name": "Coordination Chemistry",
+      "day": "thursday",
+      "date": "2026-07-09",
+      "session": 1,
+      "session_time": [
+        "08:15",
+        "09:15"
+      ],
+      "venue": "LRM 2",
+      "students": 20,
+      "examiner": "Dr (Mrs.) Rebbeca Essel",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "BIOL 194",
+      "course_name": "Human Diseases and Infections",
+      "day": "thursday",
+      "date": "2026-07-09",
+      "session": 1,
+      "session_time": [
+        "08:15",
+        "09:15"
+      ],
+      "venue": "PUB",
+      "students": 0,
+      "examiner": "Prof. Theophilus Osei-Anto",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "PHY 156",
+      "course_name": "Properties of Matter",
+      "day": "thursday",
+      "date": "2026-07-09",
+      "session": 1,
+      "session_time": [
+        "08:15",
+        "09:15"
+      ],
+      "venue": "PUB",
+      "students": 15,
+      "examiner": "William Baffour Kyei",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "ME 270",
+      "course_name": "Manufacturing Technology",
+      "day": "thursday",
+      "date": "2026-07-09",
+      "session": 1,
+      "session_time": [
+        "08:15",
+        "09:15"
+      ],
+      "venue": "PUB",
+      "students": 5,
+      "examiner": "Prof. Joe Adu-Agyem",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "MATHJ 352",
+      "course_name": "Learning, Teaching, Applying & Handling Data",
+      "day": "thursday",
+      "date": "2026-07-09",
+      "session": 1,
+      "session_time": [
+        "08:15",
+        "09:15"
+      ],
+      "venue": "LRM 2",
+      "students": 16,
+      "examiner": "Dr Isaac Agyekumhene Ossei",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "MATHJ 452",
+      "course_name": "Learning Teaching and Applying Analytical Geometry",
+      "day": "thursday",
+      "date": "2026-07-09",
+      "session": 1,
+      "session_time": [
+        "08:15",
+        "09:15"
+      ],
+      "venue": "LRM 1",
+      "students": 29,
+      "examiner": "Benjamin Adu Amankwa",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "ATE 152",
+      "course_name": "Basic Design",
+      "day": "thursday",
+      "date": "2026-07-09",
+      "session": 2,
+      "session_time": [
+        "10:00",
+        "11:00"
+      ],
+      "venue": "LRM 2",
+      "students": 0,
+      "examiner": "Miss Veronica Boateng",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "HSJ 454",
+      "course_name": "History of Gender and Culture in Ghana",
+      "day": "thursday",
+      "date": "2026-07-09",
+      "session": 2,
+      "session_time": [
+        "10:00",
+        "11:00"
+      ],
+      "venue": "LRM 1",
+      "students": 0,
+      "examiner": "William Baffour Kyei",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "SSJ 254",
+      "course_name": "Governance And Citizenship",
+      "day": "thursday",
+      "date": "2026-07-09",
+      "session": 3,
+      "session_time": [
+        "11:45",
+        "12:45"
+      ],
+      "venue": "PUB",
+      "students": 42,
+      "examiner": "Dr. Yaw Boateng Ampadu",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "GST 152",
+      "course_name": "Intersection of Physical Activity, Sports, Music and Dance",
+      "day": "thursday",
+      "date": "2026-07-09",
+      "session": 3,
+      "session_time": [
+        "11:45",
+        "12:45"
+      ],
+      "venue": "NCBGFLH1",
+      "students": 88,
+      "examiner": "Prof. (Mrs.) Nana Afia Opoku-Asare",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "VAJ 258",
+      "course_name": "Curriculum Studies in Visual Arts",
+      "day": "thursday",
+      "date": "2026-07-09",
+      "session": 4,
+      "session_time": [
+        "13:30",
+        "14:30"
+      ],
+      "venue": "LRM2",
+      "students": 8,
+      "examiner": "William Baffour Kyei",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "EDTE 152",
+      "course_name": "Foundations and Development of Science Education",
+      "day": "thursday",
+      "date": "2026-07-09",
+      "session": 4,
+      "session_time": [
+        "13:30",
+        "14:30"
+      ],
+      "venue": "NCBFFLH1",
+      "students": 0,
+      "examiner": "Benjamin Adu Amankwa",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "MEDU 152/MATH 151",
+      "course_name": "Calculus",
+      "day": "thursday",
+      "date": "2026-07-09",
+      "session": 4,
+      "session_time": [
+        "13:30",
+        "14:30"
+      ],
+      "venue": "PUB/LRM 3",
+      "students": 58,
+      "examiner": "Dr. Patrick Swanzy",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "CSM 154",
+      "course_name": "Programming with Python I (Structured)",
+      "day": "thursday",
+      "date": "2026-07-09",
+      "session": 4,
+      "session_time": [
+        "13:30",
+        "14:30"
+      ],
+      "venue": "PUB",
+      "students": 6,
+      "examiner": "Miss Veronica Boateng",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "ATE 164",
+      "course_name": "Textile Raw Materials and Processing",
+      "day": "thursday",
+      "date": "2026-07-09",
+      "session": 5,
+      "session_time": [
+        "15:15",
+        "16:15"
+      ],
+      "venue": "LRM3",
+      "students": 0,
+      "examiner": "Benjamin Adu Amankwa",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "ATE 174",
+      "course_name": "Production Technology: Sculpture",
+      "day": "thursday",
+      "date": "2026-07-09",
+      "session": 5,
+      "session_time": [
+        "15:15",
+        "16:15"
+      ],
+      "venue": "LRM 2",
+      "students": 0,
+      "examiner": "Dr. Patrick Swanzy",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "EDU 354",
+      "course_name": "Guidance & Counselling for Junior High Schools",
+      "day": "thursday",
+      "date": "2026-07-09",
+      "session": 5,
+      "session_time": [
+        "15:15",
+        "16:15"
+      ],
+      "venue": "PUB/LRM1",
+      "students": 83,
+      "examiner": "Miss Veronica Boateng",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "VAJ 256",
+      "course_name": "Figure And Perspective Drawing",
+      "day": "friday",
+      "date": "2026-07-10",
+      "session": 1,
+      "session_time": [
+        "08:15",
+        "09:15"
+      ],
+      "venue": "LRM 2",
+      "students": 8,
+      "examiner": "Dr (Mrs.) Rebbeca Essel",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "MATHJ 254",
+      "course_name": "Euclidean Geometry and Trigonometry",
+      "day": "friday",
+      "date": "2026-07-10",
+      "session": 1,
+      "session_time": [
+        "08:15",
+        "09:15"
+      ],
+      "venue": "LRM3",
+      "students": 0,
+      "examiner": "Prof. (Mrs.) Nana Afia Opoku-Asare",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "BIOL 154",
+      "course_name": "Population Genetics and Evolution",
+      "day": "friday",
+      "date": "2026-07-10",
+      "session": 1,
+      "session_time": [
+        "08:15",
+        "09:15"
+      ],
+      "venue": "LRM 3",
+      "students": 0,
+      "examiner": "Miss Veronica Boateng",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "MEDU 156",
+      "course_name": "Statistics and Probability I",
+      "day": "friday",
+      "date": "2026-07-10",
+      "session": 1,
+      "session_time": [
+        "08:15",
+        "09:15"
+      ],
+      "venue": "LRM1",
+      "students": 18,
+      "examiner": "Prof. Theophilus Osei-Anto",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "STR 154",
+      "course_name": "Control Systems",
+      "day": "friday",
+      "date": "2026-07-10",
+      "session": 1,
+      "session_time": [
+        "08:15",
+        "09:15"
+      ],
+      "venue": "LRM1",
+      "students": 9,
+      "examiner": "Prof. Joe Adu-Agyem",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "HSJ 452",
+      "course_name": "History of Arts, Science and Technology in Ghana",
+      "day": "friday",
+      "date": "2026-07-10",
+      "session": 1,
+      "session_time": [
+        "08:15",
+        "09:15"
+      ],
+      "venue": "NCBGFLH1",
+      "students": 0,
+      "examiner": "Dr Isaac Agyekumhene Ossei",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "DTED 552",
+      "course_name": "Educational Research Methods",
+      "day": "friday",
+      "date": "2026-07-10",
+      "session": 1,
+      "session_time": [
+        "08:15",
+        "09:15"
+      ],
+      "venue": "PUB",
+      "students": 0,
+      "examiner": "Prof. Theophilus Osei-Anto",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "ATE 172",
+      "course_name": "Design and Construction in Leatherwork",
+      "day": "friday",
+      "date": "2026-07-10",
+      "session": 2,
+      "session_time": [
+        "10:00",
+        "11:00"
+      ],
+      "venue": "LRM2",
+      "students": 0,
+      "examiner": "Dr. Yaw Boateng Ampadu",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "MATH 183",
+      "course_name": "Calculus for Physics II",
+      "day": "friday",
+      "date": "2026-07-10",
+      "session": 2,
+      "session_time": [
+        "10:00",
+        "11:00"
+      ],
+      "venue": "LRM 1",
+      "students": 16,
+      "examiner": "Benjamin Adu Amankwa",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "HISJ 254",
+      "course_name": "Socio-Cultural History of Ghana",
+      "day": "friday",
+      "date": "2026-07-10",
+      "session": 3,
+      "session_time": [
+        "11:45",
+        "12:45"
+      ],
+      "venue": "PUB",
+      "students": 42,
+      "examiner": "Dr (Mrs.) Rebbeca Essel",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "ICTJ 254",
+      "course_name": "Application Development in Education",
+      "day": "friday",
+      "date": "2026-07-10",
+      "session": 5,
+      "session_time": [
+        "15:15",
+        "16:15"
+      ],
+      "venue": "PUB",
+      "students": 26,
+      "examiner": "Miss Veronica Boateng",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "EDU 154",
+      "course_name": "Psychology for Teaching and Learning",
+      "day": "friday",
+      "date": "2026-07-10",
+      "session": 5,
+      "session_time": [
+        "15:15",
+        "16:15"
+      ],
+      "venue": "NCBFFLH1/NCBGFLH1",
+      "students": 151,
+      "examiner": "Prof. Theophilus Osei-Anto",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "VAJ 358",
+      "course_name": "Assessment Techniques in Visual Arts",
+      "day": "friday",
+      "date": "2026-07-10",
+      "session": 5,
+      "session_time": [
+        "15:15",
+        "16:15"
+      ],
+      "venue": "LRM 2",
+      "students": 0,
+      "examiner": "Prof. Joe Adu-Agyem",
+      "faculty": "Education",
+      "exam_type": "written"
+    },
+    {
+      "course_code": "ISCJ 452",
+      "course_name": "Chemistry Around Us",
+      "day": "friday",
+      "date": "2026-07-10",
+      "session": 5,
+      "session_time": [
+        "15:15",
+        "16:15"
+      ],
+      "venue": "LRM 1",
+      "students": 0,
+      "examiner": "William Baffour Kyei",
+      "faculty": "Education",
       "exam_type": "written"
     }
   ]
