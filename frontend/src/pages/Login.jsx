@@ -51,9 +51,23 @@ export default function Login() {
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
-        <div className="mt-4 text-center">
-          <a href="/lookup" className="text-blue-200 text-sm hover:text-white">Staff? Check your assignments</a>
+        <div className="mt-6 grid grid-cols-2 gap-2">
+          <a href="/lookup" className="flex items-center gap-2 px-4 py-3 rounded-xl bg-white/10 hover:bg-white/20 transition-colors text-center">
+            <svg className="w-5 h-5 text-cyan-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+            <div className="text-left">
+              <div className="text-white text-sm font-semibold">Staff Lookup</div>
+              <div className="text-blue-300 text-[10px]">Check your assignments</div>
+            </div>
+          </a>
+          <a href="/public/timetable" className="flex items-center gap-2 px-4 py-3 rounded-xl bg-white/10 hover:bg-white/20 transition-colors text-center">
+            <svg className="w-5 h-5 text-amber-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+            <div className="text-left">
+              <div className="text-white text-sm font-semibold">Timetable</div>
+              <div className="text-blue-300 text-[10px]">View exam schedule</div>
+            </div>
+          </a>
         </div>
+        <p className="text-blue-300/40 text-[10px] text-center mt-4">Admin & Reviewer login above</p>
       </div>
     </div>
   );
