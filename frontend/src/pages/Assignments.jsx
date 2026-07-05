@@ -16,6 +16,7 @@ export default function Assignments() {
   const [staff, setStaff] = useState([]);
   const [assignModal, setAssignModal] = useState(null);
   const [unassigned, setUnassigned] = useState([]);
+  const [bulkModal, setBulkModal] = useState(false);
 
   const load = () => {
     api.get('/timetable/exams', { params: { date } }).then(r => setExams(r.data));
@@ -55,9 +56,15 @@ export default function Assignments() {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-2xl font-black text-gray-900">Staff Assignments</h1>
-        <p className="text-sm text-gray-500 mt-1">Assign invigilators to exam sessions</p>
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <h1 className="text-2xl font-black text-gray-900">Staff Assignments</h1>
+          <p className="text-sm text-gray-500 mt-1">Assign invigilators to exam sessions</p>
+        </div>
+        <button onClick={() => setBulkModal(true)} className="btn-brand text-sm flex items-center gap-2">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+          Bulk Assign IT Staff
+        </button>
       </div>
 
       {/* Unassigned alert */}
@@ -126,6 +133,17 @@ export default function Assignments() {
         );
       })}
 
+      {/* Bulk Assign IT Staff Modal */}
+      {bulkModal && (
+        <BulkAssignModal
+          date={date}
+          exams={exams}
+          staff={staff.filter(s => s.staff_type === 'it_staff')}
+          onClose={() => setBulkModal(false)}
+          onDone={() => { setBulkModal(false); load(); }}
+        />
+      )}
+
       {/* Assign modal */}
       {assignModal && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={() => setAssignModal(null)}>
@@ -167,6 +185,158 @@ export default function Assignments() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function BulkAssignModal({ date, exams, staff, onClose, onDone }) {
+  const [selectedStaff, setSelectedStaff] = useState([]);
+  const [selectedExams, setSelectedExams] = useState([]);
+  const [step, setStep] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState(null);
+
+  const toggleStaff = (id) => setSelectedStaff(prev =>
+    prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+  );
+  const toggleExam = (id) => setSelectedExams(prev =>
+    prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+  );
+  const selectAllStaff = () => setSelectedStaff(staff.map(s => s.id));
+  const selectAllExams = () => setSelectedExams(exams.map(e => e.id));
+
+  const submit = async () => {
+    setLoading(true);
+    try {
+      const { data } = await api.post('/assignments/bulk', {
+        staff_ids: selectedStaff,
+        exam_ids: selectedExams,
+      });
+      setResult(data);
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const times = ['8:15-9:15','10:00-11:00','11:45-12:45','1:30-2:30','3:15-4:15','5:00-6:00'];
+
+  return (
+    <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="bg-white rounded-xl w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
+        <div className="p-4 border-b bg-cyan-50">
+          <h3 className="font-black text-lg text-gray-900">Bulk Assign IT Staff</h3>
+          <p className="text-xs text-gray-500 mt-0.5">
+            {step === 1 && 'Step 1: Select IT staff members'}
+            {step === 2 && 'Step 2: Select exam rooms/sessions'}
+            {step === 3 && 'Done!'}
+          </p>
+          <div className="flex gap-1 mt-2">
+            {[1,2,3].map(s => (
+              <div key={s} className={`h-1.5 flex-1 rounded-full ${step >= s ? 'bg-cyan-500' : 'bg-gray-200'}`} />
+            ))}
+          </div>
+        </div>
+
+        <div className="overflow-y-auto flex-1 p-4">
+          {step === 1 && (
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-sm font-semibold text-gray-700">{selectedStaff.length} selected</span>
+                <button onClick={selectAllStaff} className="text-xs text-cyan-600 hover:underline">Select All</button>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {staff.map(s => (
+                  <button key={s.id} onClick={() => toggleStaff(s.id)}
+                    className={`text-left p-3 rounded-lg border-2 transition-colors ${
+                      selectedStaff.includes(s.id)
+                        ? 'border-cyan-500 bg-cyan-50'
+                        : 'border-gray-100 hover:border-gray-200'
+                    }`}>
+                    <div className="font-medium text-sm">{s.name}</div>
+                    <div className="text-xs text-gray-400">{s.staff_code} | {s.phone}</div>
+                  </button>
+                ))}
+              </div>
+              {staff.length === 0 && <p className="text-center text-gray-400 py-8">No IT staff found</p>}
+            </div>
+          )}
+
+          {step === 2 && (
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-sm font-semibold text-gray-700">{selectedExams.length} exams selected</span>
+                <button onClick={selectAllExams} className="text-xs text-cyan-600 hover:underline">Select All</button>
+              </div>
+              {[1,2,3,4,5,6].map(sn => {
+                const sessionExams = exams.filter(e => e.session_number === sn);
+                if (!sessionExams.length) return null;
+                return (
+                  <div key={sn} className="mb-3">
+                    <div className="text-xs font-bold text-brand mb-1">Session {sn} ({times[sn-1]})</div>
+                    <div className="space-y-1">
+                      {sessionExams.map(e => (
+                        <button key={e.id} onClick={() => toggleExam(e.id)}
+                          className={`w-full text-left p-2.5 rounded-lg border-2 transition-colors ${
+                            selectedExams.includes(e.id)
+                              ? 'border-cyan-500 bg-cyan-50'
+                              : 'border-gray-100 hover:border-gray-200'
+                          }`}>
+                          <div className="flex justify-between items-center">
+                            <span className="font-medium text-sm">{e.course_code} <span className="font-normal text-gray-500">{e.course_name}</span></span>
+                            <span className="text-[10px] text-gray-400">{e.venue}</span>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {step === 3 && result && (
+            <div className="text-center py-8">
+              <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+              </div>
+              <h3 className="font-black text-xl text-gray-900">{result.assigned} Assignment(s) Created</h3>
+              {result.skipped > 0 && <p className="text-sm text-gray-500 mt-1">{result.skipped} duplicate(s) skipped</p>}
+              {result.conflicts?.length > 0 && (
+                <div className="mt-3 text-left bg-amber-50 rounded-lg p-3">
+                  <p className="text-xs font-bold text-amber-700">{result.conflicts.length} conflict(s):</p>
+                  {result.conflicts.slice(0, 5).map((c, i) => (
+                    <p key={i} className="text-xs text-amber-600 mt-0.5">{c.reason}</p>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        <div className="p-4 border-t flex gap-3">
+          {step === 1 && (
+            <>
+              <button onClick={onClose} className="btn-ghost flex-1">Cancel</button>
+              <button onClick={() => setStep(2)} disabled={!selectedStaff.length}
+                className="btn-brand flex-1 disabled:opacity-40">Next — Select Exams</button>
+            </>
+          )}
+          {step === 2 && (
+            <>
+              <button onClick={() => setStep(1)} className="btn-ghost flex-1">Back</button>
+              <button onClick={submit} disabled={!selectedExams.length || loading}
+                className="btn-brand flex-1 disabled:opacity-40">
+                {loading ? 'Assigning...' : `Assign ${selectedStaff.length} staff → ${selectedExams.length} exams`}
+              </button>
+            </>
+          )}
+          {step === 3 && (
+            <button onClick={onDone} className="btn-brand w-full">Done</button>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

@@ -35,6 +35,40 @@ router.post('/', authAdmin, async (req, res) => {
   }
 });
 
+router.post('/bulk', authAdmin, async (req, res) => {
+  const { staff_ids, exam_ids } = req.body;
+  if (!staff_ids?.length || !exam_ids?.length)
+    return res.status(400).json({ error: 'Staff and exams are required' });
+
+  let assigned = 0, skipped = 0, conflicts = [];
+  for (const exam_id of exam_ids) {
+    const { rows: [exam] } = await db.query('SELECT exam_date, session_number, course_code FROM exams WHERE id=$1', [exam_id]);
+    if (!exam) continue;
+
+    for (const staff_id of staff_ids) {
+      const { rows: existing } = await db.query(
+        'SELECT 1 FROM exam_assignments WHERE exam_id=$1 AND staff_id=$2', [exam_id, staff_id]);
+      if (existing.length) { skipped++; continue; }
+
+      const { rows: conflict } = await db.query(`
+        SELECT e.course_code FROM exam_assignments ea
+        JOIN exams e ON e.id = ea.exam_id
+        WHERE ea.staff_id=$1 AND e.exam_date=$2 AND e.session_number=$3`,
+        [staff_id, exam.exam_date, exam.session_number]);
+      if (conflict.length) {
+        conflicts.push({ staff_id, exam_id, reason: `Already in ${conflict[0].course_code}` });
+        continue;
+      }
+
+      await db.query(
+        'INSERT INTO exam_assignments (exam_id, staff_id, role, assigned_by) VALUES ($1,$2,$3,$4)',
+        [exam_id, staff_id, 'it_support', req.admin.id]);
+      assigned++;
+    }
+  }
+  res.json({ assigned, skipped, conflicts });
+});
+
 router.delete('/:id', authAdmin, async (req, res) => {
   try {
     await db.query('DELETE FROM exam_assignments WHERE id=$1', [req.params.id]);

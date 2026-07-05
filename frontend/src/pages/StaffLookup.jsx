@@ -51,6 +51,39 @@ export default function StaffLookup() {
     grouped[key].push(a);
   });
 
+  const printSchedule = (data, groupedData) => {
+    const win = window.open('', '_blank');
+    const rows = Object.entries(groupedData).sort().map(([date, assignments]) => {
+      return assignments.map(a =>
+        `<tr>
+          <td style="padding:8px;border:1px solid #ddd;">${a.day_name || ''} ${new Date(date+'T00:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</td>
+          <td style="padding:8px;border:1px solid #ddd;">Session ${a.session_number} (${SESSION_TIMES[a.session_number]})</td>
+          <td style="padding:8px;border:1px solid #ddd;font-weight:bold;">${a.course_code}</td>
+          <td style="padding:8px;border:1px solid #ddd;">${a.course_name || ''}</td>
+          <td style="padding:8px;border:1px solid #ddd;">${a.venue || ''}</td>
+          <td style="padding:8px;border:1px solid #ddd;">${a.faculty_name || ''}</td>
+        </tr>`
+      ).join('');
+    }).join('');
+
+    win.document.write(`<!DOCTYPE html><html><head><title>Schedule - ${data.staff.name}</title>
+      <style>body{font-family:Arial,sans-serif;padding:30px;} table{border-collapse:collapse;width:100%;margin-top:15px;} th{background:#1a3a5c;color:#fff;padding:10px;text-align:left;} @media print{button{display:none;}}</style>
+    </head><body>
+      <h1 style="margin:0;color:#1a3a5c;">CABE Exam Operations</h1>
+      <p style="color:#666;margin:4px 0 0;">Mid-Semester Examination Schedule 2025/2026 | 6th - 10th July, 2026</p>
+      <hr style="margin:15px 0;border-color:#c8a951;">
+      <h2 style="margin:0;">${data.staff.name}</h2>
+      <p style="color:#666;margin:4px 0;">Staff Code: ${data.staff.staff_code || 'N/A'} | Role: ${data.staff.role} | Total Assignments: ${data.assignments.length}</p>
+      <table>
+        <thead><tr><th>Day</th><th>Session</th><th>Code</th><th>Course</th><th>Venue</th><th>Faculty</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <p style="margin-top:20px;color:#999;font-size:12px;">Generated from CABE Exam Ops System | examops.campusmarketgh.com</p>
+      <button onclick="window.print()" style="margin-top:15px;padding:10px 20px;background:#1a3a5c;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:14px;">Print this page</button>
+    </body></html>`);
+    win.document.close();
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-brand-dark to-brand">
       <div className="max-w-lg mx-auto p-4 pt-12">
@@ -98,15 +131,23 @@ export default function StaffLookup() {
         {selected && (
           <div className="space-y-4">
             <div className="card">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-brand flex items-center justify-center text-white font-black text-lg">
-                  {selected.staff.name[0]}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-brand flex items-center justify-center text-white font-black text-lg">
+                    {selected.staff.name[0]}
+                  </div>
+                  <div>
+                    <h2 className="font-black text-lg text-gray-900">{selected.staff.name}</h2>
+                    {selected.staff.department && <p className="text-xs text-gray-400">{selected.staff.department}</p>}
+                    <p className="text-xs text-gray-300">{selected.staff.role}</p>
+                  </div>
                 </div>
-                <div>
-                  <h2 className="font-black text-lg text-gray-900">{selected.staff.name}</h2>
-                  {selected.staff.department && <p className="text-xs text-gray-400">{selected.staff.department}</p>}
-                  <p className="text-xs text-gray-300">{selected.staff.role}</p>
-                </div>
+                {selected.assignments.length > 0 && (
+                  <button onClick={() => printSchedule(selected, grouped)} className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white/80 border text-sm font-medium text-gray-700 hover:bg-white">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
+                    Print
+                  </button>
+                )}
               </div>
             </div>
 
