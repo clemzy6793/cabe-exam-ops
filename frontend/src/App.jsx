@@ -13,6 +13,11 @@ function PrivateRoute({ children }) {
   return token ? children : <Navigate to="/login" />;
 }
 
+function AdminRoute({ children }) {
+  const role = localStorage.getItem('exam_ops_role');
+  return role === 'admin' || role === 'superadmin' ? children : <Navigate to="/" />;
+}
+
 export default function App() {
   return (
     <Routes>
@@ -22,8 +27,8 @@ export default function App() {
       <Route path="/" element={<PrivateRoute><Layout /></PrivateRoute>}>
         <Route index element={<Dashboard />} />
         <Route path="timetable" element={<Timetable />} />
-        <Route path="staff" element={<StaffManagement />} />
-        <Route path="assignments" element={<Assignments />} />
+        <Route path="staff" element={<AdminRoute><StaffManagement /></AdminRoute>} />
+        <Route path="assignments" element={<AdminRoute><Assignments /></AdminRoute>} />
       </Route>
     </Routes>
   );

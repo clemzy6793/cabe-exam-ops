@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const db = require('../db');
-const { authAdmin } = require('../middleware/auth');
+const { authAdmin, authEditor } = require('../middleware/auth');
 
 router.get('/exams', async (req, res) => {
   const { date, faculty_id, session, search } = req.query;
@@ -59,7 +59,7 @@ router.get('/exams/:id', async (req, res) => {
   }
 });
 
-router.post('/exams', authAdmin, async (req, res) => {
+router.post('/exams', authEditor, async (req, res) => {
   const { faculty_id, course_code, course_name, examiner, year_group,
     exam_date, day_name, session_number, start_time, end_time,
     venue, student_count, exam_type, notes } = req.body;
@@ -86,7 +86,7 @@ router.post('/exams', authAdmin, async (req, res) => {
   }
 });
 
-router.put('/exams/:id', authAdmin, async (req, res) => {
+router.put('/exams/:id', authEditor, async (req, res) => {
   const { course_code, course_name, examiner, year_group,
     exam_date, day_name, session_number, start_time, end_time,
     venue, student_count, exam_type, notes, faculty_id } = req.body;
@@ -107,7 +107,7 @@ router.put('/exams/:id', authAdmin, async (req, res) => {
   }
 });
 
-router.delete('/exams/:id', authAdmin, async (req, res) => {
+router.delete('/exams/:id', authEditor, async (req, res) => {
   try {
     await db.query('DELETE FROM exams WHERE id=$1', [req.params.id]);
     res.json({ message: 'Deleted' });
