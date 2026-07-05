@@ -159,7 +159,11 @@ export default function StaffLookup() {
               <>
                 <div className="card bg-accent/10 border-accent/20">
                   <p className="text-sm font-bold text-accent">
-                    You have {selected.assignments.length} assignment{selected.assignments.length !== 1 ? 's' : ''} this week
+                    {Object.entries(grouped).sort().map(([, dayAssignments], i, arr) => {
+                      const dayName = dayAssignments[0]?.day_name?.charAt(0).toUpperCase() + dayAssignments[0]?.day_name?.slice(1);
+                      const count = dayAssignments.length;
+                      return `${count} assignment${count !== 1 ? 's' : ''} on ${dayName}`;
+                    }).join(', ')}
                   </p>
                 </div>
 
