@@ -209,7 +209,7 @@ export default function Assignments() {
                 }} />
             </div>
             <div className="overflow-y-auto flex-1 divide-y">
-              {staff.map(s => {
+              {staff.filter(s => s.staff_type !== 'lecturer').map(s => {
                 const alreadyAssigned = assignModal.assigned_staff?.some(a => a.staff_code === s.staff_code);
                 return (
                   <button key={s.id} data-staff-row disabled={alreadyAssigned}
