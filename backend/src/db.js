@@ -1,9 +1,10 @@
 require('dotenv').config({ path: __dirname + '/../.env' });
 const { Pool } = require('pg');
 
+const noSsl = process.env.PGSSL === 'disable' || process.env.DATABASE_URL?.includes('localhost');
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: process.env.DATABASE_URL?.includes('localhost') ? false : { rejectUnauthorized: false },
+  ssl: noSsl ? false : { rejectUnauthorized: false },
 });
 
 module.exports = {
