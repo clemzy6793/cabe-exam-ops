@@ -57,7 +57,7 @@ export default function Layout() {
           <a href="/lookup" target="_blank" className="block text-xs text-blue-300 hover:text-white mb-3">Staff Lookup Portal</a>
           <a href="/public/timetable" target="_blank" className="block text-xs text-blue-300 hover:text-white mb-3">Public Timetable</a>
           {isAdmin && <button onClick={() => setShowAccounts(true)} className="w-full text-left text-xs text-blue-300 hover:text-white mb-3">Manage Accounts</button>}
-          <button onClick={() => setShowPwModal(true)} className="w-full text-left text-xs text-blue-300 hover:text-white mb-3">Change Password</button>
+          <button onClick={() => setShowPwModal(true)} className="w-full text-left text-xs text-blue-300 hover:text-white mb-3">Account Settings</button>
           <button onClick={logout} className="w-full text-left text-sm text-red-300 hover:text-red-200">Logout</button>
         </div>
       </aside>
@@ -87,54 +87,96 @@ export default function Layout() {
 }
 
 function ChangePasswordModal({ onClose }) {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [profileLoading, setProfileLoading] = useState(false);
   const [current, setCurrent] = useState('');
   const [newPw, setNewPw] = useState('');
   const [confirm, setConfirm] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [pwLoading, setPwLoading] = useState(false);
 
-  const submit = async (e) => {
+  useEffect(() => {
+    api.get('/auth/me').then(r => { setName(r.data.name); setEmail(r.data.email); }).catch(() => {});
+  }, []);
+
+  const saveProfile = async (e) => {
     e.preventDefault();
-    if (newPw !== confirm) return toast.error('Passwords do not match');
-    if (newPw.length < 6) return toast.error('Minimum 6 characters');
-    setLoading(true);
+    if (!name.trim() || !email.trim()) return toast.error('Name and email are required');
+    setProfileLoading(true);
     try {
-      await api.put('/auth/change-password', { current_password: current, new_password: newPw });
-      toast.success('Password changed!');
-      onClose();
+      const { data } = await api.put('/auth/profile', { name: name.trim(), email: email.trim() });
+      localStorage.setItem('exam_ops_token', data.token);
+      toast.success('Profile updated!');
     } catch (err) {
       toast.error(err.response?.data?.error || 'Failed');
     } finally {
-      setLoading(false);
+      setProfileLoading(false);
+    }
+  };
+
+  const changePassword = async (e) => {
+    e.preventDefault();
+    if (newPw !== confirm) return toast.error('Passwords do not match');
+    if (newPw.length < 6) return toast.error('Minimum 6 characters');
+    setPwLoading(true);
+    try {
+      await api.put('/auth/change-password', { current_password: current, new_password: newPw });
+      toast.success('Password changed!');
+      setCurrent(''); setNewPw(''); setConfirm('');
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed');
+    } finally {
+      setPwLoading(false);
     }
   };
 
   return (
     <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={onClose}>
-      <div className="bg-white rounded-xl w-full max-w-sm p-6" onClick={e => e.stopPropagation()}>
-        <h2 className="text-lg font-black mb-4">Change Password</h2>
-        <form onSubmit={submit} className="space-y-3">
+      <div className="bg-white rounded-xl w-full max-w-sm max-h-[90vh] overflow-y-auto p-6" onClick={e => e.stopPropagation()}>
+        <h2 className="text-lg font-black mb-4">Account Settings</h2>
+
+        <form onSubmit={saveProfile} className="space-y-3 mb-6">
+          <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">Profile</p>
           <div>
-            <label className="text-xs font-medium text-gray-600">Current Password</label>
-            <input type="password" value={current} onChange={e => setCurrent(e.target.value)}
+            <label className="text-xs font-medium text-gray-600">Name</label>
+            <input value={name} onChange={e => setName(e.target.value)}
               className="w-full border rounded-lg px-3 py-2 text-sm mt-1" required />
           </div>
           <div>
-            <label className="text-xs font-medium text-gray-600">New Password</label>
-            <input type="password" value={newPw} onChange={e => setNewPw(e.target.value)}
+            <label className="text-xs font-medium text-gray-600">Email (login username)</label>
+            <input type="email" value={email} onChange={e => setEmail(e.target.value)}
               className="w-full border rounded-lg px-3 py-2 text-sm mt-1" required />
           </div>
-          <div>
-            <label className="text-xs font-medium text-gray-600">Confirm New Password</label>
-            <input type="password" value={confirm} onChange={e => setConfirm(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2 text-sm mt-1" required />
-          </div>
-          <div className="flex gap-3 pt-2">
-            <button type="submit" disabled={loading} className="btn-brand flex-1">
-              {loading ? 'Saving...' : 'Change Password'}
-            </button>
-            <button type="button" onClick={onClose} className="btn-ghost flex-1">Cancel</button>
-          </div>
+          <button type="submit" disabled={profileLoading} className="btn-brand w-full py-2 text-sm">
+            {profileLoading ? 'Saving...' : 'Update Profile'}
+          </button>
         </form>
+
+        <div className="border-t pt-4">
+          <form onSubmit={changePassword} className="space-y-3">
+            <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">Change Password</p>
+            <div>
+              <label className="text-xs font-medium text-gray-600">Current Password</label>
+              <input type="password" value={current} onChange={e => setCurrent(e.target.value)}
+                className="w-full border rounded-lg px-3 py-2 text-sm mt-1" required />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-gray-600">New Password</label>
+              <input type="password" value={newPw} onChange={e => setNewPw(e.target.value)}
+                className="w-full border rounded-lg px-3 py-2 text-sm mt-1" required />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-gray-600">Confirm New Password</label>
+              <input type="password" value={confirm} onChange={e => setConfirm(e.target.value)}
+                className="w-full border rounded-lg px-3 py-2 text-sm mt-1" required />
+            </div>
+            <button type="submit" disabled={pwLoading} className="btn-brand w-full py-2 text-sm">
+              {pwLoading ? 'Saving...' : 'Change Password'}
+            </button>
+          </form>
+        </div>
+
+        <button onClick={onClose} className="btn-ghost w-full mt-4 text-sm">Close</button>
       </div>
     </div>
   );

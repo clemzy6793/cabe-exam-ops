@@ -83,6 +83,30 @@ router.delete('/accounts/:id', authAdmin, async (req, res) => {
   }
 });
 
+router.put('/profile', async (req, res) => {
+  const token = req.headers.authorization?.replace('Bearer ', '');
+  if (!token) return res.status(401).json({ error: 'Not authenticated' });
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const { name, email } = req.body;
+    if (!name || !email) return res.status(400).json({ error: 'Name and email are required' });
+    const { rows } = await db.query(
+      'UPDATE admins SET name=$1, email=$2 WHERE id=$3 RETURNING id, name, email, role',
+      [name.trim(), email.trim(), decoded.id]);
+    if (!rows.length) return res.status(404).json({ error: 'Not found' });
+    const admin = rows[0];
+    const newToken = jwt.sign(
+      { id: admin.id, role: admin.role, name: admin.name },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+    res.json({ admin, token: newToken });
+  } catch (err) {
+    if (err.code === '23505') return res.status(409).json({ error: 'Email already in use' });
+    res.status(500).json({ error: err.message });
+  }
+});
+
 router.get('/me', async (req, res) => {
   const token = req.headers.authorization?.replace('Bearer ', '');
   if (!token) return res.status(401).json({ error: 'Not authenticated' });
