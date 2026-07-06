@@ -151,4 +151,37 @@ router.get('/unassigned', async (req, res) => {
   }
 });
 
+router.get('/it-report', async (req, res) => {
+  try {
+    const { rows } = await db.query(`
+      SELECT s.id, s.name, s.staff_code, s.phone,
+        e.day_name, e.exam_date, e.session_number, e.course_code, e.venue, f.code AS faculty_code
+      FROM staff s
+      LEFT JOIN exam_assignments ea ON ea.staff_id = s.id
+      LEFT JOIN exams e ON e.id = ea.exam_id
+      LEFT JOIN faculties f ON f.id = e.faculty_id
+      WHERE s.staff_type = 'it_staff'
+      ORDER BY s.name, e.exam_date, e.session_number
+    `);
+
+    const staffMap = {};
+    rows.forEach(r => {
+      if (!staffMap[r.id]) {
+        staffMap[r.id] = { id: r.id, name: r.name, staff_code: r.staff_code, phone: r.phone, days: {} };
+      }
+      if (r.day_name) {
+        if (!staffMap[r.id].days[r.day_name]) staffMap[r.id].days[r.day_name] = [];
+        staffMap[r.id].days[r.day_name].push({
+          session: r.session_number, course_code: r.course_code,
+          venue: r.venue, faculty_code: r.faculty_code, exam_date: r.exam_date
+        });
+      }
+    });
+
+    res.json(Object.values(staffMap));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;
