@@ -88,6 +88,15 @@ router.delete('/:id', authAdmin, async (req, res) => {
   }
 });
 
+router.delete('/exam/:examId/all', authAdmin, async (req, res) => {
+  try {
+    const { rowCount } = await db.query('DELETE FROM exam_assignments WHERE exam_id=$1', [req.params.examId]);
+    res.json({ message: `Removed ${rowCount} assignment(s)` });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 router.get('/by-date/:date', async (req, res) => {
   try {
     const { rows } = await db.query(`

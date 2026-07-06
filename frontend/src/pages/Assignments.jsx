@@ -57,6 +57,17 @@ export default function Assignments() {
     }
   };
 
+  const removeAllAssignments = async (examId, courseCode) => {
+    if (!confirm(`Remove all staff from ${courseCode}?`)) return;
+    try {
+      const { data } = await api.delete(`/assignments/exam/${examId}/all`);
+      toast.success(data.message);
+      load();
+    } catch (err) {
+      toast.error('Failed');
+    }
+  };
+
   const grouped = {};
   exams.forEach(e => {
     const key = e.session_number;
@@ -159,7 +170,7 @@ export default function Assignments() {
                     <button onClick={() => setAssignModal(e)} className="btn-brand text-xs px-3 py-1">+ Assign</button>
                   </div>
                   {e.assigned_staff?.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5 mt-2">
+                    <div className="flex flex-wrap items-center gap-1.5 mt-2">
                       {e.assigned_staff.map((s, i) => (
                         <span key={i} className="inline-flex items-center gap-1 text-xs bg-emerald-50 text-emerald-700 px-2 py-1 rounded-lg">
                           {s.name}
@@ -167,6 +178,12 @@ export default function Assignments() {
                           <button onClick={() => removeAssignment(s.id)} className="text-red-400 hover:text-red-600 ml-1">&times;</button>
                         </span>
                       ))}
+                      {e.assigned_staff.length > 1 && (
+                        <button onClick={() => removeAllAssignments(e.id, e.course_code)}
+                          className="text-xs text-red-500 hover:text-red-700 font-semibold px-2 py-1 rounded hover:bg-red-50">
+                          Remove All
+                        </button>
+                      )}
                     </div>
                   )}
                 </div>
