@@ -192,8 +192,9 @@ export default function Reports() {
 
 function UploadModal({ isAdmin, faculties, onClose, onDone }) {
   const [step, setStep] = useState(1);
-  const [staffCode, setStaffCode] = useState('');
+  const [staffName, setStaffName] = useState('');
   const [staffInfo, setStaffInfo] = useState(null);
+  const [matches, setMatches] = useState([]);
   const [myExams, setMyExams] = useState([]);
   const [myFacultyIds, setMyFacultyIds] = useState([]);
   const [selectedExam, setSelectedExam] = useState(null);
@@ -202,21 +203,39 @@ function UploadModal({ isAdmin, faculties, onClose, onDone }) {
   const [dayFilter, setDayFilter] = useState('all');
   const fileRef = useRef();
 
-  const lookupStaff = async () => {
-    if (!staffCode.trim()) return toast.error('Enter staff code');
-    try {
-      const { data } = await api.get(`/reports/my-exams/${staffCode.trim()}`);
-      setStaffInfo(data.staff);
+  const loadExamsForStaff = async (staff) => {
+    const { data } = await api.get(`/reports/my-exams/${staff.staff_code}`);
+    setStaffInfo(data.staff);
+    if (isAdmin && data.exams.length === 0) {
+      const { data: allExams } = await api.get('/timetable/exams');
+      setMyExams(allExams);
+      setMyFacultyIds([]);
+    } else {
+      setMyExams(data.exams);
+      setMyFacultyIds(data.facultyIds);
+    }
+    setMatches([]);
+    setStep(2);
+  };
 
-      if (isAdmin && data.exams.length === 0) {
-        const { data: allExams } = await api.get('/timetable/exams');
-        setMyExams(allExams);
-        setMyFacultyIds([]);
+  const lookupStaff = async () => {
+    if (!staffName.trim()) return toast.error('Enter staff name');
+    try {
+      const { data } = await api.get(`/reports/my-exams/${encodeURIComponent(staffName.trim())}`);
+      if (data.matches) {
+        setMatches(data.matches);
       } else {
-        setMyExams(data.exams);
-        setMyFacultyIds(data.facultyIds);
+        setStaffInfo(data.staff);
+        if (isAdmin && data.exams.length === 0) {
+          const { data: allExams } = await api.get('/timetable/exams');
+          setMyExams(allExams);
+          setMyFacultyIds([]);
+        } else {
+          setMyExams(data.exams);
+          setMyFacultyIds(data.facultyIds);
+        }
+        setStep(2);
       }
-      setStep(2);
     } catch (err) {
       toast.error(err.response?.data?.error || 'Staff not found');
     }
@@ -228,7 +247,7 @@ function UploadModal({ isAdmin, faculties, onClose, onDone }) {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('exam_id', selectedExam.id);
-    formData.append('staff_code', staffCode);
+    formData.append('staff_code', staffInfo?.staff_code);
     try {
       await api.post('/reports/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
@@ -265,7 +284,7 @@ function UploadModal({ isAdmin, faculties, onClose, onDone }) {
         <div className="p-4 border-b bg-emerald-50">
           <h3 className="font-black text-lg text-gray-900">Upload Biometric Report</h3>
           <p className="text-xs text-gray-500 mt-0.5">
-            {step === 1 && 'Step 1: Enter your staff code'}
+            {step === 1 && 'Step 1: Enter your name'}
             {step === 2 && 'Step 2: Select your assigned exam'}
             {step === 3 && 'Step 3: Attach Excel file'}
           </p>
@@ -280,11 +299,23 @@ function UploadModal({ isAdmin, faculties, onClose, onDone }) {
           {step === 1 && (
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-semibold text-gray-700">Staff Code</label>
-                <input value={staffCode} onChange={e => setStaffCode(e.target.value)}
+                <label className="text-sm font-semibold text-gray-700">Staff Name</label>
+                <input value={staffName} onChange={e => { setStaffName(e.target.value); setMatches([]); }}
                   onKeyDown={e => e.key === 'Enter' && lookupStaff()}
-                  placeholder="e.g. CABE1147" className="w-full border rounded-lg px-3 py-2.5 text-sm mt-1" autoFocus />
+                  placeholder="e.g. Isaac Kyere" className="w-full border rounded-lg px-3 py-2.5 text-sm mt-1" autoFocus />
               </div>
+              {matches.length > 0 && (
+                <div className="space-y-1.5">
+                  <p className="text-xs text-gray-500 font-semibold">Multiple matches — select one:</p>
+                  {matches.map(m => (
+                    <button key={m.id} onClick={() => loadExamsForStaff(m)}
+                      className="w-full text-left p-2.5 rounded-lg border hover:border-emerald-400 hover:bg-emerald-50/50 transition-colors">
+                      <span className="text-sm font-medium">{m.name}</span>
+                      <span className="text-xs text-gray-400 ml-2">{m.staff_code}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
@@ -409,7 +440,7 @@ function UploadModal({ isAdmin, faculties, onClose, onDone }) {
           )}
           {step === 2 && (
             <>
-              <button onClick={() => { setStep(1); setStaffInfo(null); setMyExams([]); }} className="btn-ghost flex-1">Back</button>
+              <button onClick={() => { setStep(1); setStaffInfo(null); setMyExams([]); setMatches([]); }} className="btn-ghost flex-1">Back</button>
             </>
           )}
           {step === 3 && (

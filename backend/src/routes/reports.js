@@ -43,10 +43,19 @@ router.post('/upload', authAny, upload.single('file'), async (req, res) => {
   }
 });
 
-router.get('/my-exams/:staffCode', async (req, res) => {
+router.get('/my-exams/:query', async (req, res) => {
   try {
-    const { rows: [staff] } = await db.query('SELECT id, name, staff_code, phone FROM staff WHERE staff_code ILIKE $1', [req.params.staffCode]);
-    if (!staff) return res.status(404).json({ error: 'Staff not found' });
+    const q = req.params.query.trim();
+    let staff;
+    const { rows: byCode } = await db.query('SELECT id, name, staff_code, phone FROM staff WHERE staff_code ILIKE $1', [q]);
+    if (byCode.length) {
+      staff = byCode[0];
+    } else {
+      const { rows: byName } = await db.query('SELECT id, name, staff_code, phone FROM staff WHERE name ILIKE $1', [`%${q}%`]);
+      if (byName.length === 1) staff = byName[0];
+      else if (byName.length > 1) return res.json({ matches: byName });
+      else return res.status(404).json({ error: 'Staff not found' });
+    }
 
     const { rows: exams } = await db.query(`
       SELECT e.id, e.course_code, e.course_name, e.venue, e.day_name, e.session_number,
