@@ -98,6 +98,16 @@ CREATE TABLE IF NOT EXISTS faculty_staff (
   UNIQUE(faculty_id, staff_id, role)
 );
 
+CREATE TABLE IF NOT EXISTS biometric_reports (
+  id SERIAL PRIMARY KEY,
+  exam_id INT REFERENCES exams(id) ON DELETE CASCADE,
+  uploader_id INT REFERENCES staff(id) ON DELETE SET NULL,
+  filename VARCHAR(255) NOT NULL,
+  file_data BYTEA NOT NULL,
+  file_size INT,
+  uploaded_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 CREATE TABLE IF NOT EXISTS activity_log (
   id SERIAL PRIMARY KEY,
   admin_id INT REFERENCES admins(id),

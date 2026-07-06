@@ -40,6 +40,7 @@ app.use('/api/timetable', require('./routes/timetable'));
 app.use('/api/staff', require('./routes/staff'));
 app.use('/api/assignments', require('./routes/assignments'));
 app.use('/api/lookup', require('./routes/lookup'));
+app.use('/api/reports', require('./routes/reports'));
 
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, '../../frontend/dist')));

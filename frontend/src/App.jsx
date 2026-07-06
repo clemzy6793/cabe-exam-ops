@@ -6,6 +6,7 @@ import Timetable from './pages/Timetable';
 import StaffManagement from './pages/StaffManagement';
 import Assignments from './pages/Assignments';
 import ITReport from './pages/ITReport';
+import Reports from './pages/Reports';
 import StaffLookup from './pages/StaffLookup';
 import PublicTimetable from './pages/PublicTimetable';
 
@@ -31,6 +32,7 @@ export default function App() {
         <Route path="staff" element={<AdminRoute><StaffManagement /></AdminRoute>} />
         <Route path="assignments" element={<AdminRoute><Assignments /></AdminRoute>} />
         <Route path="it-report" element={<AdminRoute><ITReport /></AdminRoute>} />
+        <Route path="reports" element={<AdminRoute><Reports /></AdminRoute>} />
       </Route>
     </Routes>
   );
