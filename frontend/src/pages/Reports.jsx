@@ -25,6 +25,9 @@ export default function Reports() {
   const [day, setDay] = useState('all');
   const [showUpload, setShowUpload] = useState(false);
 
+  const role = localStorage.getItem('exam_ops_role');
+  const isAdmin = role === 'admin' || role === 'superadmin';
+
   const load = () => {
     const params = {};
     if (facultyId !== 'all') params.faculty_id = facultyId;
@@ -157,10 +160,12 @@ export default function Reports() {
                             className="text-xs bg-brand text-white px-2.5 py-1 rounded-lg hover:bg-brand-dark">
                             Download
                           </button>
-                          <button onClick={() => remove(r.id)}
-                            className="text-xs text-red-400 hover:text-red-600 px-1.5 py-1">
-                            &times;
-                          </button>
+                          {isAdmin && (
+                            <button onClick={() => remove(r.id)}
+                              className="text-xs text-red-400 hover:text-red-600 px-1.5 py-1">
+                              &times;
+                            </button>
+                          )}
                         </div>
                       </div>
                     ))}
@@ -180,36 +185,40 @@ export default function Reports() {
         </div>
       )}
 
-      {showUpload && <UploadModal faculties={faculties} onClose={() => setShowUpload(false)} onDone={() => { setShowUpload(false); load(); }} />}
+      {showUpload && <UploadModal isAdmin={isAdmin} faculties={faculties} onClose={() => setShowUpload(false)} onDone={() => { setShowUpload(false); load(); }} />}
     </div>
   );
 }
 
-function UploadModal({ faculties, onClose, onDone }) {
+function UploadModal({ isAdmin, faculties, onClose, onDone }) {
   const [step, setStep] = useState(1);
   const [staffCode, setStaffCode] = useState('');
   const [staffInfo, setStaffInfo] = useState(null);
-  const [assignments, setAssignments] = useState([]);
+  const [myExams, setMyExams] = useState([]);
+  const [myFacultyIds, setMyFacultyIds] = useState([]);
   const [selectedExam, setSelectedExam] = useState(null);
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
-  const [facFilter, setFacFilter] = useState('all');
   const [dayFilter, setDayFilter] = useState('all');
   const fileRef = useRef();
 
   const lookupStaff = async () => {
     if (!staffCode.trim()) return toast.error('Enter staff code');
     try {
-      const { data: staffList } = await api.get('/staff');
-      const found = staffList.find(s => s.staff_code?.toLowerCase() === staffCode.trim().toLowerCase());
-      if (!found) return toast.error('Staff not found');
-      setStaffInfo(found);
+      const { data } = await api.get(`/reports/my-exams/${staffCode.trim()}`);
+      setStaffInfo(data.staff);
 
-      const { data: allExams } = await api.get('/timetable/exams');
-      setAssignments(allExams);
+      if (isAdmin && data.exams.length === 0) {
+        const { data: allExams } = await api.get('/timetable/exams');
+        setMyExams(allExams);
+        setMyFacultyIds([]);
+      } else {
+        setMyExams(data.exams);
+        setMyFacultyIds(data.facultyIds);
+      }
       setStep(2);
-    } catch {
-      toast.error('Failed to look up staff');
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Staff not found');
     }
   };
 
@@ -233,8 +242,7 @@ function UploadModal({ faculties, onClose, onDone }) {
     }
   };
 
-  const filteredExams = assignments.filter(e => {
-    if (facFilter !== 'all' && e.faculty_id !== Number(facFilter)) return false;
+  const filteredExams = myExams.filter(e => {
     if (dayFilter !== 'all' && e.day_name !== dayFilter) return false;
     return true;
   });
@@ -258,7 +266,7 @@ function UploadModal({ faculties, onClose, onDone }) {
           <h3 className="font-black text-lg text-gray-900">Upload Biometric Report</h3>
           <p className="text-xs text-gray-500 mt-0.5">
             {step === 1 && 'Step 1: Enter your staff code'}
-            {step === 2 && 'Step 2: Select exam session'}
+            {step === 2 && 'Step 2: Select your assigned exam'}
             {step === 3 && 'Step 3: Attach Excel file'}
           </p>
           <div className="flex gap-1 mt-2">
@@ -277,70 +285,81 @@ function UploadModal({ faculties, onClose, onDone }) {
                   onKeyDown={e => e.key === 'Enter' && lookupStaff()}
                   placeholder="e.g. CABE1147" className="w-full border rounded-lg px-3 py-2.5 text-sm mt-1" autoFocus />
               </div>
-              {staffInfo && (
-                <div className="bg-emerald-50 rounded-lg p-3">
-                  <p className="font-bold text-sm text-emerald-800">{staffInfo.name}</p>
-                  <p className="text-xs text-emerald-600">{staffInfo.staff_code} | {staffInfo.phone}</p>
-                </div>
-              )}
             </div>
           )}
 
           {step === 2 && (
             <div className="space-y-3">
-              <div className="bg-emerald-50 rounded-lg p-2.5 flex items-center gap-2">
-                <span className="text-sm font-bold text-emerald-800">{staffInfo?.name}</span>
-                <span className="text-xs text-emerald-600">{staffCode}</span>
+              <div className="bg-emerald-50 rounded-lg p-2.5 flex items-center justify-between">
+                <div>
+                  <span className="text-sm font-bold text-emerald-800">{staffInfo?.name}</span>
+                  <span className="text-xs text-emerald-600 ml-2">{staffInfo?.staff_code}</span>
+                </div>
+                <span className="text-[10px] bg-emerald-200 text-emerald-800 px-2 py-0.5 rounded-full font-bold">
+                  {myExams.length} assigned
+                </span>
               </div>
 
-              <div className="flex gap-2 overflow-x-auto">
-                <button onClick={() => setFacFilter('all')}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap ${
-                    facFilter === 'all' ? 'bg-amber-500 text-white' : 'bg-gray-100 text-gray-600'
-                  }`}>All</button>
-                {faculties.map(f => (
-                  <button key={f.id} onClick={() => setFacFilter(String(f.id))}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap ${
-                      facFilter === String(f.id) ? 'bg-amber-500 text-white' : 'bg-gray-100 text-gray-600'
-                    }`}>{f.code}</button>
-                ))}
-              </div>
-              <div className="flex gap-2 overflow-x-auto">
-                <button onClick={() => setDayFilter('all')}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap ${
-                    dayFilter === 'all' ? 'bg-brand text-white' : 'bg-gray-100 text-gray-600'
-                  }`}>All Days</button>
-                {DAYS.map(d => (
-                  <button key={d.key} onClick={() => setDayFilter(d.key)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap ${
-                      dayFilter === d.key ? 'bg-brand text-white' : 'bg-gray-100 text-gray-600'
-                    }`}>{d.label}</button>
-                ))}
-              </div>
+              {myExams.length === 0 ? (
+                <div className="text-center py-10">
+                  <svg className="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                  <p className="text-gray-500 font-semibold text-sm">Not on schedule</p>
+                  <p className="text-gray-400 text-xs mt-1">You have no assigned exam sessions</p>
+                </div>
+              ) : (
+                <>
+                  <div className="flex gap-2 overflow-x-auto">
+                    <button onClick={() => setDayFilter('all')}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap ${
+                        dayFilter === 'all' ? 'bg-brand text-white' : 'bg-gray-100 text-gray-600'
+                      }`}>All Days</button>
+                    {DAYS.map(d => {
+                      const hasExams = myExams.some(e => e.day_name === d.key);
+                      if (!hasExams) return null;
+                      return (
+                        <button key={d.key} onClick={() => setDayFilter(d.key)}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap ${
+                            dayFilter === d.key ? 'bg-brand text-white' : 'bg-gray-100 text-gray-600'
+                          }`}>{d.label}</button>
+                      );
+                    })}
+                  </div>
 
-              <div className="space-y-2 max-h-[45vh] overflow-y-auto">
-                {sortedGroups.map(g => {
-                  const dayLabel = DAYS.find(d => d.key === g.day)?.label || g.day;
-                  return (
-                    <div key={`${g.day}_${g.session}`}>
-                      <div className="text-xs font-bold text-brand mb-1">{dayLabel} — Session {g.session} <span className="text-gray-400 font-normal">{TIMES[g.session]}</span></div>
-                      {g.exams.map(e => (
-                        <button key={e.id} onClick={() => { setSelectedExam(e); setStep(3); }}
-                          className={`w-full text-left p-2.5 rounded-lg border-2 mb-1 transition-colors ${
-                            selectedExam?.id === e.id ? 'border-emerald-500 bg-emerald-50' : 'border-gray-100 hover:border-gray-200'
-                          }`}>
-                          <div className="flex justify-between items-center">
-                            <span className="font-medium text-sm">{e.course_code} <span className="font-normal text-gray-500">{e.course_name}</span></span>
-                            <span className="text-[10px] text-gray-400">{e.faculty_code}</span>
-                          </div>
-                          <div className="text-[10px] text-gray-400 mt-0.5">{e.venue}</div>
-                        </button>
-                      ))}
-                    </div>
-                  );
-                })}
-                {sortedGroups.length === 0 && <p className="text-center text-gray-400 py-6 text-sm">No exams found</p>}
-              </div>
+                  <div className="space-y-2 max-h-[45vh] overflow-y-auto">
+                    {sortedGroups.map(g => {
+                      const dayLabel = DAYS.find(d => d.key === g.day)?.label || g.day;
+                      return (
+                        <div key={`${g.day}_${g.session}`}>
+                          <div className="text-xs font-bold text-brand mb-1">{dayLabel} — Session {g.session} <span className="text-gray-400 font-normal">{TIMES[g.session]}</span></div>
+                          {g.exams.map(e => (
+                            <button key={e.id} onClick={() => { setSelectedExam(e); setStep(3); }}
+                              className={`w-full text-left p-2.5 rounded-lg border-2 mb-1 transition-colors ${
+                                selectedExam?.id === e.id ? 'border-emerald-500 bg-emerald-50' : 'border-gray-100 hover:border-gray-200'
+                              }`}>
+                              <div className="flex justify-between items-center">
+                                <span className="font-medium text-sm">
+                                  {e.course_code}
+                                  {e.exam_type && e.exam_type !== 'written' && (
+                                    <span className={`ml-1.5 text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
+                                      e.exam_type === 'CBE' ? 'bg-orange-100 text-orange-700' : 'bg-sky-100 text-sky-700'
+                                    }`}>{e.exam_type}</span>
+                                  )}
+                                  <span className="font-normal text-gray-500 ml-1">{e.course_name}</span>
+                                </span>
+                                <span className={`text-[10px] font-semibold ${
+                                  e.faculty_code === 'FOBE' ? 'text-blue-600' :
+                                  e.faculty_code === 'Art' ? 'text-purple-600' : 'text-emerald-600'
+                                }`}>{e.faculty_code}</span>
+                              </div>
+                              <div className="text-[10px] text-gray-400 mt-0.5">{e.venue}</div>
+                            </button>
+                          ))}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
             </div>
           )}
 
@@ -351,6 +370,7 @@ function UploadModal({ faculties, onClose, onDone }) {
                 <p className="text-xs text-emerald-600">
                   {DAYS.find(d => d.key === selectedExam.day_name)?.label} | Session {selectedExam.session_number} | {selectedExam.venue} | {selectedExam.faculty_code}
                 </p>
+                <p className="text-[10px] text-emerald-500 mt-1">Uploading as: {staffInfo?.name} ({staffInfo?.staff_code})</p>
               </div>
 
               <div>
@@ -389,7 +409,7 @@ function UploadModal({ faculties, onClose, onDone }) {
           )}
           {step === 2 && (
             <>
-              <button onClick={() => setStep(1)} className="btn-ghost flex-1">Back</button>
+              <button onClick={() => { setStep(1); setStaffInfo(null); setMyExams([]); }} className="btn-ghost flex-1">Back</button>
             </>
           )}
           {step === 3 && (

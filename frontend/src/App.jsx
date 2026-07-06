@@ -32,7 +32,7 @@ export default function App() {
         <Route path="staff" element={<AdminRoute><StaffManagement /></AdminRoute>} />
         <Route path="assignments" element={<AdminRoute><Assignments /></AdminRoute>} />
         <Route path="it-report" element={<AdminRoute><ITReport /></AdminRoute>} />
-        <Route path="reports" element={<AdminRoute><Reports /></AdminRoute>} />
+        <Route path="reports" element={<Reports />} />
       </Route>
     </Routes>
   );

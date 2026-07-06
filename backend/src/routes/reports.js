@@ -1,7 +1,7 @@
 const router = require('express').Router();
 const multer = require('multer');
 const db = require('../db');
-const { authAdmin } = require('../middleware/auth');
+const { authAdmin, authAny } = require('../middleware/auth');
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -20,7 +20,7 @@ const upload = multer({
   },
 });
 
-router.post('/upload', authAdmin, upload.single('file'), async (req, res) => {
+router.post('/upload', authAny, upload.single('file'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
   const { exam_id, staff_code } = req.body;
   if (!exam_id) return res.status(400).json({ error: 'Exam is required' });
@@ -38,6 +38,27 @@ router.post('/upload', authAdmin, upload.single('file'), async (req, res) => {
       [exam_id, uploaderId, req.file.originalname, req.file.buffer, req.file.size]
     );
     res.status(201).json(rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.get('/my-exams/:staffCode', async (req, res) => {
+  try {
+    const { rows: [staff] } = await db.query('SELECT id, name, staff_code, phone FROM staff WHERE staff_code ILIKE $1', [req.params.staffCode]);
+    if (!staff) return res.status(404).json({ error: 'Staff not found' });
+
+    const { rows: exams } = await db.query(`
+      SELECT e.id, e.course_code, e.course_name, e.venue, e.day_name, e.session_number,
+        e.exam_date, e.student_count, e.exam_type, f.code AS faculty_code, f.id AS faculty_id
+      FROM exam_assignments ea
+      JOIN exams e ON e.id = ea.exam_id
+      JOIN faculties f ON f.id = e.faculty_id
+      WHERE ea.staff_id = $1
+      ORDER BY e.day_name, e.session_number, e.course_code`, [staff.id]);
+
+    const facultyIds = [...new Set(exams.map(e => e.faculty_id))];
+    res.json({ staff, exams, facultyIds });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
