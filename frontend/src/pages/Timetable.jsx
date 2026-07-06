@@ -128,8 +128,8 @@ export default function Timetable() {
                         e.faculty_code === 'Art' ? 'bg-purple-100 text-purple-700' :
                         'bg-emerald-100 text-emerald-700'
                       }`}>{e.faculty_code}</span>
-                      {e.exam_type === 'CBE' && <span className="text-[10px] px-1.5 py-0.5 rounded font-semibold bg-orange-100 text-orange-700">CBE</span>}
-                      {e.exam_type === 'BYOD' && <span className="text-[10px] px-1.5 py-0.5 rounded font-semibold bg-cyan-100 text-cyan-700">BYOD</span>}
+                      {e.exam_type === 'CBE' && <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold bg-amber-500 text-white">CBE</span>}
+                      {e.exam_type === 'BYOD' && <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold bg-sky-500 text-white">BYOD</span>}
                     </div>
                     <p className="text-xs text-gray-500 mt-0.5">{e.course_name}</p>
                     <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1.5 text-xs text-gray-400">

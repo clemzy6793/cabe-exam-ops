@@ -181,8 +181,8 @@ export default function Dashboard() {
             {stats.by_type?.map(t => {
               const typeConfig = {
                 written: { label: 'Written', bg: 'bg-gray-100', text: 'text-gray-700', bar: 'bg-gray-500' },
-                CBE: { label: 'Computer Based (CBE)', bg: 'bg-orange-50', text: 'text-orange-700', bar: 'bg-orange-500' },
-                BYOD: { label: 'Bring Your Own Device', bg: 'bg-cyan-50', text: 'text-cyan-700', bar: 'bg-cyan-500' },
+                CBE: { label: 'Computer Based (CBE)', bg: 'bg-amber-50', text: 'text-amber-700', bar: 'bg-amber-500' },
+                BYOD: { label: 'Bring Your Own Device', bg: 'bg-sky-50', text: 'text-sky-700', bar: 'bg-sky-500' },
               };
               const cfg = typeConfig[t.exam_type] || typeConfig.written;
               const pct = Math.round((t.count / stats.total_exams) * 100);

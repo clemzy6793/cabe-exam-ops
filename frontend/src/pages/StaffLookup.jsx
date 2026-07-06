@@ -180,8 +180,8 @@ export default function StaffLookup() {
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                               <span className="font-bold text-sm text-gray-900">{a.course_code}</span>
-                              {a.exam_type === 'CBE' && <span className="text-[10px] px-1.5 py-0.5 rounded font-semibold bg-orange-100 text-orange-700">CBE</span>}
-                              {a.exam_type === 'BYOD' && <span className="text-[10px] px-1.5 py-0.5 rounded font-semibold bg-cyan-100 text-cyan-700">BYOD</span>}
+                              {a.exam_type === 'CBE' && <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold bg-amber-500 text-white">CBE</span>}
+                              {a.exam_type === 'BYOD' && <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold bg-sky-500 text-white">BYOD</span>}
                             </div>
                             <span className="text-xs bg-brand/10 text-brand px-2 py-0.5 rounded font-semibold">
                               Session {a.session_number}

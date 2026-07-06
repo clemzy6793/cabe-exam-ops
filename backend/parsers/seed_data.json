@@ -2204,7 +2204,7 @@
       ],
       "students": 138,
       "invigilators": [],
-      "exam_type": "written"
+      "exam_type": "CBE"
     },
     {
       "faculty": "FOBE",
@@ -2657,7 +2657,7 @@
         "I. Abu",
         "V. Acheamfour"
       ],
-      "exam_type": "written"
+      "exam_type": "CBE"
     },
     {
       "faculty": "FOBE",
@@ -3297,7 +3297,7 @@
       "students": 0,
       "examiner": "",
       "year_group": "",
-      "exam_type": "written"
+      "exam_type": "CBE"
     },
     {
       "faculty": "Art",
