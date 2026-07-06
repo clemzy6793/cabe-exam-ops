@@ -209,19 +209,20 @@ router.get('/it-report', async (req, res) => {
       }
       staffMap[fr.staff_id].faculty_roles.push({ role: fr.role, faculty_code: fr.faculty_code });
 
-      // Count 1 session per day their faculty has exams (printing is a day-long task)
+      // Add every session for their faculty (printing happens every session)
       const days = ['monday','tuesday','wednesday','thursday','friday'];
       days.forEach(day => {
         const sessions = facDaySessions[`${fr.faculty_id}_${day}`] || [];
-        if (sessions.length === 0) return;
         if (!staffMap[fr.staff_id].days[day]) staffMap[fr.staff_id].days[day] = [];
-        const already = staffMap[fr.staff_id].days[day].some(a => a.course_code === fr.role.toUpperCase() && a.faculty_code === fr.faculty_code);
-        if (!already) {
-          staffMap[fr.staff_id].days[day].push({
-            session: 0, course_code: fr.role.toUpperCase(),
-            venue: fr.faculty_code, faculty_code: fr.faculty_code
-          });
-        }
+        sessions.forEach(sn => {
+          const already = staffMap[fr.staff_id].days[day].some(a => a.session === sn && a.faculty_code === fr.faculty_code);
+          if (!already) {
+            staffMap[fr.staff_id].days[day].push({
+              session: sn, course_code: fr.role.toUpperCase(),
+              venue: fr.faculty_code, faculty_code: fr.faculty_code
+            });
+          }
+        });
       });
     });
 
