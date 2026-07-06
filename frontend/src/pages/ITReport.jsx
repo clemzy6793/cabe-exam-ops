@@ -32,7 +32,12 @@ export default function ITReport() {
       `<th style="padding:8px;border:1px solid #ddd;font-weight:bold;">Total</th></tr>`;
     const rows = sorted.map(s => {
       const total = getTotal(s);
-      return `<tr><td style="padding:8px;border:1px solid #ddd;">${s.name}</td><td style="padding:8px;border:1px solid #ddd;font-family:monospace;font-size:12px;">${s.staff_code}</td>` +
+      const roleBadges = (s.faculty_roles || []).map(fr =>
+        `<span style="display:inline-block;font-size:9px;padding:1px 5px;border-radius:9px;font-weight:bold;margin-left:4px;${
+          fr.role === 'printing' ? 'background:#ede9fe;color:#6d28d9;' : 'background:#cffafe;color:#0e7490;'
+        }">${fr.role} (${fr.faculty_code})</span>`
+      ).join('');
+      return `<tr><td style="padding:8px;border:1px solid #ddd;">${s.name}${roleBadges}</td><td style="padding:8px;border:1px solid #ddd;font-family:monospace;font-size:12px;">${s.staff_code}</td>` +
         DAYS.map(d => `<td style="padding:8px;border:1px solid #ddd;text-align:center;">${getDayCount(s, d.key) || '-'}</td>`).join('') +
         `<td style="padding:8px;border:1px solid #ddd;text-align:center;font-weight:bold;">${total}</td></tr>`;
     }).join('');
@@ -137,7 +142,18 @@ export default function ITReport() {
                 if (filter === 'all') {
                   return (
                     <tr key={s.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-2.5 font-medium">{s.name}</td>
+                      <td className="px-4 py-2.5">
+                        <div className="font-medium">{s.name}</div>
+                        {s.faculty_roles?.length > 0 && (
+                          <div className="flex gap-1 mt-0.5">
+                            {s.faculty_roles.map((fr, i) => (
+                              <span key={i} className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold ${
+                                fr.role === 'printing' ? 'bg-violet-100 text-violet-700' : 'bg-cyan-100 text-cyan-700'
+                              }`}>{fr.role} ({fr.faculty_code})</span>
+                            ))}
+                          </div>
+                        )}
+                      </td>
                       <td className="px-3 py-2.5 text-gray-400 font-mono text-xs">{s.staff_code}</td>
                       {DAYS.map(d => {
                         const cnt = getDayCount(s, d.key);
@@ -166,7 +182,18 @@ export default function ITReport() {
 
                 return (
                   <tr key={s.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-2.5 font-medium">{s.name}</td>
+                    <td className="px-4 py-2.5">
+                      <div className="font-medium">{s.name}</div>
+                      {s.faculty_roles?.length > 0 && (
+                        <div className="flex gap-1 mt-0.5">
+                          {s.faculty_roles.map((fr, i) => (
+                            <span key={i} className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold ${
+                              fr.role === 'printing' ? 'bg-violet-100 text-violet-700' : 'bg-cyan-100 text-cyan-700'
+                            }`}>{fr.role} ({fr.faculty_code})</span>
+                          ))}
+                        </div>
+                      )}
+                    </td>
                     <td className="px-3 py-2.5 text-gray-400 font-mono text-xs">{s.staff_code}</td>
                     <td className="text-center px-3 py-2.5">
                       {dayAssignments.length > 0 ? (

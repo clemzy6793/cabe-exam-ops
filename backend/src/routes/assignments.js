@@ -153,6 +153,7 @@ router.get('/unassigned', async (req, res) => {
 
 router.get('/it-report', async (req, res) => {
   try {
+    // IT staff with exam assignments
     const { rows } = await db.query(`
       SELECT s.id, s.name, s.staff_code, s.phone,
         e.day_name, e.exam_date, e.session_number, e.course_code, e.venue, f.code AS faculty_code
@@ -167,7 +168,7 @@ router.get('/it-report', async (req, res) => {
     const staffMap = {};
     rows.forEach(r => {
       if (!staffMap[r.id]) {
-        staffMap[r.id] = { id: r.id, name: r.name, staff_code: r.staff_code, phone: r.phone, days: {} };
+        staffMap[r.id] = { id: r.id, name: r.name, staff_code: r.staff_code, phone: r.phone, days: {}, faculty_roles: [] };
       }
       if (r.day_name) {
         if (!staffMap[r.id].days[r.day_name]) staffMap[r.id].days[r.day_name] = [];
@@ -176,6 +177,53 @@ router.get('/it-report', async (req, res) => {
           venue: r.venue, faculty_code: r.faculty_code, exam_date: r.exam_date
         });
       }
+    });
+
+    // Faculty-level roles (printing/biometric) — count sessions per day for their faculty
+    const { rows: fRoles } = await db.query(`
+      SELECT fs.role, fs.staff_id, f.code AS faculty_code, f.id AS faculty_id,
+        s.id, s.name, s.staff_code, s.phone
+      FROM faculty_staff fs
+      JOIN staff s ON s.id = fs.staff_id
+      JOIN faculties f ON f.id = fs.faculty_id
+    `);
+
+    // Get unique sessions per faculty per day
+    const { rows: facSessions } = await db.query(`
+      SELECT f.id AS faculty_id, e.day_name, e.session_number
+      FROM exams e JOIN faculties f ON f.id = e.faculty_id
+      GROUP BY f.id, e.day_name, e.session_number
+      ORDER BY e.day_name, e.session_number
+    `);
+
+    const facDaySessions = {};
+    facSessions.forEach(r => {
+      const k = `${r.faculty_id}_${r.day_name}`;
+      if (!facDaySessions[k]) facDaySessions[k] = [];
+      facDaySessions[k].push(r.session_number);
+    });
+
+    fRoles.forEach(fr => {
+      if (!staffMap[fr.staff_id]) {
+        staffMap[fr.staff_id] = { id: fr.staff_id, name: fr.name, staff_code: fr.staff_code, phone: fr.phone, days: {}, faculty_roles: [] };
+      }
+      staffMap[fr.staff_id].faculty_roles.push({ role: fr.role, faculty_code: fr.faculty_code });
+
+      // Add faculty sessions as assignments for this staff
+      const days = ['monday','tuesday','wednesday','thursday','friday'];
+      days.forEach(day => {
+        const sessions = facDaySessions[`${fr.faculty_id}_${day}`] || [];
+        if (!staffMap[fr.staff_id].days[day]) staffMap[fr.staff_id].days[day] = [];
+        sessions.forEach(sn => {
+          const already = staffMap[fr.staff_id].days[day].some(a => a.session === sn && a.faculty_code === fr.faculty_code);
+          if (!already) {
+            staffMap[fr.staff_id].days[day].push({
+              session: sn, course_code: fr.role.toUpperCase(),
+              venue: fr.faculty_code, faculty_code: fr.faculty_code
+            });
+          }
+        });
+      });
     });
 
     res.json(Object.values(staffMap));
