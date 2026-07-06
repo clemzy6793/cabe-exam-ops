@@ -184,4 +184,46 @@ router.get('/it-report', async (req, res) => {
   }
 });
 
+// Faculty-level staff roles (printing, biometric)
+router.get('/faculty-staff', async (req, res) => {
+  try {
+    const { rows } = await db.query(`
+      SELECT fs.id, fs.role, fs.faculty_id,
+        f.name AS faculty_name, f.code AS faculty_code,
+        s.id AS staff_id, s.name AS staff_name, s.staff_code, s.phone
+      FROM faculty_staff fs
+      JOIN faculties f ON f.id = fs.faculty_id
+      JOIN staff s ON s.id = fs.staff_id
+      ORDER BY f.code, fs.role, s.name
+    `);
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.post('/faculty-staff', authAdmin, async (req, res) => {
+  const { faculty_id, staff_id, role } = req.body;
+  if (!faculty_id || !staff_id || !role) return res.status(400).json({ error: 'Faculty, staff, and role are required' });
+  try {
+    const { rows } = await db.query(
+      `INSERT INTO faculty_staff (faculty_id, staff_id, role) VALUES ($1,$2,$3) RETURNING *`,
+      [faculty_id, staff_id, role]
+    );
+    res.status(201).json(rows[0]);
+  } catch (err) {
+    if (err.code === '23505') return res.status(409).json({ error: 'Already assigned' });
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.delete('/faculty-staff/:id', authAdmin, async (req, res) => {
+  try {
+    await db.query('DELETE FROM faculty_staff WHERE id=$1', [req.params.id]);
+    res.json({ message: 'Removed' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;

@@ -89,6 +89,15 @@ CREATE TABLE IF NOT EXISTS exam_assignments (
   UNIQUE(exam_id, staff_id)
 );
 
+CREATE TABLE IF NOT EXISTS faculty_staff (
+  id SERIAL PRIMARY KEY,
+  faculty_id INT REFERENCES faculties(id) ON DELETE CASCADE,
+  staff_id INT REFERENCES staff(id) ON DELETE CASCADE,
+  role VARCHAR(50) NOT NULL DEFAULT 'printing',
+  assigned_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(faculty_id, staff_id, role)
+);
+
 CREATE TABLE IF NOT EXISTS activity_log (
   id SERIAL PRIMARY KEY,
   admin_id INT REFERENCES admins(id),

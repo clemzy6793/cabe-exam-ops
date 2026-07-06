@@ -220,6 +220,9 @@ export default function Assignments() {
         </div>
       )}
 
+      {/* Faculty Roles (Printing / Biometric) */}
+      <FacultyRoles faculties={faculties} staff={staff} />
+
       {/* Bulk Assign IT Staff Modal */}
       {bulkModal && (
         <BulkAssignModal
@@ -470,6 +473,135 @@ function BulkAssignModal({ date, faculties, staff, onClose, onDone }) {
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+function FacultyRoles({ faculties, staff }) {
+  const [data, setData] = useState([]);
+  const [addModal, setAddModal] = useState(null);
+
+  const load = () => api.get('/assignments/faculty-staff').then(r => setData(r.data));
+  useEffect(() => { load(); }, []);
+
+  const remove = async (id) => {
+    try {
+      await api.delete(`/assignments/faculty-staff/${id}`);
+      toast.success('Removed');
+      load();
+    } catch { toast.error('Failed'); }
+  };
+
+  const assign = async (faculty_id, staff_id, role) => {
+    try {
+      await api.post('/assignments/faculty-staff', { faculty_id, staff_id, role });
+      toast.success('Assigned');
+      setAddModal(null);
+      load();
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed');
+    }
+  };
+
+  const ROLES = [
+    { key: 'printing', label: 'Printing', color: 'bg-violet-100 text-violet-700' },
+    { key: 'biometric', label: 'Biometric', color: 'bg-cyan-100 text-cyan-700' },
+  ];
+
+  const itStaff = staff.filter(s => s.staff_type === 'it_staff');
+
+  return (
+    <div className="card p-0 overflow-hidden">
+      <div className="bg-violet-50 px-4 py-3 border-b flex items-center justify-between">
+        <div>
+          <h2 className="font-bold text-sm text-violet-900">Faculty Roles</h2>
+          <p className="text-xs text-violet-500">Printing &amp; Biometric staff per faculty</p>
+        </div>
+      </div>
+      <div className="divide-y">
+        {faculties.map(fac => {
+          const facStaff = data.filter(d => d.faculty_id === fac.id);
+          return (
+            <div key={fac.id} className="px-4 py-3">
+              <div className="flex items-center justify-between mb-2">
+                <span className="font-bold text-sm text-gray-800">{fac.code || fac.name}</span>
+                <button onClick={() => setAddModal(fac)}
+                  className="text-xs text-violet-600 hover:text-violet-800 font-semibold px-2 py-1 rounded hover:bg-violet-50">
+                  + Add Staff
+                </button>
+              </div>
+              {facStaff.length > 0 ? (
+                <div className="flex flex-wrap gap-1.5">
+                  {facStaff.map(fs => {
+                    const roleConf = ROLES.find(r => r.key === fs.role) || ROLES[0];
+                    return (
+                      <span key={fs.id} className="inline-flex items-center gap-1 text-xs bg-gray-50 border px-2 py-1 rounded-lg">
+                        <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${roleConf.color}`}>{roleConf.label}</span>
+                        {fs.staff_name}
+                        <span className="text-gray-400 font-mono text-[10px]">{fs.staff_code}</span>
+                        <button onClick={() => remove(fs.id)} className="text-red-400 hover:text-red-600 ml-1">&times;</button>
+                      </span>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="text-xs text-gray-300">No staff assigned</p>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {addModal && (
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={() => setAddModal(null)}>
+          <div className="bg-white rounded-xl w-full max-w-md max-h-[80vh] overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
+            <div className="p-4 border-b">
+              <h3 className="font-bold">Add Staff to {addModal.code || addModal.name}</h3>
+              <p className="text-xs text-gray-500">Select role and staff member</p>
+            </div>
+            <div className="p-4 border-b">
+              <label className="text-xs font-semibold text-gray-600">Role</label>
+              <div className="flex gap-2 mt-1">
+                {ROLES.map(r => (
+                  <button key={r.key} id={`role-${r.key}`}
+                    onClick={() => {
+                      document.querySelectorAll('[id^="role-"]').forEach(el => el.classList.remove('ring-2', 'ring-violet-500'));
+                      document.getElementById(`role-${r.key}`).classList.add('ring-2', 'ring-violet-500');
+                      document.getElementById('selected-role').value = r.key;
+                    }}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold ${r.color}`}>
+                    {r.label}
+                  </button>
+                ))}
+                <input type="hidden" id="selected-role" defaultValue="printing" />
+              </div>
+            </div>
+            <div className="overflow-y-auto flex-1 divide-y">
+              {itStaff.map(s => {
+                const alreadyHere = data.some(d => d.faculty_id === addModal.id && d.staff_id === s.id);
+                return (
+                  <button key={s.id} disabled={alreadyHere}
+                    onClick={() => assign(addModal.id, s.id, document.getElementById('selected-role').value)}
+                    className={`w-full text-left px-4 py-2.5 flex items-center justify-between hover:bg-gray-50 ${alreadyHere ? 'opacity-40' : ''}`}>
+                    <div>
+                      <div className="text-sm font-medium">{s.name}</div>
+                      <div className="text-xs text-gray-400">{s.staff_code}</div>
+                    </div>
+                    {alreadyHere ? (
+                      <span className="text-[10px] bg-gray-100 text-gray-400 px-2 py-0.5 rounded">Assigned</span>
+                    ) : (
+                      <span className="text-xs text-violet-600">+ Add</span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+            <div className="p-3 border-t">
+              <button onClick={() => setAddModal(null)} className="btn-ghost w-full text-sm">Close</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
