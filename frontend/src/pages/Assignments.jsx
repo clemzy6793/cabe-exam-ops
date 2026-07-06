@@ -68,6 +68,19 @@ export default function Assignments() {
     }
   };
 
+  const removeAllFacultyAssignments = async () => {
+    const fac = faculties.find(f => f.id === Number(facultyId));
+    if (!fac) return;
+    if (!confirm(`Remove ALL assignments for ${fac.name} on ${date}?`)) return;
+    try {
+      const { data } = await api.delete(`/assignments/faculty/${facultyId}/date/${date}`);
+      toast.success(`Removed ${data.removed} assignment(s)`);
+      load();
+    } catch (err) {
+      toast.error('Failed');
+    }
+  };
+
   const grouped = {};
   exams.forEach(e => {
     const key = e.session_number;
@@ -137,9 +150,17 @@ export default function Assignments() {
 
       {/* Faculty header */}
       {facultyId !== 'all' && selectedFaculty && (
-        <div className="card bg-amber-50 border-l-4 border-l-amber-500">
-          <p className="font-bold text-amber-800 text-sm">{selectedFaculty.name}</p>
-          <p className="text-xs text-amber-600">{exams.length} exam(s) on this day</p>
+        <div className="card bg-amber-50 border-l-4 border-l-amber-500 flex items-center justify-between">
+          <div>
+            <p className="font-bold text-amber-800 text-sm">{selectedFaculty.name}</p>
+            <p className="text-xs text-amber-600">{exams.length} exam(s) on this day</p>
+          </div>
+          {exams.some(e => e.assigned_staff?.length) && (
+            <button onClick={removeAllFacultyAssignments}
+              className="text-xs text-red-500 hover:text-red-700 font-semibold px-3 py-1.5 rounded-lg hover:bg-red-50 border border-red-200">
+              Remove All Assignments
+            </button>
+          )}
         </div>
       )}
 

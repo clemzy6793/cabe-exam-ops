@@ -97,6 +97,19 @@ router.delete('/exam/:examId/all', authAdmin, async (req, res) => {
   }
 });
 
+router.delete('/faculty/:facultyId/date/:date', authAdmin, async (req, res) => {
+  try {
+    const { rowCount } = await db.query(
+      `DELETE FROM exam_assignments WHERE exam_id IN (
+        SELECT e.id FROM exams e WHERE e.faculty_id = $1 AND e.exam_date = $2
+      )`, [req.params.facultyId, req.params.date]
+    );
+    res.json({ removed: rowCount });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 router.get('/by-date/:date', async (req, res) => {
   try {
     const { rows } = await db.query(`
