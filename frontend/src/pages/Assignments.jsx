@@ -110,7 +110,7 @@ export default function Assignments() {
           <div className="flex flex-wrap gap-1 mt-2">
             {unassigned.slice(0, 10).map(e => (
               <span key={e.id} className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded">
-                {e.course_code} (S{e.session_number})
+                {e.course_code}{e.exam_type && e.exam_type !== 'written' ? ` [${e.exam_type}]` : ''} (S{e.session_number})
               </span>
             ))}
             {unassigned.length > 10 && <span className="text-xs text-red-400">+{unassigned.length - 10} more</span>}
@@ -182,7 +182,15 @@ export default function Assignments() {
                 <div key={e.id} className="px-4 py-3">
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <div className="font-bold text-sm">{e.course_code} <span className="font-normal text-gray-500">{e.course_name}</span></div>
+                      <div className="font-bold text-sm">
+                        {e.course_code}
+                        {e.exam_type && e.exam_type !== 'written' && (
+                          <span className={`ml-1.5 text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
+                            e.exam_type === 'CBE' ? 'bg-orange-100 text-orange-700' : 'bg-sky-100 text-sky-700'
+                          }`}>{e.exam_type}</span>
+                        )}
+                        <span className="font-normal text-gray-500 ml-1">{e.course_name}</span>
+                      </div>
                       <div className="text-xs text-gray-400 mt-0.5">
                         {e.venue} {e.student_count > 0 ? `| ${e.student_count} students` : ''}
                         {facultyId === 'all' && e.faculty_code && <span className="ml-1 text-amber-600 font-semibold">({e.faculty_code})</span>}
@@ -413,7 +421,15 @@ function BulkAssignModal({ date, faculties, staff, onClose, onDone }) {
                               : 'border-gray-100 hover:border-gray-200'
                           }`}>
                           <div className="flex justify-between items-center">
-                            <span className="font-medium text-sm">{e.course_code} <span className="font-normal text-gray-500">{e.course_name}</span></span>
+                            <span className="font-medium text-sm">
+                              {e.course_code}
+                              {e.exam_type && e.exam_type !== 'written' && (
+                                <span className={`ml-1.5 text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
+                                  e.exam_type === 'CBE' ? 'bg-orange-100 text-orange-700' : 'bg-sky-100 text-sky-700'
+                                }`}>{e.exam_type}</span>
+                              )}
+                              <span className="font-normal text-gray-500 ml-1">{e.course_name}</span>
+                            </span>
                             <div className="text-right">
                               <span className="text-[10px] text-gray-400">{e.venue}</span>
                               {bulkFacultyId === 'all' && e.faculty_code && (

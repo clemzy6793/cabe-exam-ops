@@ -20,8 +20,8 @@ export default function ITReport() {
     api.get('/assignments/it-report').then(r => setData(r.data));
   }, []);
 
-  const getTotal = (staff) => Object.values(staff.days).reduce((s, d) => s + d.length, 0);
-  const getDayCount = (staff, day) => (staff.days[day] || []).length;
+  const getTotal = (staff) => Object.values(staff.days).reduce((s, d) => s + new Set(d.map(a => a.session)).size, 0);
+  const getDayCount = (staff, day) => new Set((staff.days[day] || []).map(a => a.session)).size;
 
   const sorted = [...data].sort((a, b) => getTotal(b) - getTotal(a));
 
