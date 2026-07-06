@@ -62,6 +62,7 @@ export default function StaffLookup() {
           <td style="padding:8px;border:1px solid #ddd;">${a.course_name || ''}</td>
           <td style="padding:8px;border:1px solid #ddd;">${a.venue || ''}</td>
           <td style="padding:8px;border:1px solid #ddd;">${a.faculty_name || ''}</td>
+          <td style="padding:8px;border:1px solid #ddd;font-size:12px;color:#666;">${(a.paired_staff || []).map(p => p.name + (p.phone ? ' (' + p.phone + ')' : '')).join(', ') || '-'}</td>
         </tr>`
       ).join('');
     }).join('');
@@ -75,7 +76,7 @@ export default function StaffLookup() {
       <h2 style="margin:0;">${data.staff.name}</h2>
       <p style="color:#666;margin:4px 0;">Staff Code: ${data.staff.staff_code || 'N/A'} | Role: ${data.staff.role} | Total Assignments: ${data.assignments.length}</p>
       <table>
-        <thead><tr><th>Day</th><th>Session</th><th>Code</th><th>Course</th><th>Venue</th><th>Faculty</th></tr></thead>
+        <thead><tr><th>Day</th><th>Session</th><th>Code</th><th>Course</th><th>Venue</th><th>Faculty</th><th>Paired With</th></tr></thead>
         <tbody>${rows}</tbody>
       </table>
       <p style="margin-top:20px;color:#999;font-size:12px;">Generated from CABE Exam Ops System | examops.campusmarketgh.com</p>
@@ -200,6 +201,29 @@ export default function StaffLookup() {
                               'bg-emerald-100 text-emerald-700'
                             }`}>{a.faculty_name}</span>
                           </div>
+                          {a.paired_staff?.length > 0 && (
+                            <div className="mt-2 pt-2 border-t border-gray-100">
+                              <p className="text-[10px] text-gray-400 uppercase tracking-wide font-semibold mb-1">Paired with</p>
+                              <div className="space-y-1">
+                                {a.paired_staff.map((p, j) => (
+                                  <div key={j} className="flex items-center gap-2 bg-gray-50 rounded-lg px-2.5 py-1.5">
+                                    <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold ${
+                                      p.staff_type === 'it_staff' ? 'bg-cyan-100 text-cyan-700' : 'bg-amber-100 text-amber-700'
+                                    }`}>{p.name.split(' ').map(n => n[0]).join('').slice(0, 2)}</div>
+                                    <div className="flex-1 min-w-0">
+                                      <span className="text-xs font-medium text-gray-700">{p.name}</span>
+                                      <span className="text-[10px] text-gray-400 ml-1.5">{p.staff_code}</span>
+                                    </div>
+                                    {p.phone && <a href={`tel:${p.phone}`} className="text-[10px] text-brand font-medium">{p.phone}</a>}
+                                    <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold ${
+                                      p.staff_type === 'it_staff' ? 'bg-cyan-50 text-cyan-600' :
+                                      p.assignment_role === 'invigilator' ? 'bg-amber-50 text-amber-600' : 'bg-gray-100 text-gray-500'
+                                    }`}>{p.staff_type === 'it_staff' ? 'IT' : p.assignment_role}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>

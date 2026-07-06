@@ -46,13 +46,13 @@ router.get('/staff', async (req, res) => {
 router.get('/staff/:id', async (req, res) => {
   try {
     const { rows } = await db.query(
-      'SELECT id, name, staff_code, department, role FROM staff WHERE id=$1',
+      'SELECT id, name, staff_code, department, role, phone FROM staff WHERE id=$1',
       [req.params.id]
     );
     if (!rows.length) return res.status(404).json({ error: 'Staff not found' });
     const staff = rows[0];
     const { rows: assignments } = await db.query(`
-      SELECT ea.role AS assignment_role,
+      SELECT ea.role AS assignment_role, e.id AS exam_id,
         e.course_code, e.course_name, e.exam_date, e.day_name,
         e.session_number, e.start_time, e.end_time, e.venue, e.student_count, e.exam_type,
         f.name AS faculty_name, f.code AS faculty_code
@@ -61,6 +61,23 @@ router.get('/staff/:id', async (req, res) => {
       JOIN faculties f ON f.id = e.faculty_id
       WHERE ea.staff_id = $1
       ORDER BY e.exam_date, e.session_number`, [staff.id]);
+
+    if (assignments.length) {
+      const examIds = assignments.map(a => a.exam_id);
+      const { rows: pairs } = await db.query(`
+        SELECT ea.exam_id, s.name, s.staff_code, s.phone, ea.role AS assignment_role, s.staff_type
+        FROM exam_assignments ea
+        JOIN staff s ON s.id = ea.staff_id
+        WHERE ea.exam_id = ANY($1) AND ea.staff_id != $2
+        ORDER BY s.name`, [examIds, staff.id]);
+      const pairMap = {};
+      pairs.forEach(p => {
+        if (!pairMap[p.exam_id]) pairMap[p.exam_id] = [];
+        pairMap[p.exam_id].push(p);
+      });
+      assignments.forEach(a => { a.paired_staff = pairMap[a.exam_id] || []; });
+    }
+
     res.json({ staff, assignments });
   } catch (err) {
     res.status(500).json({ error: err.message });

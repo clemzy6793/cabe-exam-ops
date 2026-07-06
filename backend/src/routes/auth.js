@@ -14,11 +14,11 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     const admin = rows[0];
     const token = jwt.sign(
-      { id: admin.id, role: admin.role, name: admin.name },
+      { id: admin.id, role: admin.role, name: admin.name, faculty_id: admin.faculty_id },
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
-    res.json({ token, admin: { id: admin.id, name: admin.name, email: admin.email, role: admin.role } });
+    res.json({ token, admin: { id: admin.id, name: admin.name, email: admin.email, role: admin.role, faculty_id: admin.faculty_id } });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -48,7 +48,8 @@ router.put('/change-password', async (req, res) => {
 
 router.get('/accounts', authAdmin, async (req, res) => {
   try {
-    const { rows } = await db.query('SELECT id, name, email, role, created_at FROM admins ORDER BY role, name');
+    const { rows } = await db.query(`SELECT a.id, a.name, a.email, a.role, a.faculty_id, f.code AS faculty_code, a.created_at
+      FROM admins a LEFT JOIN faculties f ON a.faculty_id=f.id ORDER BY a.role, a.name`);
     res.json(rows);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -58,12 +59,13 @@ router.get('/accounts', authAdmin, async (req, res) => {
 router.post('/accounts', authAdmin, async (req, res) => {
   const { name, email, password, role } = req.body;
   if (!name || !email || !password) return res.status(400).json({ error: 'Name, email, and password are required' });
-  if (!['admin', 'reviewer'].includes(role)) return res.status(400).json({ error: 'Role must be admin or reviewer' });
+  if (!['admin', 'reviewer', 'exam_officer'].includes(role)) return res.status(400).json({ error: 'Invalid role' });
   try {
     const hash = await bcrypt.hash(password, 10);
+    const faculty_id = req.body.faculty_id || null;
     const { rows } = await db.query(
-      'INSERT INTO admins (name, email, password_hash, role) VALUES ($1,$2,$3,$4) RETURNING id, name, email, role',
-      [name, email, hash, role]);
+      'INSERT INTO admins (name, email, password_hash, role, faculty_id) VALUES ($1,$2,$3,$4,$5) RETURNING id, name, email, role, faculty_id',
+      [name, email, hash, role, faculty_id]);
     res.status(201).json(rows[0]);
   } catch (err) {
     if (err.code === '23505') return res.status(409).json({ error: 'Email already exists' });

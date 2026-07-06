@@ -48,6 +48,12 @@ CREATE TABLE IF NOT EXISTS staff (
 );
 
 DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='admins' AND column_name='faculty_id') THEN
+    ALTER TABLE admins ADD COLUMN faculty_id INT REFERENCES faculties(id) ON DELETE SET NULL;
+  END IF;
+END $$;
+
+DO $$ BEGIN
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='staff' AND column_name='staff_type') THEN
     ALTER TABLE staff ADD COLUMN staff_type VARCHAR(20) DEFAULT 'lecturer';
   END IF;

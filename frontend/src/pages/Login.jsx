@@ -16,6 +16,8 @@ export default function Login() {
       const { data } = await api.post('/auth/login', { email, password });
       localStorage.setItem('exam_ops_token', data.token);
       localStorage.setItem('exam_ops_role', data.admin.role);
+      if (data.admin.faculty_id) localStorage.setItem('exam_ops_faculty_id', String(data.admin.faculty_id));
+      else localStorage.removeItem('exam_ops_faculty_id');
       toast.success(`Welcome, ${data.admin.name}`);
       nav('/');
     } catch (err) {
