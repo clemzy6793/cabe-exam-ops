@@ -117,9 +117,8 @@ export default function StaffLookup() {
       </tr>`;
     }).join('');
 
-    const win = window.open('', '_blank');
-    win.document.write(`<!DOCTYPE html><html><head><title>Session Report Status</title>
-      <style>body{font-family:Arial,sans-serif;padding:30px;} table{border-collapse:collapse;width:100%;margin-top:15px;} th{background:#1a3a5c;color:#fff;padding:10px;text-align:left;font-size:12px;} @media print{button{display:none;}}</style>
+    const html = `<!DOCTYPE html><html><head><title>Session Report Status</title>
+      <style>body{font-family:Arial,sans-serif;padding:30px;} table{border-collapse:collapse;width:100%;margin-top:15px;} th{background:#1a3a5c;color:#fff;padding:10px;text-align:left;font-size:12px;} @media print{.no-print{display:none;}}</style>
     </head><body>
       <h1 style="margin:0;color:#1a3a5c;">CABE Exam Operations</h1>
       <p style="color:#666;margin:4px 0 0;">Biometric Report Upload Status</p>
@@ -132,13 +131,21 @@ export default function StaffLookup() {
         <tbody>${rows}</tbody>
       </table>
       <p style="margin-top:20px;color:#999;font-size:12px;">Generated from CABE Exam Ops System | examops.campusmarketgh.com</p>
-      <button onclick="window.print()" style="margin-top:15px;padding:10px 20px;background:#1a3a5c;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:14px;">Print this page</button>
-    </body></html>`);
-    win.document.close();
+      <button class="no-print" onclick="window.print()" style="margin-top:15px;padding:10px 20px;background:#1a3a5c;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:14px;">Print this page</button>
+    </body></html>`;
+
+    const win = window.open('', '_blank');
+    if (win) {
+      win.document.write(html);
+      win.document.close();
+    } else {
+      const blob = new Blob([html], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      window.location.href = url;
+    }
   };
 
   const printSchedule = (data, groupedData) => {
-    const win = window.open('', '_blank');
     const rows = Object.entries(groupedData).sort().map(([date, assignments]) => {
       return assignments.map(a =>
         `<tr>
@@ -153,8 +160,8 @@ export default function StaffLookup() {
       ).join('');
     }).join('');
 
-    win.document.write(`<!DOCTYPE html><html><head><title>Schedule - ${data.staff.name}</title>
-      <style>body{font-family:Arial,sans-serif;padding:30px;} table{border-collapse:collapse;width:100%;margin-top:15px;} th{background:#1a3a5c;color:#fff;padding:10px;text-align:left;} @media print{button{display:none;}}</style>
+    const html = `<!DOCTYPE html><html><head><title>Schedule - ${data.staff.name}</title>
+      <style>body{font-family:Arial,sans-serif;padding:30px;} table{border-collapse:collapse;width:100%;margin-top:15px;} th{background:#1a3a5c;color:#fff;padding:10px;text-align:left;} @media print{.no-print{display:none;}}</style>
     </head><body>
       <h1 style="margin:0;color:#1a3a5c;">CABE Exam Operations</h1>
       <p style="color:#666;margin:4px 0 0;">Mid-Semester Examination Schedule 2025/2026 | 6th - 10th July, 2026</p>
@@ -166,9 +173,16 @@ export default function StaffLookup() {
         <tbody>${rows}</tbody>
       </table>
       <p style="margin-top:20px;color:#999;font-size:12px;">Generated from CABE Exam Ops System | examops.campusmarketgh.com</p>
-      <button onclick="window.print()" style="margin-top:15px;padding:10px 20px;background:#1a3a5c;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:14px;">Print this page</button>
-    </body></html>`);
-    win.document.close();
+      <button class="no-print" onclick="window.print()" style="margin-top:15px;padding:10px 20px;background:#1a3a5c;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:14px;">Print this page</button>
+    </body></html>`;
+    const win = window.open('', '_blank');
+    if (win) {
+      win.document.write(html);
+      win.document.close();
+    } else {
+      const blob = new Blob([html], { type: 'text/html' });
+      window.location.href = URL.createObjectURL(blob);
+    }
   };
 
   return (
