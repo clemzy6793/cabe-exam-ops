@@ -126,9 +126,9 @@ export default function StaffLookup() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-brand-dark to-brand">
+    <div className={printView ? '' : 'min-h-screen bg-gradient-to-br from-brand-dark to-brand'}>
       <Toaster position="top-center" />
-      <div className="max-w-lg mx-auto p-4 pt-12">
+      <div className={`max-w-lg mx-auto p-4 pt-12 main-content ${printView ? 'hidden' : ''}`}>
         <div className="text-center mb-8">
           <h1 className="text-2xl font-black text-white">Staff Assignment Lookup</h1>
           <p className="text-blue-200 text-sm mt-1">CABE Mid-Semester Exams 2025/2026</p>
@@ -389,10 +389,9 @@ export default function StaffLookup() {
 
       {/* Full-screen print overlay */}
       {printView && (
-        <div className="fixed inset-0 z-50 bg-white overflow-y-auto print-overlay">
+        <div className="min-h-screen bg-white print-overlay">
           <style dangerouslySetInnerHTML={{ __html: `
-            @media print { .no-print { display: none !important; } .print-overlay { position: static !important; } }
-            @media screen { .print-only-break { display: none; } }
+            @media print { .no-print { display: none !important; } .print-overlay { position: static !important; overflow: visible !important; } }
           `}} />
           <div className="no-print sticky top-0 bg-white border-b px-4 py-3 flex items-center justify-between z-10">
             <button onClick={() => setPrintView(null)} className="text-sm font-semibold text-gray-600 flex items-center gap-1">
