@@ -43,6 +43,46 @@ router.post('/upload', authAny, upload.single('file'), async (req, res) => {
   }
 });
 
+router.post('/public-upload', upload.single('file'), async (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+  const { exam_id, staff_id } = req.body;
+  if (!exam_id || !staff_id) return res.status(400).json({ error: 'Exam and staff are required' });
+
+  try {
+    const { rows: [staff] } = await db.query('SELECT id FROM staff WHERE id=$1', [staff_id]);
+    if (!staff) return res.status(404).json({ error: 'Staff not found' });
+
+    const { rows: [assignment] } = await db.query(
+      'SELECT 1 FROM exam_assignments ea JOIN exams e ON e.id=ea.exam_id WHERE ea.staff_id=$1 AND ea.exam_id=$2',
+      [staff_id, exam_id]);
+    const { rows: [fRole] } = !assignment ? await db.query(
+      `SELECT 1 FROM faculty_staff fs JOIN exams e ON e.faculty_id=fs.faculty_id WHERE fs.staff_id=$1 AND e.id=$2`,
+      [staff_id, exam_id]) : { rows: [true] };
+    if (!assignment && !fRole) return res.status(403).json({ error: 'You are not assigned to this exam' });
+
+    const { rows } = await db.query(
+      `INSERT INTO biometric_reports (exam_id, uploader_id, filename, file_data, file_size)
+       VALUES ($1, $2, $3, $4, $5) RETURNING id, exam_id, filename, file_size, uploaded_at`,
+      [exam_id, staff_id, req.file.originalname, req.file.buffer, req.file.size]
+    );
+    res.status(201).json(rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.get('/by-staff/:staffId', async (req, res) => {
+  try {
+    const { rows } = await db.query(`
+      SELECT br.id, br.exam_id, br.filename, br.file_size, br.uploaded_at
+      FROM biometric_reports br WHERE br.uploader_id=$1
+      ORDER BY br.uploaded_at DESC`, [req.params.staffId]);
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 router.get('/my-exams/:query', async (req, res) => {
   try {
     const q = req.params.query.trim();

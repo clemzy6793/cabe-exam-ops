@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import api from '../api';
+import toast, { Toaster } from 'react-hot-toast';
 
 const SESSION_TIMES = {
   1: '8:15 - 9:15 AM',
@@ -16,6 +17,9 @@ export default function StaffLookup() {
   const [selected, setSelected] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [uploadedReports, setUploadedReports] = useState({});
+  const [uploading, setUploading] = useState(null);
+  const fileRef = useRef(null);
   const debounce = useRef(null);
 
   useEffect(() => {
@@ -37,10 +41,34 @@ export default function StaffLookup() {
       const { data } = await api.get(`/lookup/staff/${id}`);
       setSelected(data);
       setQuery(data.staff.name);
+      const { data: reports } = await api.get(`/reports/by-staff/${id}`);
+      const rMap = {};
+      reports.forEach(r => { rMap[r.exam_id] = r; });
+      setUploadedReports(rMap);
     } catch (err) {
       setError(err.response?.data?.error || 'Not found');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleUpload = async (examId, file) => {
+    if (!file || !selected) return;
+    setUploading(examId);
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('exam_id', examId);
+    formData.append('staff_id', selected.staff.id);
+    try {
+      const { data } = await api.post('/reports/public-upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      toast.success('Report uploaded!');
+      setUploadedReports(prev => ({ ...prev, [examId]: data }));
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Upload failed');
+    } finally {
+      setUploading(null);
     }
   };
 
@@ -87,6 +115,7 @@ export default function StaffLookup() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-brand-dark to-brand">
+      <Toaster position="top-center" />
       <div className="max-w-lg mx-auto p-4 pt-12">
         <div className="text-center mb-8">
           <h1 className="text-2xl font-black text-white">Staff Assignment Lookup</h1>
@@ -194,12 +223,32 @@ export default function StaffLookup() {
                             {a.venue && <span>Venue: {a.venue}</span>}
                             {a.student_count > 0 && <span>{a.student_count} students</span>}
                           </div>
-                          <div className="mt-1">
+                          <div className="mt-1 flex items-center justify-between">
                             <span className={`text-[10px] px-1.5 py-0.5 rounded font-semibold ${
                               a.faculty_code === 'FOBE' ? 'bg-blue-100 text-blue-700' :
                               a.faculty_code === 'Art' ? 'bg-purple-100 text-purple-700' :
                               'bg-emerald-100 text-emerald-700'
                             }`}>{a.faculty_name}</span>
+                            {a.exam_id && (
+                              uploadedReports[a.exam_id] ? (
+                                <span className="text-[10px] px-2 py-1 rounded-lg bg-emerald-50 text-emerald-600 font-semibold flex items-center gap-1">
+                                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                                  Report uploaded
+                                </span>
+                              ) : (
+                                <label className="cursor-pointer">
+                                  <span className={`text-[10px] px-2 py-1 rounded-lg font-semibold flex items-center gap-1 ${
+                                    uploading === a.exam_id ? 'bg-gray-100 text-gray-400' : 'bg-brand/10 text-brand hover:bg-brand/20'
+                                  }`}>
+                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                                    {uploading === a.exam_id ? 'Uploading...' : 'Upload Report'}
+                                  </span>
+                                  <input type="file" accept=".xls,.xlsx" className="hidden"
+                                    disabled={uploading === a.exam_id}
+                                    onChange={e => { if (e.target.files[0]) handleUpload(a.exam_id, e.target.files[0]); e.target.value = ''; }} />
+                                </label>
+                              )
+                            )}
                           </div>
                           {a.paired_staff?.length > 0 && (
                             <div className="mt-2 pt-2 border-t border-gray-100">
