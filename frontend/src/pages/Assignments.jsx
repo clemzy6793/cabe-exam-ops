@@ -12,8 +12,17 @@ const DAYS = [
 
 const TIMES = ['8:15-9:15','10:00-11:00','11:45-12:45','1:30-2:30','3:15-4:15','5:00-6:00'];
 
+function getDefaultDate() {
+  const today = new Date().toISOString().slice(0, 10);
+  const match = DAYS.find(d => d.date === today);
+  if (match) return match.date;
+  const future = DAYS.find(d => d.date > today);
+  if (future) return future.date;
+  return DAYS[DAYS.length - 1].date;
+}
+
 export default function Assignments() {
-  const [date, setDate] = useState('2026-07-06');
+  const [date, setDate] = useState(getDefaultDate);
   const [faculties, setFaculties] = useState([]);
   const [facultyId, setFacultyId] = useState('all');
   const [exams, setExams] = useState([]);
@@ -260,44 +269,13 @@ export default function Assignments() {
 
       {/* Assign modal */}
       {assignModal && (
-        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={() => setAssignModal(null)}>
-          <div className="bg-white rounded-xl w-full max-w-md max-h-[80vh] overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
-            <div className="p-4 border-b">
-              <h3 className="font-bold">Assign Staff to {assignModal.course_code}</h3>
-              <p className="text-xs text-gray-500">Session {assignModal.session_number} | {assignModal.venue}</p>
-              <input placeholder="Search staff..." className="w-full border rounded-lg px-3 py-2 text-sm mt-2"
-                id="staff-search" onChange={e => {
-                  const val = e.target.value.toLowerCase();
-                  document.querySelectorAll('[data-staff-row]').forEach(row => {
-                    row.style.display = row.textContent.toLowerCase().includes(val) ? '' : 'none';
-                  });
-                }} />
-            </div>
-            <div className="overflow-y-auto flex-1 divide-y">
-              {staff.filter(s => s.staff_type !== 'lecturer').map(s => {
-                const alreadyAssigned = assignModal.assigned_staff?.some(a => a.staff_code === s.staff_code);
-                return (
-                  <button key={s.id} data-staff-row disabled={alreadyAssigned}
-                    onClick={() => assign(assignModal.id, s.id)}
-                    className={`w-full text-left px-4 py-2.5 flex items-center justify-between hover:bg-gray-50 ${alreadyAssigned ? 'opacity-40' : ''}`}>
-                    <div>
-                      <div className="text-sm font-medium">{s.name}</div>
-                      <div className="text-xs text-gray-400">{s.staff_code} {s.department ? `| ${s.department}` : ''}</div>
-                    </div>
-                    {alreadyAssigned ? (
-                      <span className="text-[10px] bg-gray-100 text-gray-400 px-2 py-0.5 rounded">Assigned</span>
-                    ) : (
-                      <span className="text-xs text-brand">+ Assign</span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-            <div className="p-3 border-t">
-              <button onClick={() => setAssignModal(null)} className="btn-ghost w-full text-sm">Close</button>
-            </div>
-          </div>
-        </div>
+        <AssignModal
+          exam={assignModal}
+          staff={staff}
+          date={date}
+          onAssign={(examId, staffId) => assign(examId, staffId)}
+          onClose={() => setAssignModal(null)}
+        />
       )}
     </div>
   );
@@ -503,6 +481,74 @@ function BulkAssignModal({ date, faculties, staff, onClose, onDone }) {
           {step === 3 && (
             <button onClick={onDone} className="btn-brand w-full">Done</button>
           )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AssignModal({ exam, staff, date, onAssign, onClose }) {
+  const [search, setSearch] = useState('');
+  const [sessionAssignments, setSessionAssignments] = useState([]);
+
+  useEffect(() => {
+    api.get(`/assignments/by-date/${date}`).then(r => {
+      setSessionAssignments(r.data.filter(a => a.session_number === exam.session_number));
+    }).catch(() => {});
+  }, [date, exam.session_number]);
+
+  const busyMap = {};
+  sessionAssignments.forEach(a => {
+    if (!busyMap[a.staff_id]) busyMap[a.staff_id] = [];
+    busyMap[a.staff_id].push({ course_code: a.course_code, venue: a.venue, faculty_name: a.faculty_name });
+  });
+
+  const filtered = staff.filter(s => s.staff_type !== 'lecturer').filter(s =>
+    s.name.toLowerCase().includes(search.toLowerCase()) || s.staff_code?.toLowerCase().includes(search.toLowerCase())
+  );
+
+  return (
+    <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="bg-white rounded-xl w-full max-w-md max-h-[80vh] overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
+        <div className="p-4 border-b">
+          <h3 className="font-bold">Assign Staff to {exam.course_code}</h3>
+          <p className="text-xs text-gray-500">Session {exam.session_number} | {exam.venue}</p>
+          <input placeholder="Search staff..." value={search} onChange={e => setSearch(e.target.value)}
+            className="w-full border rounded-lg px-3 py-2 text-sm mt-2" autoFocus />
+        </div>
+        <div className="overflow-y-auto flex-1 divide-y">
+          {filtered.map(s => {
+            const alreadyAssigned = exam.assigned_staff?.some(a => a.staff_code === s.staff_code);
+            const busy = busyMap[s.id];
+            const isBusy = busy && !alreadyAssigned;
+            return (
+              <button key={s.id} disabled={alreadyAssigned || isBusy}
+                onClick={() => onAssign(exam.id, s.id)}
+                className={`w-full text-left px-4 py-2.5 flex items-center justify-between hover:bg-gray-50 ${alreadyAssigned || isBusy ? 'opacity-50' : ''}`}>
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-medium">{s.name}</div>
+                  <div className="text-xs text-gray-400">{s.staff_code} {s.department ? `| ${s.department}` : ''}</div>
+                  {isBusy && (
+                    <div className="text-[10px] text-red-500 font-semibold mt-0.5">
+                      Busy: {busy.map(b => `${b.course_code} at ${b.venue} (${b.faculty_name})`).join(', ')}
+                    </div>
+                  )}
+                </div>
+                <div className="ml-2 flex-shrink-0">
+                  {alreadyAssigned ? (
+                    <span className="text-[10px] bg-gray-100 text-gray-400 px-2 py-0.5 rounded">Assigned</span>
+                  ) : isBusy ? (
+                    <span className="text-[10px] bg-red-100 text-red-500 px-2 py-0.5 rounded">In Session</span>
+                  ) : (
+                    <span className="text-xs text-brand">+ Assign</span>
+                  )}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+        <div className="p-3 border-t">
+          <button onClick={onClose} className="btn-ghost w-full text-sm">Close</button>
         </div>
       </div>
     </div>

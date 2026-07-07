@@ -7,25 +7,22 @@ router.post('/', authAdmin, async (req, res) => {
   if (!exam_id || !staff_id) return res.status(400).json({ error: 'Exam and staff are required' });
 
   try {
-    const { rows: [staffRow] } = await db.query('SELECT staff_type FROM staff WHERE id=$1', [staff_id]);
-    const isItStaff = staffRow?.staff_type === 'it_staff';
-
-    if (!isItStaff) {
-      const { rows: conflicts } = await db.query(`
-        SELECT ea.id, e.course_code, e.start_time, e.end_time
-        FROM exam_assignments ea
-        JOIN exams e ON e.id = ea.exam_id
-        WHERE ea.staff_id = $1
-          AND e.exam_date = (SELECT exam_date FROM exams WHERE id = $2)
-          AND e.session_number = (SELECT session_number FROM exams WHERE id = $2)`,
-        [staff_id, exam_id]
-      );
-      if (conflicts.length) {
-        return res.status(409).json({
-          error: `Staff already assigned to ${conflicts[0].course_code} in this session`,
-          conflict: conflicts[0],
-        });
-      }
+    const { rows: conflicts } = await db.query(`
+      SELECT ea.id, e.course_code, e.venue, f.code AS faculty_code, f.name AS faculty_name
+      FROM exam_assignments ea
+      JOIN exams e ON e.id = ea.exam_id
+      JOIN faculties f ON f.id = e.faculty_id
+      WHERE ea.staff_id = $1
+        AND e.exam_date = (SELECT exam_date FROM exams WHERE id = $2)
+        AND e.session_number = (SELECT session_number FROM exams WHERE id = $2)`,
+      [staff_id, exam_id]
+    );
+    if (conflicts.length) {
+      const c = conflicts[0];
+      return res.status(409).json({
+        error: `Already assigned to ${c.course_code} at ${c.venue} (${c.faculty_code}) in this session`,
+        conflict: c,
+      });
     }
 
     const { rows } = await db.query(
@@ -55,19 +52,15 @@ router.post('/bulk', authAdmin, async (req, res) => {
         'SELECT 1 FROM exam_assignments WHERE exam_id=$1 AND staff_id=$2', [exam_id, staff_id]);
       if (existing.length) { skipped++; continue; }
 
-      const { rows: [staffRow] } = await db.query('SELECT staff_type FROM staff WHERE id=$1', [staff_id]);
-      const isItStaff = staffRow?.staff_type === 'it_staff';
-
-      if (!isItStaff) {
-        const { rows: conflict } = await db.query(`
-          SELECT e.course_code FROM exam_assignments ea
-          JOIN exams e ON e.id = ea.exam_id
-          WHERE ea.staff_id=$1 AND e.exam_date=$2 AND e.session_number=$3`,
-          [staff_id, exam.exam_date, exam.session_number]);
-        if (conflict.length) {
-          conflicts.push({ staff_id, exam_id, reason: `Already in ${conflict[0].course_code}` });
-          continue;
-        }
+      const { rows: conflict } = await db.query(`
+        SELECT e.course_code, f.code AS faculty_code FROM exam_assignments ea
+        JOIN exams e ON e.id = ea.exam_id
+        JOIN faculties f ON f.id = e.faculty_id
+        WHERE ea.staff_id=$1 AND e.exam_date=$2 AND e.session_number=$3`,
+        [staff_id, exam.exam_date, exam.session_number]);
+      if (conflict.length) {
+        conflicts.push({ staff_id, exam_id, reason: `Already in ${conflict[0].course_code} (${conflict[0].faculty_code})` });
+        continue;
       }
 
       await db.query(
@@ -99,9 +92,8 @@ router.post('/replace', authAdmin, async (req, res) => {
 
     if (!assignments.length) return res.status(404).json({ error: 'No assignments found for this staff' });
 
-    const { rows: [newStaff] } = await db.query('SELECT id, name, staff_type FROM staff WHERE id=$1', [new_staff_id]);
+    const { rows: [newStaff] } = await db.query('SELECT id, name FROM staff WHERE id=$1', [new_staff_id]);
     if (!newStaff) return res.status(404).json({ error: 'Replacement staff not found' });
-    const isItStaff = newStaff.staff_type === 'it_staff';
 
     let replaced = 0, skipped = 0;
     const conflicts = [];
@@ -115,16 +107,15 @@ router.post('/replace', authAdmin, async (req, res) => {
         continue;
       }
 
-      if (!isItStaff) {
-        const { rows: clash } = await db.query(`
-          SELECT e.course_code FROM exam_assignments ea JOIN exams e ON e.id=ea.exam_id
-          WHERE ea.staff_id=$1 AND e.exam_date=$2 AND e.session_number=$3`,
-          [new_staff_id, a.exam_date, a.session_number]);
-        if (clash.length) {
-          skipped++;
-          conflicts.push({ exam: a.course_code, reason: `${newStaff.name} busy with ${clash[0].course_code}` });
-          continue;
-        }
+      const { rows: clash } = await db.query(`
+        SELECT e.course_code, f.code AS faculty_code FROM exam_assignments ea
+        JOIN exams e ON e.id=ea.exam_id JOIN faculties f ON f.id=e.faculty_id
+        WHERE ea.staff_id=$1 AND e.exam_date=$2 AND e.session_number=$3`,
+        [new_staff_id, a.exam_date, a.session_number]);
+      if (clash.length) {
+        skipped++;
+        conflicts.push({ exam: a.course_code, reason: `${newStaff.name} busy with ${clash[0].course_code} (${clash[0].faculty_code})` });
+        continue;
       }
 
       await db.query('UPDATE exam_assignments SET staff_id=$1 WHERE id=$2', [new_staff_id, a.id]);
