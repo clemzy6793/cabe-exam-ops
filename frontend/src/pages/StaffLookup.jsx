@@ -96,6 +96,47 @@ export default function StaffLookup() {
     grouped[key].push(a);
   });
 
+  const printSessionStatus = (a, exams) => {
+    const uploaded = exams.filter(e => e.reports.length > 0).length;
+    const dateStr = new Date(a.exam_date + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    const rows = exams.map(exam => {
+      const staffList = (exam.assigned_staff || []).map(s => s.name).join(', ') || '-';
+      const status = exam.reports.length > 0;
+      const reportInfo = status
+        ? exam.reports.map(r => `${r.uploader_name || 'Unknown'} — ${r.filename}`).join('<br>')
+        : '<span style="color:#dc2626;font-weight:bold;">NOT UPLOADED</span>';
+      return `<tr>
+        <td style="padding:8px;border:1px solid #ddd;font-weight:bold;">${exam.course_code}</td>
+        <td style="padding:8px;border:1px solid #ddd;font-size:12px;">${exam.course_name || ''}</td>
+        <td style="padding:8px;border:1px solid #ddd;">${exam.venue || ''}</td>
+        <td style="padding:8px;border:1px solid #ddd;font-size:12px;">${staffList}</td>
+        <td style="padding:8px;border:1px solid #ddd;text-align:center;">
+          <span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:bold;${status ? 'background:#d1fae5;color:#065f46;' : 'background:#fee2e2;color:#991b1b;'}">${status ? 'Done' : 'Missing'}</span>
+        </td>
+        <td style="padding:8px;border:1px solid #ddd;font-size:11px;">${reportInfo}</td>
+      </tr>`;
+    }).join('');
+
+    const win = window.open('', '_blank');
+    win.document.write(`<!DOCTYPE html><html><head><title>Session Report Status</title>
+      <style>body{font-family:Arial,sans-serif;padding:30px;} table{border-collapse:collapse;width:100%;margin-top:15px;} th{background:#1a3a5c;color:#fff;padding:10px;text-align:left;font-size:12px;} @media print{button{display:none;}}</style>
+    </head><body>
+      <h1 style="margin:0;color:#1a3a5c;">CABE Exam Operations</h1>
+      <p style="color:#666;margin:4px 0 0;">Biometric Report Upload Status</p>
+      <hr style="margin:15px 0;border-color:#c8a951;">
+      <h2 style="margin:0;">${a.faculty_name} — Session ${a.session_number}</h2>
+      <p style="color:#666;margin:4px 0;">${dateStr} | ${SESSION_TIMES[a.session_number]}</p>
+      <p style="margin:10px 0;font-size:14px;"><strong>${uploaded}/${exams.length}</strong> reports uploaded</p>
+      <table>
+        <thead><tr><th>Code</th><th>Course</th><th>Venue</th><th>Assigned Staff</th><th>Status</th><th>Report Details</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <p style="margin-top:20px;color:#999;font-size:12px;">Generated from CABE Exam Ops System | examops.campusmarketgh.com</p>
+      <button onclick="window.print()" style="margin-top:15px;padding:10px 20px;background:#1a3a5c;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:14px;">Print this page</button>
+    </body></html>`);
+    win.document.close();
+  };
+
   const printSchedule = (data, groupedData) => {
     const win = window.open('', '_blank');
     const rows = Object.entries(groupedData).sort().map(([date, assignments]) => {
@@ -291,10 +332,17 @@ export default function StaffLookup() {
                               ) : (
                                 <div className="space-y-2.5">
                                   <div className="flex items-center justify-between">
-                                    <p className="text-[10px] text-gray-400 uppercase tracking-wide font-semibold">Report Status</p>
-                                    <p className="text-[10px] text-gray-400">
-                                      {sessionData?.filter(e => e.reports.length > 0).length}/{sessionData?.length} uploaded
-                                    </p>
+                                    <div>
+                                      <p className="text-[10px] text-gray-400 uppercase tracking-wide font-semibold">Report Status</p>
+                                      <p className="text-[10px] text-gray-400">
+                                        {sessionData?.filter(e => e.reports.length > 0).length}/{sessionData?.length} uploaded
+                                      </p>
+                                    </div>
+                                    <button onClick={() => printSessionStatus(a, sessionData)}
+                                      className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-brand/10 text-brand text-[10px] font-semibold hover:bg-brand/20">
+                                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
+                                      Print
+                                    </button>
                                   </div>
                                   {sessionData?.map(exam => (
                                     <div key={exam.id} className={`rounded-lg p-2.5 ${exam.reports.length ? 'bg-emerald-50/50' : 'bg-red-50/50'}`}>
