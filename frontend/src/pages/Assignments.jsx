@@ -499,6 +499,7 @@ function AssignModal({ exam, staff, date, onAssign, onClose }) {
 
   const busyMap = {};
   sessionAssignments.forEach(a => {
+    if (a.exam_faculty_id === exam.faculty_id) return;
     if (!busyMap[a.staff_id]) busyMap[a.staff_id] = [];
     busyMap[a.staff_id].push({ course_code: a.course_code, venue: a.venue, faculty_name: a.faculty_name });
   });

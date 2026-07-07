@@ -8,13 +8,14 @@ router.post('/', authAdmin, async (req, res) => {
 
   try {
     const { rows: conflicts } = await db.query(`
-      SELECT ea.id, e.course_code, e.venue, f.code AS faculty_code, f.name AS faculty_name
+      SELECT ea.id, e.course_code, e.venue, e.faculty_id, f.code AS faculty_code, f.name AS faculty_name
       FROM exam_assignments ea
       JOIN exams e ON e.id = ea.exam_id
       JOIN faculties f ON f.id = e.faculty_id
       WHERE ea.staff_id = $1
         AND e.exam_date = (SELECT exam_date FROM exams WHERE id = $2)
-        AND e.session_number = (SELECT session_number FROM exams WHERE id = $2)`,
+        AND e.session_number = (SELECT session_number FROM exams WHERE id = $2)
+        AND e.faculty_id != (SELECT faculty_id FROM exams WHERE id = $2)`,
       [staff_id, exam_id]
     );
     if (conflicts.length) {
@@ -44,7 +45,7 @@ router.post('/bulk', authAdmin, async (req, res) => {
 
   let assigned = 0, skipped = 0, conflicts = [];
   for (const exam_id of exam_ids) {
-    const { rows: [exam] } = await db.query('SELECT exam_date, session_number, course_code FROM exams WHERE id=$1', [exam_id]);
+    const { rows: [exam] } = await db.query('SELECT exam_date, session_number, course_code, faculty_id FROM exams WHERE id=$1', [exam_id]);
     if (!exam) continue;
 
     for (const staff_id of staff_ids) {
@@ -56,8 +57,8 @@ router.post('/bulk', authAdmin, async (req, res) => {
         SELECT e.course_code, f.code AS faculty_code FROM exam_assignments ea
         JOIN exams e ON e.id = ea.exam_id
         JOIN faculties f ON f.id = e.faculty_id
-        WHERE ea.staff_id=$1 AND e.exam_date=$2 AND e.session_number=$3`,
-        [staff_id, exam.exam_date, exam.session_number]);
+        WHERE ea.staff_id=$1 AND e.exam_date=$2 AND e.session_number=$3 AND e.faculty_id!=$4`,
+        [staff_id, exam.exam_date, exam.session_number, exam.faculty_id]);
       if (conflict.length) {
         conflicts.push({ staff_id, exam_id, reason: `Already in ${conflict[0].course_code} (${conflict[0].faculty_code})` });
         continue;
@@ -86,7 +87,7 @@ router.post('/replace', authAdmin, async (req, res) => {
     }
 
     const { rows: assignments } = await db.query(`
-      SELECT ea.id, ea.exam_id, e.exam_date, e.session_number, e.course_code
+      SELECT ea.id, ea.exam_id, e.exam_date, e.session_number, e.course_code, e.faculty_id
       FROM exam_assignments ea JOIN exams e ON e.id = ea.exam_id ${filter}
       ORDER BY e.exam_date, e.session_number`, params);
 
@@ -110,8 +111,8 @@ router.post('/replace', authAdmin, async (req, res) => {
       const { rows: clash } = await db.query(`
         SELECT e.course_code, f.code AS faculty_code FROM exam_assignments ea
         JOIN exams e ON e.id=ea.exam_id JOIN faculties f ON f.id=e.faculty_id
-        WHERE ea.staff_id=$1 AND e.exam_date=$2 AND e.session_number=$3`,
-        [new_staff_id, a.exam_date, a.session_number]);
+        WHERE ea.staff_id=$1 AND e.exam_date=$2 AND e.session_number=$3 AND e.faculty_id!=$4`,
+        [new_staff_id, a.exam_date, a.session_number, a.faculty_id]);
       if (clash.length) {
         skipped++;
         conflicts.push({ exam: a.course_code, reason: `${newStaff.name} busy with ${clash[0].course_code} (${clash[0].faculty_code})` });
@@ -164,7 +165,7 @@ router.get('/by-date/:date', async (req, res) => {
     const { rows } = await db.query(`
       SELECT ea.*, s.name AS staff_name, s.staff_code,
         e.course_code, e.course_name, e.exam_date, e.session_number,
-        e.start_time, e.end_time, e.venue, f.name AS faculty_name
+        e.start_time, e.end_time, e.venue, e.faculty_id AS exam_faculty_id, f.name AS faculty_name
       FROM exam_assignments ea
       JOIN staff s ON s.id = ea.staff_id
       JOIN exams e ON e.id = ea.exam_id
