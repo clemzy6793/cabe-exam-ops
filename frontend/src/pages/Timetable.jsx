@@ -30,9 +30,12 @@ export default function Timetable() {
 
   const load = () => {
     const params = {};
-    if (date) params.date = date;
-    if (facultyId) params.faculty_id = facultyId;
-    if (search) params.search = search;
+    if (search) {
+      params.search = search;
+    } else {
+      if (date) params.date = date;
+      if (facultyId) params.faculty_id = facultyId;
+    }
     api.get('/timetable/exams', { params }).then(r => setExams(r.data));
   };
 
@@ -100,9 +103,18 @@ export default function Timetable() {
           <option value="">All Faculties</option>
           {faculties.map(f => <option key={f.id} value={f.id}>{f.name}</option>)}
         </select>
-        <input placeholder="Search courses..." value={search} onChange={e => setSearch(e.target.value)}
-          className="border rounded-lg px-3 py-1.5 text-sm flex-1 min-w-[150px]" />
+        <div className="relative flex-1 min-w-[150px]">
+          <input placeholder="Search across all faculties..." value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="w-full border rounded-lg px-3 py-1.5 text-sm pr-8" />
+          {search && (
+            <button onClick={() => setSearch('')}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-lg leading-none">&times;</button>
+          )}
+        </div>
       </div>
+
+      {search && <p className="text-xs text-gray-500">Showing results for "<strong>{search}</strong>" across all days and faculties — {exams.length} found</p>}
 
       {/* Timetable grid by session */}
       {SESSIONS.map(s => {
@@ -131,6 +143,9 @@ export default function Timetable() {
                       {e.exam_type === 'CBE' && <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold bg-amber-500 text-white">CBE</span>}
                       {e.exam_type === 'ONLINE' && <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold bg-green-500 text-white">ONLINE</span>}
                       {e.exam_type === 'BYOD' && <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold bg-sky-500 text-white">BYOD</span>}
+                      {search && <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-500 font-medium">
+                        {e.day_name?.charAt(0).toUpperCase() + e.day_name?.slice(1)} — {new Date(e.exam_date?.slice(0,10) + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                      </span>}
                     </div>
                     <p className="text-xs text-gray-500 mt-0.5">{e.course_name}</p>
                     <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1.5 text-xs text-gray-400">
