@@ -98,7 +98,8 @@ export default function StaffLookup() {
 
   const printSessionStatus = (a, exams) => {
     const uploaded = exams.filter(e => e.reports.length > 0).length;
-    const dateStr = new Date(a.exam_date + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    const rawDate = a.exam_date?.slice(0, 10) || '';
+    const dateStr = rawDate ? new Date(rawDate + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) : '';
     const rows = exams.map(exam => {
       const staffList = (exam.assigned_staff || []).map(s => s.name).join(', ') || '-';
       const status = exam.reports.length > 0;
