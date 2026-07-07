@@ -79,6 +79,64 @@ router.post('/bulk', authAdmin, async (req, res) => {
   res.json({ assigned, skipped, conflicts });
 });
 
+router.post('/replace', authAdmin, async (req, res) => {
+  const { old_staff_id, new_staff_id, assignment_ids } = req.body;
+  if (!old_staff_id || !new_staff_id) return res.status(400).json({ error: 'Both staff members required' });
+  if (old_staff_id === new_staff_id) return res.status(400).json({ error: 'Cannot replace with the same person' });
+
+  try {
+    let filter = 'WHERE ea.staff_id = $1';
+    const params = [old_staff_id];
+    if (assignment_ids?.length) {
+      params.push(assignment_ids);
+      filter += ` AND ea.id = ANY($${params.length})`;
+    }
+
+    const { rows: assignments } = await db.query(`
+      SELECT ea.id, ea.exam_id, e.exam_date, e.session_number, e.course_code
+      FROM exam_assignments ea JOIN exams e ON e.id = ea.exam_id ${filter}
+      ORDER BY e.exam_date, e.session_number`, params);
+
+    if (!assignments.length) return res.status(404).json({ error: 'No assignments found for this staff' });
+
+    const { rows: [newStaff] } = await db.query('SELECT id, name, staff_type FROM staff WHERE id=$1', [new_staff_id]);
+    if (!newStaff) return res.status(404).json({ error: 'Replacement staff not found' });
+    const isItStaff = newStaff.staff_type === 'it_staff';
+
+    let replaced = 0, skipped = 0;
+    const conflicts = [];
+
+    for (const a of assignments) {
+      const { rows: dup } = await db.query(
+        'SELECT 1 FROM exam_assignments WHERE exam_id=$1 AND staff_id=$2', [a.exam_id, new_staff_id]);
+      if (dup.length) {
+        skipped++;
+        conflicts.push({ exam: a.course_code, reason: `${newStaff.name} already assigned` });
+        continue;
+      }
+
+      if (!isItStaff) {
+        const { rows: clash } = await db.query(`
+          SELECT e.course_code FROM exam_assignments ea JOIN exams e ON e.id=ea.exam_id
+          WHERE ea.staff_id=$1 AND e.exam_date=$2 AND e.session_number=$3`,
+          [new_staff_id, a.exam_date, a.session_number]);
+        if (clash.length) {
+          skipped++;
+          conflicts.push({ exam: a.course_code, reason: `${newStaff.name} busy with ${clash[0].course_code}` });
+          continue;
+        }
+      }
+
+      await db.query('UPDATE exam_assignments SET staff_id=$1 WHERE id=$2', [new_staff_id, a.id]);
+      replaced++;
+    }
+
+    res.json({ replaced, skipped, conflicts, total: assignments.length });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 router.delete('/:id', authAdmin, async (req, res) => {
   try {
     await db.query('DELETE FROM exam_assignments WHERE id=$1', [req.params.id]);

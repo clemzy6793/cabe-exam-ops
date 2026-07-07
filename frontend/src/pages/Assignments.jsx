@@ -21,6 +21,7 @@ export default function Assignments() {
   const [assignModal, setAssignModal] = useState(null);
   const [unassigned, setUnassigned] = useState([]);
   const [bulkModal, setBulkModal] = useState(false);
+  const [replaceModal, setReplaceModal] = useState(false);
 
   const load = () => {
     const params = { date };
@@ -97,10 +98,16 @@ export default function Assignments() {
           <h1 className="text-2xl font-black text-gray-900">Staff Assignments</h1>
           <p className="text-sm text-gray-500 mt-1">Assign invigilators to exam sessions</p>
         </div>
-        <button onClick={() => setBulkModal(true)} className="btn-brand text-sm flex items-center gap-2">
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-          Bulk Assign IT Staff
-        </button>
+        <div className="flex gap-2">
+          <button onClick={() => setReplaceModal(true)} className="btn-ghost text-sm flex items-center gap-2 border">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>
+            Search &amp; Replace
+          </button>
+          <button onClick={() => setBulkModal(true)} className="btn-brand text-sm flex items-center gap-2">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+            Bulk Assign IT Staff
+          </button>
+        </div>
       </div>
 
       {/* Unassigned alert */}
@@ -239,6 +246,15 @@ export default function Assignments() {
           staff={staff.filter(s => s.staff_type === 'it_staff')}
           onClose={() => setBulkModal(false)}
           onDone={() => { setBulkModal(false); load(); }}
+        />
+      )}
+
+      {/* Search & Replace Modal */}
+      {replaceModal && (
+        <ReplaceModal
+          staff={staff}
+          onClose={() => setReplaceModal(false)}
+          onDone={() => { setReplaceModal(false); load(); }}
         />
       )}
 
@@ -487,6 +503,249 @@ function BulkAssignModal({ date, faculties, staff, onClose, onDone }) {
           {step === 3 && (
             <button onClick={onDone} className="btn-brand w-full">Done</button>
           )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const REPLACE_TIMES = ['8:15-9:15','10:00-11:00','11:45-12:45','1:30-2:30','3:15-4:15','5:00-6:00'];
+const REPLACE_DAYS = { monday: 'Mon 6th', tuesday: 'Tue 7th', wednesday: 'Wed 8th', thursday: 'Thu 9th', friday: 'Fri 10th' };
+
+function ReplaceModal({ staff, onClose, onDone }) {
+  const [step, setStep] = useState(1);
+  const [search, setSearch] = useState('');
+  const [oldStaff, setOldStaff] = useState(null);
+  const [assignments, setAssignments] = useState([]);
+  const [selected, setSelected] = useState([]);
+  const [newSearch, setNewSearch] = useState('');
+  const [newStaff, setNewStaff] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState(null);
+
+  const loadAssignments = async (staffId) => {
+    try {
+      const allAssignments = [];
+      const dates = ['2026-07-06','2026-07-07','2026-07-08','2026-07-09','2026-07-10'];
+      for (const d of dates) {
+        const { data } = await api.get(`/assignments/by-date/${d}`);
+        allAssignments.push(...data.filter(a => a.staff_id === staffId));
+      }
+      setAssignments(allAssignments);
+      setSelected(allAssignments.map(a => a.id));
+    } catch { setAssignments([]); }
+  };
+
+  const pickOld = (s) => {
+    setOldStaff(s);
+    loadAssignments(s.id);
+    setStep(2);
+  };
+
+  const pickNew = (s) => {
+    setNewStaff(s);
+    setStep(3);
+  };
+
+  const toggleSelect = (id) => setSelected(prev =>
+    prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+  );
+
+  const doReplace = async () => {
+    setLoading(true);
+    try {
+      const { data } = await api.post('/assignments/replace', {
+        old_staff_id: oldStaff.id,
+        new_staff_id: newStaff.id,
+        assignment_ids: selected,
+      });
+      setResult(data);
+      setStep(4);
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Replace failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const itStaff = staff.filter(s => s.staff_type !== 'lecturer');
+  const filteredOld = itStaff.filter(s => s.name.toLowerCase().includes(search.toLowerCase()) || s.staff_code?.toLowerCase().includes(search.toLowerCase()));
+  const filteredNew = itStaff.filter(s => s.id !== oldStaff?.id && (s.name.toLowerCase().includes(newSearch.toLowerCase()) || s.staff_code?.toLowerCase().includes(newSearch.toLowerCase())));
+
+  return (
+    <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="bg-white rounded-xl w-full max-w-lg max-h-[85vh] overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
+        <div className="p-4 border-b bg-gray-50">
+          <h3 className="font-black text-lg text-gray-900">Search & Replace Staff</h3>
+          <p className="text-xs text-gray-500 mt-0.5">
+            {step === 1 && 'Step 1: Find staff to replace'}
+            {step === 2 && 'Step 2: Pick replacement'}
+            {step === 3 && 'Step 3: Confirm swap'}
+            {step === 4 && 'Done!'}
+          </p>
+          <div className="flex gap-1 mt-2">
+            {[1,2,3,4].map(s => (
+              <div key={s} className={`h-1.5 flex-1 rounded-full ${step >= s ? 'bg-brand' : 'bg-gray-200'}`} />
+            ))}
+          </div>
+        </div>
+
+        <div className="overflow-y-auto flex-1">
+          {/* Step 1: Search for old staff */}
+          {step === 1 && (
+            <div>
+              <div className="p-4 border-b">
+                <input placeholder="Search by name or staff code..." value={search} onChange={e => setSearch(e.target.value)}
+                  className="w-full border rounded-lg px-3 py-2.5 text-sm" autoFocus />
+              </div>
+              <div className="divide-y">
+                {filteredOld.map(s => (
+                  <button key={s.id} onClick={() => pickOld(s)}
+                    className="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center justify-between">
+                    <div>
+                      <div className="text-sm font-medium">{s.name}</div>
+                      <div className="text-xs text-gray-400">{s.staff_code} {s.department ? `| ${s.department}` : ''}</div>
+                    </div>
+                    <svg className="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                  </button>
+                ))}
+                {filteredOld.length === 0 && <p className="text-center text-gray-400 py-8 text-sm">No staff found</p>}
+              </div>
+            </div>
+          )}
+
+          {/* Step 2: Show assignments + pick replacement */}
+          {step === 2 && oldStaff && (
+            <div>
+              <div className="p-4 bg-red-50 border-b">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-red-100 text-red-700 font-bold text-sm flex items-center justify-center">
+                    {oldStaff.name.split(' ').map(w => w[0]).join('').slice(0, 2)}
+                  </div>
+                  <div>
+                    <p className="font-bold text-sm text-red-800">Replacing: {oldStaff.name}</p>
+                    <p className="text-xs text-red-500">{oldStaff.staff_code} | {assignments.length} assignment(s)</p>
+                  </div>
+                </div>
+                {assignments.length > 0 && (
+                  <div className="mt-3 space-y-1">
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs font-semibold text-red-700">Current assignments:</p>
+                      <button onClick={() => setSelected(selected.length === assignments.length ? [] : assignments.map(a => a.id))}
+                        className="text-[10px] text-red-600 hover:underline">
+                        {selected.length === assignments.length ? 'Deselect all' : 'Select all'}
+                      </button>
+                    </div>
+                    {assignments.map(a => (
+                      <label key={a.id} className="flex items-center gap-2 text-xs bg-white/70 rounded-lg px-3 py-2 cursor-pointer">
+                        <input type="checkbox" checked={selected.includes(a.id)} onChange={() => toggleSelect(a.id)}
+                          className="rounded text-brand" />
+                        <span className="font-bold">{a.course_code}</span>
+                        <span className="text-gray-500">{REPLACE_DAYS[a.day_name] || a.exam_date}</span>
+                        <span className="text-gray-400">S{a.session_number} ({REPLACE_TIMES[a.session_number - 1]})</span>
+                        <span className="text-gray-400">{a.venue}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+                {assignments.length === 0 && (
+                  <p className="mt-2 text-xs text-red-400">This staff has no exam assignments to replace.</p>
+                )}
+              </div>
+              {assignments.length > 0 && selected.length > 0 && (
+                <div>
+                  <div className="p-4 border-b">
+                    <p className="text-xs font-semibold text-gray-600 mb-2">Pick replacement ({selected.length} assignment{selected.length > 1 ? 's' : ''}):</p>
+                    <input placeholder="Search replacement staff..." value={newSearch} onChange={e => setNewSearch(e.target.value)}
+                      className="w-full border rounded-lg px-3 py-2.5 text-sm" autoFocus />
+                  </div>
+                  <div className="divide-y">
+                    {filteredNew.map(s => (
+                      <button key={s.id} onClick={() => pickNew(s)}
+                        className="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center justify-between">
+                        <div>
+                          <div className="text-sm font-medium">{s.name}</div>
+                          <div className="text-xs text-gray-400">{s.staff_code} {s.department ? `| ${s.department}` : ''}</div>
+                        </div>
+                        <span className="text-xs text-emerald-600">Select</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Step 3: Confirm */}
+          {step === 3 && oldStaff && newStaff && (
+            <div className="p-6">
+              <div className="flex items-center justify-center gap-4 mb-6">
+                <div className="text-center">
+                  <div className="w-14 h-14 rounded-full bg-red-100 text-red-700 font-bold text-lg flex items-center justify-center mx-auto">
+                    {oldStaff.name.split(' ').map(w => w[0]).join('').slice(0, 2)}
+                  </div>
+                  <p className="text-sm font-bold text-red-700 mt-2">{oldStaff.name}</p>
+                  <p className="text-[10px] text-gray-400">{oldStaff.staff_code}</p>
+                </div>
+                <div className="flex flex-col items-center">
+                  <svg className="w-8 h-8 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+                  <span className="text-[10px] text-gray-400 mt-1">{selected.length} exam(s)</span>
+                </div>
+                <div className="text-center">
+                  <div className="w-14 h-14 rounded-full bg-emerald-100 text-emerald-700 font-bold text-lg flex items-center justify-center mx-auto">
+                    {newStaff.name.split(' ').map(w => w[0]).join('').slice(0, 2)}
+                  </div>
+                  <p className="text-sm font-bold text-emerald-700 mt-2">{newStaff.name}</p>
+                  <p className="text-[10px] text-gray-400">{newStaff.staff_code}</p>
+                </div>
+              </div>
+              <div className="bg-gray-50 rounded-lg p-3 space-y-1">
+                {assignments.filter(a => selected.includes(a.id)).map(a => (
+                  <div key={a.id} className="flex items-center gap-2 text-xs">
+                    <span className="font-bold">{a.course_code}</span>
+                    <span className="text-gray-400">{REPLACE_DAYS[a.day_name] || a.exam_date} S{a.session_number}</span>
+                    <span className="text-gray-400">{a.venue}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Step 4: Result */}
+          {step === 4 && result && (
+            <div className="p-6 text-center">
+              <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+              </div>
+              <h3 className="font-black text-xl text-gray-900">{result.replaced} Replaced</h3>
+              {result.skipped > 0 && <p className="text-sm text-gray-500 mt-1">{result.skipped} skipped</p>}
+              {result.conflicts?.length > 0 && (
+                <div className="mt-3 text-left bg-amber-50 rounded-lg p-3">
+                  <p className="text-xs font-bold text-amber-700">Conflicts:</p>
+                  {result.conflicts.map((c, i) => (
+                    <p key={i} className="text-xs text-amber-600 mt-0.5">{c.exam}: {c.reason}</p>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        <div className="p-4 border-t flex gap-3">
+          {step === 1 && <button onClick={onClose} className="btn-ghost w-full">Cancel</button>}
+          {step === 2 && (
+            <button onClick={() => { setStep(1); setOldStaff(null); setAssignments([]); setSelected([]); }}
+              className="btn-ghost w-full">Back</button>
+          )}
+          {step === 3 && (
+            <>
+              <button onClick={() => { setStep(2); setNewStaff(null); }} className="btn-ghost flex-1">Back</button>
+              <button onClick={doReplace} disabled={loading} className="btn-brand flex-1 disabled:opacity-40">
+                {loading ? 'Replacing...' : `Replace ${selected.length} Assignment(s)`}
+              </button>
+            </>
+          )}
+          {step === 4 && <button onClick={onDone} className="btn-brand w-full">Done</button>}
         </div>
       </div>
     </div>
