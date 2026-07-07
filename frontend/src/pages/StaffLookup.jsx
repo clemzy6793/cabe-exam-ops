@@ -274,6 +274,7 @@ export default function StaffLookup() {
                             <div className="flex items-center gap-2">
                               <span className="font-bold text-sm text-gray-900">{a.course_code}</span>
                               {a.exam_type === 'CBE' && <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold bg-amber-500 text-white">CBE</span>}
+                              {a.exam_type === 'ONLINE' && <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold bg-green-500 text-white">ONLINE</span>}
                               {a.exam_type === 'BYOD' && <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold bg-sky-500 text-white">BYOD</span>}
                             </div>
                             <div className="flex items-center gap-2">

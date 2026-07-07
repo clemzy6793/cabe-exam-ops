@@ -129,6 +129,7 @@ export default function Timetable() {
                         'bg-emerald-100 text-emerald-700'
                       }`}>{e.faculty_code}</span>
                       {e.exam_type === 'CBE' && <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold bg-amber-500 text-white">CBE</span>}
+                      {e.exam_type === 'ONLINE' && <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold bg-green-500 text-white">ONLINE</span>}
                       {e.exam_type === 'BYOD' && <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold bg-sky-500 text-white">BYOD</span>}
                     </div>
                     <p className="text-xs text-gray-500 mt-0.5">{e.course_name}</p>
@@ -264,7 +265,8 @@ function ExamModal({ exam, faculties, onSave, onClose }) {
               <select value={form.exam_type} onChange={e => set('exam_type', e.target.value)}
                 className="w-full border rounded-lg px-3 py-2 text-sm mt-1">
                 <option value="written">Written</option>
-                <option value="CBE">CBE (Online)</option>
+                <option value="CBE">CBE</option>
+                <option value="ONLINE">Online</option>
                 <option value="BYOD">BYOD</option>
               </select>
             </div>

@@ -90,6 +90,7 @@ export default function PublicTimetable() {
                         'bg-emerald-100 text-emerald-700'
                       }`}>{e.faculty_code}</span>
                       {e.exam_type === 'CBE' && <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold bg-amber-500 text-white">CBE</span>}
+                      {e.exam_type === 'ONLINE' && <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold bg-green-500 text-white">ONLINE</span>}
                       {e.exam_type === 'BYOD' && <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold bg-sky-500 text-white">BYOD</span>}
                     </div>
                     <p className="text-xs text-gray-500">{e.course_name}</p>
