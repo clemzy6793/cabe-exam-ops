@@ -191,6 +191,7 @@ function ExamModal({ exam, faculties, onSave, onClose }) {
     end_time: exam?.end_time || '09:15',
     venue: exam?.venue || '',
     student_count: exam?.student_count || 0,
+    exam_type: exam?.exam_type || 'written',
     faculty_id: exam?.faculty_id || faculties[0]?.id || '',
     notes: exam?.notes || '',
   });
@@ -252,10 +253,21 @@ function ExamModal({ exam, faculties, onSave, onClose }) {
                 className="w-full border rounded-lg px-3 py-2 text-sm mt-1" />
             </div>
           </div>
-          <div>
-            <label className="text-xs font-medium text-gray-600">Venue</label>
-            <input value={form.venue} onChange={e => set('venue', e.target.value)}
-              className="w-full border rounded-lg px-3 py-2 text-sm mt-1" />
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-medium text-gray-600">Venue</label>
+              <input value={form.venue} onChange={e => set('venue', e.target.value)}
+                className="w-full border rounded-lg px-3 py-2 text-sm mt-1" />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-gray-600">Exam Type</label>
+              <select value={form.exam_type} onChange={e => set('exam_type', e.target.value)}
+                className="w-full border rounded-lg px-3 py-2 text-sm mt-1">
+                <option value="written">Written</option>
+                <option value="CBE">CBE (Online)</option>
+                <option value="BYOD">BYOD</option>
+              </select>
+            </div>
           </div>
           <div>
             <label className="text-xs font-medium text-gray-600">Student Count</label>
