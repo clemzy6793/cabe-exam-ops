@@ -83,6 +83,37 @@ router.get('/by-staff/:staffId', async (req, res) => {
   }
 });
 
+router.get('/session-status', async (req, res) => {
+  const { faculty_code, date, session } = req.query;
+  if (!faculty_code || !date || !session) return res.status(400).json({ error: 'faculty_code, date, session required' });
+  try {
+    const { rows: exams } = await db.query(`
+      SELECT e.id, e.course_code, e.course_name, e.venue, e.student_count, e.exam_type,
+        f.code AS faculty_code
+      FROM exams e JOIN faculties f ON f.id=e.faculty_id
+      WHERE f.code=$1 AND e.exam_date=$2 AND e.session_number=$3
+      ORDER BY e.course_code`, [faculty_code, date, parseInt(session)]);
+
+    for (const exam of exams) {
+      const { rows: staff } = await db.query(`
+        SELECT s.id, s.name, s.staff_code, s.phone, ea.role
+        FROM exam_assignments ea JOIN staff s ON s.id=ea.staff_id
+        WHERE ea.exam_id=$1 ORDER BY s.name`, [exam.id]);
+      exam.assigned_staff = staff;
+
+      const { rows: reports } = await db.query(`
+        SELECT br.id, br.filename, br.file_size, br.uploaded_at, s.name AS uploader_name, s.staff_code AS uploader_code
+        FROM biometric_reports br LEFT JOIN staff s ON s.id=br.uploader_id
+        WHERE br.exam_id=$1 ORDER BY br.uploaded_at DESC`, [exam.id]);
+      exam.reports = reports;
+    }
+
+    res.json(exams);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 router.get('/my-exams/:query', async (req, res) => {
   try {
     const q = req.params.query.trim();

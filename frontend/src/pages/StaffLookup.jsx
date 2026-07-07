@@ -19,6 +19,9 @@ export default function StaffLookup() {
   const [error, setError] = useState('');
   const [uploadedReports, setUploadedReports] = useState({});
   const [uploading, setUploading] = useState(null);
+  const [sessionPanel, setSessionPanel] = useState(null);
+  const [sessionData, setSessionData] = useState(null);
+  const [sessionLoading, setSessionLoading] = useState(false);
   const fileRef = useRef(null);
   const debounce = useRef(null);
 
@@ -50,6 +53,20 @@ export default function StaffLookup() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const openSessionStatus = async (a) => {
+    const key = `${a.faculty_code}_${a.exam_date}_${a.session_number}`;
+    if (sessionPanel === key) { setSessionPanel(null); return; }
+    setSessionPanel(key);
+    setSessionLoading(true);
+    try {
+      const { data } = await api.get('/reports/session-status', {
+        params: { faculty_code: a.faculty_code, date: a.exam_date, session: a.session_number }
+      });
+      setSessionData(data);
+    } catch { setSessionData([]); }
+    finally { setSessionLoading(false); }
   };
 
   const handleUpload = async (examId, file) => {
@@ -205,22 +222,35 @@ export default function StaffLookup() {
                       </span>
                     </div>
                     <div className="divide-y">
-                      {assignments.map((a, i) => (
+                      {assignments.map((a, i) => {
+                        const isFacultyRole = !a.exam_id;
+                        const panelKey = `${a.faculty_code}_${a.exam_date}_${a.session_number}`;
+                        const isPanelOpen = sessionPanel === panelKey;
+                        return (
                         <div key={i} className="px-4 py-3">
-                          <div className="flex items-center justify-between">
+                          <div className={`flex items-center justify-between ${isFacultyRole ? 'cursor-pointer' : ''}`}
+                            onClick={isFacultyRole ? () => openSessionStatus(a) : undefined}>
                             <div className="flex items-center gap-2">
                               <span className="font-bold text-sm text-gray-900">{a.course_code}</span>
                               {a.exam_type === 'CBE' && <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold bg-amber-500 text-white">CBE</span>}
                               {a.exam_type === 'BYOD' && <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold bg-sky-500 text-white">BYOD</span>}
                             </div>
-                            <span className="text-xs bg-brand/10 text-brand px-2 py-0.5 rounded font-semibold">
-                              Session {a.session_number}
-                            </span>
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs bg-brand/10 text-brand px-2 py-0.5 rounded font-semibold">
+                                Session {a.session_number}
+                              </span>
+                              {isFacultyRole && (
+                                <svg className={`w-4 h-4 text-gray-400 transition-transform ${isPanelOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                              )}
+                            </div>
                           </div>
-                          <p className="text-xs text-gray-500 mt-0.5">{a.course_name}</p>
+                          {isFacultyRole && (
+                            <p className="text-xs text-brand/60 mt-0.5">Tap to view report status for this session</p>
+                          )}
+                          {!isFacultyRole && <p className="text-xs text-gray-500 mt-0.5">{a.course_name}</p>}
                           <div className="flex flex-wrap gap-x-4 mt-1.5 text-xs text-gray-400">
                             <span>Time: {SESSION_TIMES[a.session_number]}</span>
-                            {a.venue && <span>Venue: {a.venue}</span>}
+                            {a.venue && !isFacultyRole && <span>Venue: {a.venue}</span>}
                             {a.student_count > 0 && <span>{a.student_count} students</span>}
                           </div>
                           <div className="mt-1 flex items-center justify-between">
@@ -250,6 +280,64 @@ export default function StaffLookup() {
                               )
                             )}
                           </div>
+
+                          {/* Session report status panel */}
+                          {isFacultyRole && isPanelOpen && (
+                            <div className="mt-3 pt-3 border-t border-gray-100">
+                              {sessionLoading ? (
+                                <p className="text-xs text-gray-400 text-center py-3">Loading...</p>
+                              ) : sessionData?.length === 0 ? (
+                                <p className="text-xs text-gray-400 text-center py-3">No exams in this session</p>
+                              ) : (
+                                <div className="space-y-2.5">
+                                  <div className="flex items-center justify-between">
+                                    <p className="text-[10px] text-gray-400 uppercase tracking-wide font-semibold">Report Status</p>
+                                    <p className="text-[10px] text-gray-400">
+                                      {sessionData?.filter(e => e.reports.length > 0).length}/{sessionData?.length} uploaded
+                                    </p>
+                                  </div>
+                                  {sessionData?.map(exam => (
+                                    <div key={exam.id} className={`rounded-lg p-2.5 ${exam.reports.length ? 'bg-emerald-50/50' : 'bg-red-50/50'}`}>
+                                      <div className="flex items-center justify-between">
+                                        <div>
+                                          <span className="font-bold text-xs text-gray-900">{exam.course_code}</span>
+                                          <span className="text-[10px] text-gray-400 ml-1.5">{exam.venue}</span>
+                                        </div>
+                                        {exam.reports.length > 0 ? (
+                                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-semibold flex items-center gap-1">
+                                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                                            Done
+                                          </span>
+                                        ) : (
+                                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-100 text-red-600 font-semibold">Missing</span>
+                                        )}
+                                      </div>
+                                      <p className="text-[10px] text-gray-400 mt-0.5">{exam.course_name}</p>
+                                      {exam.assigned_staff?.length > 0 && (
+                                        <div className="flex flex-wrap gap-1 mt-1.5">
+                                          {exam.assigned_staff.map(s => (
+                                            <span key={s.id} className="text-[10px] bg-white/80 border px-1.5 py-0.5 rounded text-gray-600">
+                                              {s.name}
+                                            </span>
+                                          ))}
+                                        </div>
+                                      )}
+                                      {exam.reports.length > 0 && (
+                                        <div className="mt-1.5 space-y-0.5">
+                                          {exam.reports.map(r => (
+                                            <div key={r.id} className="text-[10px] text-emerald-600 flex items-center gap-1">
+                                              <svg className="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                                              {r.uploader_name || 'Unknown'} — {r.filename}
+                                            </div>
+                                          ))}
+                                        </div>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          )}
                           {a.paired_staff?.length > 0 && (
                             <div className="mt-2 pt-2 border-t border-gray-100">
                               <p className="text-[10px] text-gray-400 uppercase tracking-wide font-semibold mb-1">Paired with</p>
@@ -274,7 +362,8 @@ export default function StaffLookup() {
                             </div>
                           )}
                         </div>
-                      ))}
+                      );
+                      })}
                     </div>
                   </div>
                 ))}
