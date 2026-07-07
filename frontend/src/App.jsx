@@ -11,6 +11,7 @@ import Venues from './pages/Venues';
 import TimetableUpload from './pages/TimetableUpload';
 import StaffLookup from './pages/StaffLookup';
 import PublicTimetable from './pages/PublicTimetable';
+import SessionReport from './pages/SessionReport';
 
 function PrivateRoute({ children }) {
   const token = localStorage.getItem('exam_ops_token');
@@ -28,6 +29,7 @@ export default function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/lookup" element={<StaffLookup />} />
       <Route path="/public/timetable" element={<PublicTimetable />} />
+      <Route path="/public/session-report" element={<SessionReport />} />
       <Route path="/" element={<PrivateRoute><Layout /></PrivateRoute>}>
         <Route index element={<Dashboard />} />
         <Route path="timetable" element={<Timetable />} />
