@@ -117,8 +117,10 @@ router.get('/staff/:id', async (req, res) => {
     if (fRoles.length) {
       for (const fr of fRoles) {
         const { rows: sessions } = await db.query(`
-          SELECT DISTINCT e.exam_date, e.day_name, e.session_number, e.start_time, e.end_time
-          FROM exams e WHERE e.faculty_id=$1 ORDER BY e.exam_date, e.session_number`, [fr.faculty_id]);
+          SELECT e.exam_date, e.day_name, e.session_number, MIN(e.start_time) AS start_time, MAX(e.end_time) AS end_time
+          FROM exams e WHERE e.faculty_id=$1
+          GROUP BY e.exam_date, e.day_name, e.session_number
+          ORDER BY e.exam_date, e.session_number`, [fr.faculty_id]);
         for (const s of sessions) {
           const already = assignments.some(a => a.exam_date === s.exam_date && a.session_number === s.session_number && a.faculty_code === fr.faculty_code);
           if (!already) {
