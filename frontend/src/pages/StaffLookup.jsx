@@ -22,6 +22,7 @@ export default function StaffLookup() {
   const [sessionPanel, setSessionPanel] = useState(null);
   const [sessionData, setSessionData] = useState(null);
   const [sessionLoading, setSessionLoading] = useState(false);
+  const [printView, setPrintView] = useState(null);
   const fileRef = useRef(null);
   const debounce = useRef(null);
 
@@ -100,90 +101,28 @@ export default function StaffLookup() {
     const uploaded = exams.filter(e => e.reports.length > 0).length;
     const rawDate = a.exam_date?.slice(0, 10) || '';
     const dateStr = rawDate ? new Date(rawDate + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) : '';
-    const rows = exams.map(exam => {
-      const staffList = (exam.assigned_staff || []).map(s => s.name).join(', ') || '-';
-      const status = exam.reports.length > 0;
-      const reportInfo = status
-        ? exam.reports.map(r => `${r.uploader_name || 'Unknown'} — ${r.filename}`).join('<br>')
-        : '<span style="color:#dc2626;font-weight:bold;">NOT UPLOADED</span>';
-      return `<tr>
-        <td style="padding:8px;border:1px solid #ddd;font-weight:bold;">${exam.course_code}</td>
-        <td style="padding:8px;border:1px solid #ddd;font-size:12px;">${exam.course_name || ''}</td>
-        <td style="padding:8px;border:1px solid #ddd;">${exam.venue || ''}</td>
-        <td style="padding:8px;border:1px solid #ddd;font-size:12px;">${staffList}</td>
-        <td style="padding:8px;border:1px solid #ddd;text-align:center;">
-          <span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:bold;${status ? 'background:#d1fae5;color:#065f46;' : 'background:#fee2e2;color:#991b1b;'}">${status ? 'Done' : 'Missing'}</span>
-        </td>
-        <td style="padding:8px;border:1px solid #ddd;font-size:11px;">${reportInfo}</td>
-      </tr>`;
-    }).join('');
-
-    const html = `<!DOCTYPE html><html><head><title>Session Report Status</title>
-      <style>body{font-family:Arial,sans-serif;padding:30px;} table{border-collapse:collapse;width:100%;margin-top:15px;} th{background:#1a3a5c;color:#fff;padding:10px;text-align:left;font-size:12px;} @media print{.no-print{display:none;}}</style>
-    </head><body>
-      <h1 style="margin:0;color:#1a3a5c;">CABE Exam Operations</h1>
-      <p style="color:#666;margin:4px 0 0;">Biometric Report Upload Status</p>
-      <hr style="margin:15px 0;border-color:#c8a951;">
-      <h2 style="margin:0;">${a.faculty_name} — Session ${a.session_number}</h2>
-      <p style="color:#666;margin:4px 0;">${dateStr} | ${SESSION_TIMES[a.session_number]}</p>
-      <p style="margin:10px 0;font-size:14px;"><strong>${uploaded}/${exams.length}</strong> reports uploaded</p>
-      <table>
-        <thead><tr><th>Code</th><th>Course</th><th>Venue</th><th>Assigned Staff</th><th>Status</th><th>Report Details</th></tr></thead>
-        <tbody>${rows}</tbody>
-      </table>
-      <p style="margin-top:20px;color:#999;font-size:12px;">Generated from CABE Exam Ops System | examops.campusmarketgh.com</p>
-      <button class="no-print" onclick="window.print()" style="margin-top:15px;padding:10px 20px;background:#1a3a5c;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:14px;">Print this page</button>
-    </body></html>`;
-
-    const win = window.open('', '_blank');
-    if (win) {
-      win.document.write(html);
-      win.document.close();
-    } else {
-      const blob = new Blob([html], { type: 'text/html' });
-      const url = URL.createObjectURL(blob);
-      window.location.href = url;
-    }
+    setPrintView({
+      type: 'session',
+      title: `${a.faculty_name} — Session ${a.session_number}`,
+      subtitle: `${dateStr} | ${SESSION_TIMES[a.session_number]}`,
+      summary: `${uploaded}/${exams.length} reports uploaded`,
+      exams,
+    });
   };
 
   const printSchedule = (data, groupedData) => {
-    const rows = Object.entries(groupedData).sort().map(([date, assignments]) => {
-      return assignments.map(a =>
-        `<tr>
-          <td style="padding:8px;border:1px solid #ddd;">${a.day_name || ''} ${new Date(date+'T00:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</td>
-          <td style="padding:8px;border:1px solid #ddd;">Session ${a.session_number} (${SESSION_TIMES[a.session_number]})</td>
-          <td style="padding:8px;border:1px solid #ddd;font-weight:bold;">${a.course_code}</td>
-          <td style="padding:8px;border:1px solid #ddd;">${a.course_name || ''}</td>
-          <td style="padding:8px;border:1px solid #ddd;">${a.venue || ''}</td>
-          <td style="padding:8px;border:1px solid #ddd;">${a.faculty_name || ''}</td>
-          <td style="padding:8px;border:1px solid #ddd;font-size:12px;color:#666;">${(a.paired_staff || []).map(p => p.name + (p.phone ? ' (' + p.phone + ')' : '')).join(', ') || '-'}</td>
-        </tr>`
-      ).join('');
-    }).join('');
-
-    const html = `<!DOCTYPE html><html><head><title>Schedule - ${data.staff.name}</title>
-      <style>body{font-family:Arial,sans-serif;padding:30px;} table{border-collapse:collapse;width:100%;margin-top:15px;} th{background:#1a3a5c;color:#fff;padding:10px;text-align:left;} @media print{.no-print{display:none;}}</style>
-    </head><body>
-      <h1 style="margin:0;color:#1a3a5c;">CABE Exam Operations</h1>
-      <p style="color:#666;margin:4px 0 0;">Mid-Semester Examination Schedule 2025/2026 | 6th - 10th July, 2026</p>
-      <hr style="margin:15px 0;border-color:#c8a951;">
-      <h2 style="margin:0;">${data.staff.name}</h2>
-      <p style="color:#666;margin:4px 0;">Staff Code: ${data.staff.staff_code || 'N/A'} | Role: ${data.staff.role} | Total Assignments: ${data.assignments.length}</p>
-      <table>
-        <thead><tr><th>Day</th><th>Session</th><th>Code</th><th>Course</th><th>Venue</th><th>Faculty</th><th>Paired With</th></tr></thead>
-        <tbody>${rows}</tbody>
-      </table>
-      <p style="margin-top:20px;color:#999;font-size:12px;">Generated from CABE Exam Ops System | examops.campusmarketgh.com</p>
-      <button class="no-print" onclick="window.print()" style="margin-top:15px;padding:10px 20px;background:#1a3a5c;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:14px;">Print this page</button>
-    </body></html>`;
-    const win = window.open('', '_blank');
-    if (win) {
-      win.document.write(html);
-      win.document.close();
-    } else {
-      const blob = new Blob([html], { type: 'text/html' });
-      window.location.href = URL.createObjectURL(blob);
-    }
+    const allRows = [];
+    Object.entries(groupedData).sort().forEach(([date, assignments]) => {
+      assignments.forEach(a => allRows.push({ ...a, date }));
+    });
+    setPrintView({
+      type: 'schedule',
+      staffName: data.staff.name,
+      staffCode: data.staff.staff_code || 'N/A',
+      staffRole: data.staff.role,
+      total: data.assignments.length,
+      rows: allRows,
+    });
   };
 
   return (
@@ -442,6 +381,103 @@ export default function StaffLookup() {
           <a href="/login" className="text-blue-200 text-sm hover:text-white">Admin Login</a>
         </div>
       </div>
+
+      {/* Full-screen print overlay */}
+      {printView && (
+        <div className="fixed inset-0 z-50 bg-white overflow-y-auto print-overlay">
+          <style dangerouslySetInnerHTML={{ __html: `
+            @media print { .no-print { display: none !important; } .print-overlay { position: static !important; } }
+            @media screen { .print-only-break { display: none; } }
+          `}} />
+          <div className="no-print sticky top-0 bg-white border-b px-4 py-3 flex items-center justify-between z-10">
+            <button onClick={() => setPrintView(null)} className="text-sm font-semibold text-gray-600 flex items-center gap-1">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+              Back
+            </button>
+            <button onClick={() => window.print()} className="px-4 py-2 bg-brand text-white rounded-lg text-sm font-semibold flex items-center gap-1.5">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
+              Print
+            </button>
+          </div>
+
+          <div className="p-6 max-w-4xl mx-auto" style={{ fontFamily: 'Arial, sans-serif' }}>
+            <h1 className="text-xl font-bold" style={{ color: '#1a3a5c', margin: 0 }}>CABE Exam Operations</h1>
+            {printView.type === 'session' ? (
+              <>
+                <p className="text-sm text-gray-500 mt-1">Biometric Report Upload Status</p>
+                <hr className="my-4" style={{ borderColor: '#c8a951' }} />
+                <h2 className="text-lg font-bold">{printView.title}</h2>
+                <p className="text-sm text-gray-500">{printView.subtitle}</p>
+                <p className="text-sm mt-2"><strong>{printView.summary}</strong></p>
+                <table className="w-full mt-4 text-sm" style={{ borderCollapse: 'collapse' }}>
+                  <thead>
+                    <tr style={{ background: '#1a3a5c', color: '#fff' }}>
+                      <th className="text-left p-2">Code</th>
+                      <th className="text-left p-2">Course</th>
+                      <th className="text-left p-2">Venue</th>
+                      <th className="text-left p-2">Assigned Staff</th>
+                      <th className="text-left p-2">Status</th>
+                      <th className="text-left p-2">Report Details</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {printView.exams.map(exam => (
+                      <tr key={exam.id} style={{ borderBottom: '1px solid #ddd' }}>
+                        <td className="p-2 font-bold">{exam.course_code}</td>
+                        <td className="p-2 text-xs">{exam.course_name}</td>
+                        <td className="p-2">{exam.venue}</td>
+                        <td className="p-2 text-xs">{(exam.assigned_staff || []).map(s => s.name).join(', ') || '-'}</td>
+                        <td className="p-2 text-center">
+                          <span className={`inline-block px-2 py-0.5 rounded-full text-[11px] font-bold ${exam.reports.length ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}`}>
+                            {exam.reports.length ? 'Done' : 'Missing'}
+                          </span>
+                        </td>
+                        <td className="p-2 text-xs">
+                          {exam.reports.length ? exam.reports.map(r => (
+                            <div key={r.id}>{r.uploader_name || 'Unknown'} — {r.filename}</div>
+                          )) : <span className="text-red-600 font-bold">NOT UPLOADED</span>}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </>
+            ) : (
+              <>
+                <p className="text-sm text-gray-500 mt-1">Mid-Semester Examination Schedule 2025/2026 | 6th - 10th July, 2026</p>
+                <hr className="my-4" style={{ borderColor: '#c8a951' }} />
+                <h2 className="text-lg font-bold">{printView.staffName}</h2>
+                <p className="text-sm text-gray-500">Staff Code: {printView.staffCode} | Role: {printView.staffRole} | Total: {printView.total}</p>
+                <table className="w-full mt-4 text-sm" style={{ borderCollapse: 'collapse' }}>
+                  <thead>
+                    <tr style={{ background: '#1a3a5c', color: '#fff' }}>
+                      <th className="text-left p-2">Day</th>
+                      <th className="text-left p-2">Session</th>
+                      <th className="text-left p-2">Code</th>
+                      <th className="text-left p-2">Course</th>
+                      <th className="text-left p-2">Venue</th>
+                      <th className="text-left p-2">Faculty</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {printView.rows.map((a, i) => (
+                      <tr key={i} style={{ borderBottom: '1px solid #ddd' }}>
+                        <td className="p-2">{a.day_name?.charAt(0).toUpperCase() + a.day_name?.slice(1)} {new Date(a.date + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</td>
+                        <td className="p-2">Session {a.session_number} ({SESSION_TIMES[a.session_number]})</td>
+                        <td className="p-2 font-bold">{a.course_code}</td>
+                        <td className="p-2">{a.course_name}</td>
+                        <td className="p-2">{a.venue}</td>
+                        <td className="p-2">{a.faculty_name}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </>
+            )}
+            <p className="text-xs text-gray-400 mt-6">Generated from CABE Exam Ops System | examops.campusmarketgh.com</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
