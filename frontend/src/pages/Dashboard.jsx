@@ -11,13 +11,26 @@ const DAYS = [
 ];
 
 const SESSION_TIMES = ['8:15 AM', '10:00 AM', '11:45 AM', '1:30 PM', '3:15 PM', '5:00 PM'];
+const SESSION_LABELS = {
+  1: '8:15 - 9:15 AM', 2: '10:00 - 11:00 AM', 3: '11:45 - 12:45 PM',
+  4: '1:30 - 2:30 PM', 5: '3:15 - 4:15 PM', 6: '5:00 - 6:00 PM',
+};
+const FACULTY_COLORS = {
+  FOBE: { bg: 'bg-blue-500', light: 'bg-blue-50', text: 'text-blue-700', ring: 'ring-blue-200', bar: 'bg-blue-500' },
+  Art: { bg: 'bg-purple-500', light: 'bg-purple-50', text: 'text-purple-700', ring: 'ring-purple-200', bar: 'bg-purple-500' },
+  Education: { bg: 'bg-emerald-500', light: 'bg-emerald-50', text: 'text-emerald-700', ring: 'ring-emerald-200', bar: 'bg-emerald-500' },
+};
 
 export default function Dashboard() {
   const [stats, setStats] = useState(null);
   const nav = useNavigate();
 
+  const loadStats = () => api.get('/timetable/stats').then(r => setStats(r.data)).catch(() => {});
+
   useEffect(() => {
-    api.get('/timetable/stats').then(r => setStats(r.data)).catch(() => {});
+    loadStats();
+    const interval = setInterval(loadStats, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   if (!stats) return (
@@ -50,7 +63,7 @@ export default function Dashboard() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         <KPICard
           label="Total Exams"
           value={stats.total_exams}
@@ -74,6 +87,14 @@ export default function Dashboard() {
           icon="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
           color="amber"
           onClick={() => nav('/assignments')}
+        />
+        <KPICard
+          label="Reports"
+          value={`${stats.exams_with_reports || 0}/${stats.total_exams}`}
+          sub={`${stats.total_reports || 0} files uploaded`}
+          icon="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+          color={stats.exams_with_reports >= stats.total_exams ? 'green' : 'blue'}
+          onClick={() => nav('/reports')}
         />
         <KPICard
           label="Unassigned"
@@ -249,20 +270,117 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Session overview */}
+      {/* Live Report Upload Tracker */}
       <div className="card">
-        <h3 className="font-bold text-gray-900 mb-4 text-sm flex items-center gap-2">
-          <svg className="w-4 h-4 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-          Daily Session Schedule
-        </h3>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-          {SESSION_TIMES.map((time, i) => (
-            <div key={i} className="bg-gray-50 rounded-lg p-3 text-center">
-              <div className="text-xs font-bold text-brand mb-1">Session {i + 1}</div>
-              <div className="text-sm font-semibold text-gray-700">{time}</div>
-            </div>
-          ))}
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-bold text-gray-900 text-sm flex items-center gap-2">
+            <svg className="w-4 h-4 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+            Biometric Report Tracker
+          </h3>
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+            <span className="text-[10px] text-gray-400 font-medium">Live — refreshes every 30s</span>
+          </div>
         </div>
+
+        {(() => {
+          const rs = stats.report_stats || [];
+          const reportPct = stats.total_exams > 0 ? Math.round(((stats.exams_with_reports || 0) / stats.total_exams) * 100) : 0;
+
+          const byDay = {};
+          rs.forEach(r => {
+            const date = r.exam_date?.slice(0, 10);
+            if (!byDay[date]) byDay[date] = [];
+            byDay[date].push(r);
+          });
+
+          return (
+            <>
+              <div className="mb-5 p-4 rounded-xl bg-gradient-to-r from-brand/5 to-accent/5 border border-brand/10">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-bold text-gray-700">Overall Upload Progress</span>
+                  <span className="text-sm font-black text-brand">{stats.exams_with_reports || 0} / {stats.total_exams}</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+                  <div className={`h-full rounded-full transition-all duration-500 ${reportPct === 100 ? 'bg-green-500' : 'bg-brand'}`}
+                    style={{ width: `${Math.max(reportPct, 1)}%` }} />
+                </div>
+                <div className="flex items-center justify-between mt-1.5">
+                  <span className="text-[10px] text-gray-400">{reportPct}% complete</span>
+                  <span className="text-[10px] text-gray-400">{stats.total_reports || 0} files uploaded</span>
+                </div>
+              </div>
+
+              {DAYS.map(day => {
+                const dayRows = byDay[day.date] || [];
+                if (!dayRows.length) return null;
+                const dayTotal = dayRows.reduce((s, r) => s + r.total_exams, 0);
+                const dayUploaded = dayRows.reduce((s, r) => s + r.uploaded, 0);
+                const dayPct = dayTotal > 0 ? Math.round((dayUploaded / dayTotal) * 100) : 0;
+                const isToday = day.date === today;
+
+                const sessions = {};
+                dayRows.forEach(r => {
+                  if (!sessions[r.session_number]) sessions[r.session_number] = [];
+                  sessions[r.session_number].push(r);
+                });
+
+                return (
+                  <div key={day.date} className={`mb-4 rounded-xl border overflow-hidden ${isToday ? 'border-accent/30 ring-1 ring-accent/10' : 'border-gray-100'}`}>
+                    <div className={`px-4 py-2.5 flex items-center justify-between ${isToday ? 'bg-accent/5' : 'bg-gray-50'}`}>
+                      <div className="flex items-center gap-2">
+                        <span className={`text-sm font-bold ${isToday ? 'text-accent' : 'text-gray-700'}`}>{day.full}</span>
+                        {isToday && <span className="text-[10px] px-2 py-0.5 rounded-full bg-accent text-white font-bold">TODAY</span>}
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="w-24 bg-gray-200 rounded-full h-2 overflow-hidden">
+                          <div className={`h-full rounded-full ${dayPct === 100 ? 'bg-green-500' : 'bg-brand'}`}
+                            style={{ width: `${Math.max(dayPct, 2)}%` }} />
+                        </div>
+                        <span className={`text-xs font-bold ${dayPct === 100 ? 'text-green-600' : 'text-gray-600'}`}>{dayUploaded}/{dayTotal}</span>
+                      </div>
+                    </div>
+                    <div className="divide-y divide-gray-50">
+                      {Object.entries(sessions).sort(([a], [b]) => a - b).map(([sn, faculties]) => {
+                        const sTotal = faculties.reduce((s, r) => s + r.total_exams, 0);
+                        const sUploaded = faculties.reduce((s, r) => s + r.uploaded, 0);
+                        return (
+                          <div key={sn} className="px-4 py-2.5">
+                            <div className="flex items-center justify-between mb-2">
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs font-bold text-brand">Session {sn}</span>
+                                <span className="text-[10px] text-gray-400">{SESSION_LABELS[sn]}</span>
+                              </div>
+                              <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                                sUploaded === sTotal ? 'bg-green-100 text-green-700' : sUploaded > 0 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-600'
+                              }`}>
+                                {sUploaded === sTotal ? 'Complete' : `${sUploaded}/${sTotal}`}
+                              </span>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              {faculties.map(f => {
+                                const fc = FACULTY_COLORS[f.faculty_code] || FACULTY_COLORS.FOBE;
+                                const done = f.uploaded === f.total_exams;
+                                return (
+                                  <div key={f.faculty_code} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg ${done ? 'bg-green-50' : fc.light}`}>
+                                    <div className={`w-2 h-2 rounded-full ${done ? 'bg-green-500' : fc.bg}`} />
+                                    <span className={`text-[11px] font-semibold ${done ? 'text-green-700' : fc.text}`}>{f.faculty_code}</span>
+                                    <span className={`text-[11px] font-black ${done ? 'text-green-700' : fc.text}`}>{f.uploaded}/{f.total_exams}</span>
+                                    {done && <svg className="w-3 h-3 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+            </>
+          );
+        })()}
       </div>
     </div>
   );

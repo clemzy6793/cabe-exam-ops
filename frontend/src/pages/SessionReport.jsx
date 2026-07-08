@@ -43,7 +43,7 @@ export default function SessionReport() {
 
   return (
     <div style={{ fontFamily: 'Arial, sans-serif', padding: '20px 16px', maxWidth: 900, margin: '0 auto' }}>
-      <style dangerouslySetInnerHTML={{ __html: `@media print { .no-print { display: none !important; } }` }} />
+      <style dangerouslySetInnerHTML={{ __html: `@media print { .no-print { display: none !important; } .print-only { display: inline !important; } }` }} />
 
       <div className="no-print" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, gap: 8 }}>
         <a href="/lookup" style={{ fontSize: 14, color: '#1a3a5c', textDecoration: 'none', fontWeight: 600 }}>Back to Lookup</a>
@@ -97,7 +97,16 @@ export default function SessionReport() {
                   </td>
                   <td style={{ padding: '8px 6px', fontSize: 11 }}>
                     {exam.reports.length ? exam.reports.map((r, i) => (
-                      <div key={i}>{r.uploader_name || 'Unknown'} — {r.filename}</div>
+                      <div key={i} style={{ marginBottom: 4 }}>
+                        <span>{r.uploader_name || 'Unknown'}</span>
+                        <span> — </span>
+                        <a href={`/api/reports/${r.id}/download`} download
+                          className="no-print"
+                          style={{ color: '#1a3a5c', fontWeight: 600, textDecoration: 'underline', cursor: 'pointer' }}>
+                          {r.filename}
+                        </a>
+                        <span className="print-only" style={{ display: 'none' }}>{r.filename}</span>
+                      </div>
                     )) : <span style={{ color: '#dc2626', fontWeight: 'bold' }}>NOT UPLOADED</span>}
                   </td>
                 </tr>

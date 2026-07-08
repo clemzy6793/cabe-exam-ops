@@ -69,7 +69,8 @@ router.get('/staff', async (req, res) => {
     );
     res.json({ results: rows });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -142,7 +143,8 @@ router.get('/staff/:id', async (req, res) => {
 
     res.json({ staff, assignments });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -172,7 +174,8 @@ router.get('/timetable', async (req, res) => {
     const { rows } = await db.query(sql, params);
     res.json(rows);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 

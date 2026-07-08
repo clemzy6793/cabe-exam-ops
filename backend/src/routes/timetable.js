@@ -36,7 +36,8 @@ router.get('/exams', async (req, res) => {
     const { rows } = await db.query(sql, params);
     res.json(rows);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -55,7 +56,8 @@ router.get('/exams/:id', async (req, res) => {
 
     res.json({ ...rows[0], assignments });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -82,7 +84,8 @@ router.post('/exams', authEditor, async (req, res) => {
     );
     res.status(201).json(rows[0]);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -103,7 +106,8 @@ router.put('/exams/:id', authEditor, async (req, res) => {
     if (!rows.length) return res.status(404).json({ error: 'Not found' });
     res.json(rows[0]);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -112,7 +116,8 @@ router.delete('/exams/:id', authEditor, async (req, res) => {
     await db.query('DELETE FROM exams WHERE id=$1', [req.params.id]);
     res.json({ message: 'Deleted' });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -146,6 +151,20 @@ router.get('/stats', async (req, res) => {
                 ORDER BY al.created_at DESC LIMIT 8`),
     ]);
     const assignedStaff = await db.query('SELECT COUNT(DISTINCT staff_id)::int AS count FROM exam_assignments');
+
+    const reportStats = await db.query(`
+      SELECT f.code AS faculty_code, e.exam_date::text, e.session_number,
+        COUNT(DISTINCT e.id)::int AS total_exams,
+        COUNT(DISTINCT CASE WHEN br.id IS NOT NULL THEN e.id END)::int AS uploaded
+      FROM exams e
+      JOIN faculties f ON f.id = e.faculty_id
+      LEFT JOIN biometric_reports br ON br.exam_id = e.id
+      GROUP BY f.code, e.exam_date, e.session_number
+      ORDER BY e.exam_date, e.session_number, f.code`);
+
+    const totalReports = await db.query('SELECT COUNT(*)::int AS count FROM biometric_reports');
+    const examsWithReports = await db.query('SELECT COUNT(DISTINCT exam_id)::int AS count FROM biometric_reports');
+
     res.json({
       total_exams: exams.rows[0].count,
       total_staff: staff.rows[0].count,
@@ -157,9 +176,13 @@ router.get('/stats', async (req, res) => {
       by_faculty: byFaculty.rows,
       by_type: byType.rows,
       recent_activity: recentActivity.rows,
+      report_stats: reportStats.rows,
+      total_reports: totalReports.rows[0].count,
+      exams_with_reports: examsWithReports.rows[0].count,
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 

@@ -34,7 +34,8 @@ router.post('/', authAdmin, async (req, res) => {
     res.status(201).json(rows[0]);
   } catch (err) {
     if (err.code === '23505') return res.status(409).json({ error: 'Already assigned' });
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -125,7 +126,8 @@ router.post('/replace', authAdmin, async (req, res) => {
 
     res.json({ replaced, skipped, conflicts, total: assignments.length });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -134,7 +136,8 @@ router.delete('/:id', authAdmin, async (req, res) => {
     await db.query('DELETE FROM exam_assignments WHERE id=$1', [req.params.id]);
     res.json({ message: 'Removed' });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -143,7 +146,8 @@ router.delete('/exam/:examId/all', authAdmin, async (req, res) => {
     const { rowCount } = await db.query('DELETE FROM exam_assignments WHERE exam_id=$1', [req.params.examId]);
     res.json({ message: `Removed ${rowCount} assignment(s)` });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -156,7 +160,8 @@ router.delete('/faculty/:facultyId/date/:date', authAdmin, async (req, res) => {
     );
     res.json({ removed: rowCount });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -174,7 +179,8 @@ router.get('/by-date/:date', async (req, res) => {
       ORDER BY e.session_number, s.name`, [req.params.date]);
     res.json(rows);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -197,7 +203,8 @@ router.get('/unassigned', async (req, res) => {
     const { rows } = await db.query(sql, params);
     res.json(rows);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -278,7 +285,8 @@ router.get('/it-report', async (req, res) => {
 
     res.json(Object.values(staffMap));
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -296,7 +304,8 @@ router.get('/faculty-staff', async (req, res) => {
     `);
     res.json(rows);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -311,7 +320,8 @@ router.post('/faculty-staff', authAdmin, async (req, res) => {
     res.status(201).json(rows[0]);
   } catch (err) {
     if (err.code === '23505') return res.status(409).json({ error: 'Already assigned' });
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -320,7 +330,8 @@ router.delete('/faculty-staff/:id', authAdmin, async (req, res) => {
     await db.query('DELETE FROM faculty_staff WHERE id=$1', [req.params.id]);
     res.json({ message: 'Removed' });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 

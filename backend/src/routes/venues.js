@@ -11,7 +11,8 @@ router.get('/', async (req, res) => {
       ORDER BY v.faculty_id NULLS LAST, v.name`);
     res.json(rows);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -26,7 +27,8 @@ router.post('/', authAdmin, async (req, res) => {
     res.status(201).json(rows[0]);
   } catch (err) {
     if (err.code === '23505') return res.status(409).json({ error: 'Venue already exists' });
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -41,7 +43,8 @@ router.put('/:id', authAdmin, async (req, res) => {
     res.json(rows[0]);
   } catch (err) {
     if (err.code === '23505') return res.status(409).json({ error: 'Venue name already exists' });
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -50,7 +53,8 @@ router.delete('/:id', authAdmin, async (req, res) => {
     await db.query('DELETE FROM venues WHERE id=$1', [req.params.id]);
     res.json({ message: 'Deleted' });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 

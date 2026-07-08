@@ -92,6 +92,20 @@ export default function StaffLookup() {
     }
   };
 
+  const deleteReport = async (reportId, examId) => {
+    if (!confirm('Delete this report?')) return;
+    try {
+      await api.delete(`/reports/public-delete/${reportId}?staff_id=${selected.staff.id}`);
+      toast.success('Report deleted');
+      setUploadedReports(prev => ({
+        ...prev,
+        [examId]: (prev[examId] || []).filter(r => r.id !== reportId),
+      }));
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Delete failed');
+    }
+  };
+
   const grouped = {};
   selected?.assignments?.forEach(a => {
     const key = a.exam_date?.slice(0, 10) || 'unknown';
@@ -274,6 +288,10 @@ export default function StaffLookup() {
                                     <span key={ri} className="text-[10px] px-2 py-0.5 rounded-lg bg-emerald-50 text-emerald-600 font-semibold flex items-center gap-1">
                                       <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
                                       {r.filename?.length > 20 ? r.filename.slice(0, 18) + '...' : r.filename}
+                                      <button onClick={(e) => { e.stopPropagation(); deleteReport(r.id, a.exam_id); }}
+                                        className="ml-1 text-red-400 hover:text-red-600">
+                                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                                      </button>
                                     </span>
                                   ))}
                                   {canUploadMore && (
@@ -310,7 +328,7 @@ export default function StaffLookup() {
                                         {sessionData?.filter(e => e.reports.length > 0).length}/{sessionData?.length} uploaded
                                       </p>
                                     </div>
-                                    <button onClick={() => printSessionStatus(a)}
+                                    <button onClick={(e) => { e.stopPropagation(); printSessionStatus(a); }}
                                       className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-brand text-white text-xs font-bold shadow-sm">
                                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
                                       Print Report
@@ -345,16 +363,17 @@ export default function StaffLookup() {
                                       {exam.reports.length > 0 && (
                                         <div className="mt-1.5 space-y-0.5">
                                           {exam.reports.map(r => (
-                                            <div key={r.id} className="text-[10px] text-emerald-600 flex items-center gap-1">
-                                              <svg className="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                                            <a key={r.id} href={`/api/reports/${r.id}/download`} download
+                                              className="text-[10px] text-emerald-600 flex items-center gap-1 hover:text-emerald-800 hover:underline">
+                                              <svg className="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
                                               {r.uploader_name || 'Unknown'} — {r.filename}
-                                            </div>
+                                            </a>
                                           ))}
                                         </div>
                                       )}
                                     </div>
                                   ))}
-                                  <button onClick={() => printSessionStatus(a)}
+                                  <button onClick={(e) => { e.stopPropagation(); printSessionStatus(a); }}
                                     className="w-full mt-3 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-brand text-white text-sm font-bold shadow-sm">
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
                                     Print This Report

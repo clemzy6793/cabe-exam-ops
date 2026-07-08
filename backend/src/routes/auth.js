@@ -1,10 +1,17 @@
 const router = require('express').Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const rateLimit = require('express-rate-limit');
 const db = require('../db');
 const { authAdmin } = require('../middleware/auth');
 
-router.post('/login', async (req, res) => {
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: { error: 'Too many login attempts, try again in 15 minutes' }
+});
+
+router.post('/login', loginLimiter, async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
   try {
@@ -20,7 +27,8 @@ router.post('/login', async (req, res) => {
     );
     res.json({ token, admin: { id: admin.id, name: admin.name, email: admin.email, role: admin.role, faculty_id: admin.faculty_id } });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -42,7 +50,8 @@ router.put('/change-password', async (req, res) => {
     await db.query('UPDATE admins SET password_hash=$1 WHERE id=$2', [hash, decoded.id]);
     res.json({ message: 'Password changed successfully' });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -52,7 +61,8 @@ router.get('/accounts', authAdmin, async (req, res) => {
       FROM admins a LEFT JOIN faculties f ON a.faculty_id=f.id ORDER BY a.role, a.name`);
     res.json(rows);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -69,7 +79,8 @@ router.post('/accounts', authAdmin, async (req, res) => {
     res.status(201).json(rows[0]);
   } catch (err) {
     if (err.code === '23505') return res.status(409).json({ error: 'Email already exists' });
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -102,7 +113,8 @@ router.delete('/accounts/:id', authAdmin, async (req, res) => {
     await db.query('DELETE FROM admins WHERE id=$1', [req.params.id]);
     res.json({ message: 'Deleted' });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -126,7 +138,8 @@ router.put('/profile', async (req, res) => {
     res.json({ admin, token: newToken });
   } catch (err) {
     if (err.code === '23505') return res.status(409).json({ error: 'Email already in use' });
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 

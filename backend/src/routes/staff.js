@@ -1,8 +1,8 @@
 const router = require('express').Router();
 const db = require('../db');
-const { authAdmin } = require('../middleware/auth');
+const { authAdmin, authAny } = require('../middleware/auth');
 
-router.get('/', async (req, res) => {
+router.get('/', authAny, async (req, res) => {
   const { search, faculty_id, staff_type } = req.query;
   let sql = `
     SELECT s.*, f.name AS faculty_name, f.code AS faculty_code,
@@ -30,11 +30,12 @@ router.get('/', async (req, res) => {
     const { rows } = await db.query(sql, params);
     res.json(rows);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-router.get('/:id', async (req, res) => {
+router.get('/:id', authAny, async (req, res) => {
   try {
     const { rows } = await db.query(`
       SELECT s.*, f.name AS faculty_name
@@ -54,7 +55,8 @@ router.get('/:id', async (req, res) => {
 
     res.json({ ...rows[0], assignments });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -81,7 +83,8 @@ router.post('/', authAdmin, async (req, res) => {
     );
     res.status(201).json(rows[0]);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -110,7 +113,8 @@ router.post('/bulk', authAdmin, async (req, res) => {
     }
     res.json({ message: `Added ${added} staff members` });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -126,7 +130,8 @@ router.put('/:id', authAdmin, async (req, res) => {
     if (!rows.length) return res.status(404).json({ error: 'Not found' });
     res.json(rows[0]);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -135,7 +140,8 @@ router.delete('/:id', authAdmin, async (req, res) => {
     await db.query('DELETE FROM staff WHERE id=$1', [req.params.id]);
     res.json({ message: 'Deleted' });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 

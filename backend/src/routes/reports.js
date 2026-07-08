@@ -39,18 +39,19 @@ router.post('/upload', authAny, upload.single('file'), async (req, res) => {
     );
     res.status(201).json(rows[0]);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
 router.post('/public-upload', upload.single('file'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
-  const { exam_id, staff_id } = req.body;
-  if (!exam_id || !staff_id) return res.status(400).json({ error: 'Exam and staff are required' });
+  const { exam_id, staff_id, staff_code } = req.body;
+  if (!exam_id || !staff_id || !staff_code) return res.status(400).json({ error: 'Exam, staff_id, and staff_code are required' });
 
   try {
-    const { rows: [staff] } = await db.query('SELECT id FROM staff WHERE id=$1', [staff_id]);
-    if (!staff) return res.status(404).json({ error: 'Staff not found' });
+    const { rows: [staff] } = await db.query('SELECT id FROM staff WHERE id=$1 AND staff_code=$2', [staff_id, staff_code]);
+    if (!staff) return res.status(403).json({ error: 'Invalid staff credentials' });
 
     const { rows: [assignment] } = await db.query(
       'SELECT 1 FROM exam_assignments ea JOIN exams e ON e.id=ea.exam_id WHERE ea.staff_id=$1 AND ea.exam_id=$2',
@@ -67,7 +68,8 @@ router.post('/public-upload', upload.single('file'), async (req, res) => {
     );
     res.status(201).json(rows[0]);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -79,7 +81,8 @@ router.get('/by-staff/:staffId', async (req, res) => {
       ORDER BY br.uploaded_at DESC`, [req.params.staffId]);
     res.json(rows);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -110,7 +113,8 @@ router.get('/session-status', async (req, res) => {
 
     res.json(exams);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -140,7 +144,8 @@ router.get('/my-exams/:query', async (req, res) => {
     const facultyIds = [...new Set(exams.map(e => e.faculty_id))];
     res.json({ staff, exams, facultyIds });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -172,7 +177,8 @@ router.get('/', async (req, res) => {
     const { rows } = await db.query(sql, params);
     res.json(rows);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -184,7 +190,8 @@ router.get('/:id/download', async (req, res) => {
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.send(rows[0].file_data);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -193,7 +200,24 @@ router.delete('/:id', authAdmin, async (req, res) => {
     await db.query('DELETE FROM biometric_reports WHERE id=$1', [req.params.id]);
     res.json({ message: 'Deleted' });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+router.delete('/public-delete/:id', async (req, res) => {
+  const { staff_id, staff_code } = req.query;
+  if (!staff_id || !staff_code) return res.status(400).json({ error: 'staff_id and staff_code required' });
+  try {
+    const { rows: staffRows } = await db.query('SELECT id FROM staff WHERE id=$1 AND staff_code=$2', [staff_id, staff_code]);
+    if (!staffRows.length) return res.status(403).json({ error: 'Invalid staff credentials' });
+    const { rows } = await db.query('SELECT id FROM biometric_reports WHERE id=$1 AND uploader_id=$2', [req.params.id, staff_id]);
+    if (!rows.length) return res.status(403).json({ error: 'You can only delete your own uploads' });
+    await db.query('DELETE FROM biometric_reports WHERE id=$1', [req.params.id]);
+    res.json({ message: 'Deleted' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
