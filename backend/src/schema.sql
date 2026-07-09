@@ -122,6 +122,15 @@ CREATE TABLE IF NOT EXISTS activity_log (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS it_teams (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(100) NOT NULL UNIQUE,
+  faculty_id INT REFERENCES faculties(id),
+  building VARCHAR(50),
+  staff_ids INT[] NOT NULL DEFAULT '{}',
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 CREATE INDEX IF NOT EXISTS idx_exams_date ON exams(exam_date);
 CREATE INDEX IF NOT EXISTS idx_exams_faculty ON exams(faculty_id);
 CREATE INDEX IF NOT EXISTS idx_exams_session ON exams(exam_date, session_number);

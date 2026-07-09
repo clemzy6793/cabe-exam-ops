@@ -31,6 +31,7 @@ export default function Assignments() {
   const [unassigned, setUnassigned] = useState([]);
   const [bulkModal, setBulkModal] = useState(false);
   const [replaceModal, setReplaceModal] = useState(false);
+  const [autoAssignModal, setAutoAssignModal] = useState(false);
 
   const load = () => {
     const params = { date };
@@ -107,7 +108,11 @@ export default function Assignments() {
           <h1 className="text-2xl font-black text-gray-900">Staff Assignments</h1>
           <p className="text-sm text-gray-500 mt-1">Assign invigilators to exam sessions</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
+          <button onClick={() => setAutoAssignModal(true)} className="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-4 py-2 rounded-lg flex items-center gap-2">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+            Auto-Assign
+          </button>
           <button onClick={() => setReplaceModal(true)} className="btn-ghost text-sm flex items-center gap-2 border">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>
             Search &amp; Replace
@@ -247,6 +252,18 @@ export default function Assignments() {
       {/* Faculty Roles (Printing / Biometric) */}
       <FacultyRoles faculties={faculties} staff={staff} />
 
+      {/* Auto-Assign Modal */}
+      {autoAssignModal && (
+        <AutoAssignModal
+          date={date}
+          dates={DAYS}
+          faculties={faculties}
+          staff={staff.filter(s => s.staff_type === 'it_staff')}
+          onClose={() => setAutoAssignModal(false)}
+          onDone={() => { setAutoAssignModal(false); load(); }}
+        />
+      )}
+
       {/* Bulk Assign IT Staff Modal */}
       {bulkModal && (
         <BulkAssignModal
@@ -277,6 +294,288 @@ export default function Assignments() {
           onClose={() => setAssignModal(null)}
         />
       )}
+    </div>
+  );
+}
+
+function AutoAssignModal({ date, dates, faculties, staff, onClose, onDone }) {
+  const [teams, setTeams] = useState([]);
+  const [selectedTeams, setSelectedTeams] = useState([]);
+  const [selectedDates, setSelectedDates] = useState([date]);
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState(null);
+  const [step, setStep] = useState('config'); // config | running | done
+  const [addTeam, setAddTeam] = useState(false);
+  const [newTeam, setNewTeam] = useState({ name: '', faculty_id: '', building: '', staff_ids: [] });
+  const [teamResults, setTeamResults] = useState([]);
+
+  const loadTeams = () => api.get('/assignments/teams').then(r => {
+    setTeams(r.data);
+    setSelectedTeams(r.data.map(t => t.id));
+  });
+  useEffect(() => { loadTeams(); }, []);
+
+  const toggleDate = (d) => setSelectedDates(prev =>
+    prev.includes(d) ? prev.filter(x => x !== d) : [...prev, d]
+  );
+  const toggleTeam = (id) => setSelectedTeams(prev =>
+    prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+  );
+
+  const saveTeam = async () => {
+    if (!newTeam.name || !newTeam.faculty_id || !newTeam.staff_ids.length) {
+      toast.error('Fill in name, faculty, and select staff');
+      return;
+    }
+    try {
+      await api.post('/assignments/teams', newTeam);
+      toast.success('Team saved');
+      setAddTeam(false);
+      setNewTeam({ name: '', faculty_id: '', building: '', staff_ids: [] });
+      loadTeams();
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed');
+    }
+  };
+
+  const deleteTeam = async (id) => {
+    if (!confirm('Delete this team?')) return;
+    try {
+      await api.delete(`/assignments/teams/${id}`);
+      toast.success('Deleted');
+      loadTeams();
+    } catch { toast.error('Failed'); }
+  };
+
+  const runAutoAssign = async () => {
+    setLoading(true);
+    setStep('running');
+    const results = [];
+    for (const d of selectedDates) {
+      try {
+        const { data } = await api.post('/assignments/auto-assign', {
+          date: d,
+          team_ids: selectedTeams,
+        });
+        results.push({ date: d, ...data });
+      } catch (err) {
+        results.push({ date: d, error: err.response?.data?.error || 'Failed' });
+      }
+    }
+    setTeamResults(results);
+    setResult({
+      total_assigned: results.reduce((s, r) => s + (r.assigned || 0), 0),
+      total_skipped: results.reduce((s, r) => s + (r.skipped || 0), 0),
+      total_conflicts: results.reduce((s, r) => s + (r.conflicts?.length || 0), 0),
+    });
+    setStep('done');
+    setLoading(false);
+  };
+
+  const toggleStaffInTeam = (id) => setNewTeam(prev => ({
+    ...prev,
+    staff_ids: prev.staff_ids.includes(id)
+      ? prev.staff_ids.filter(x => x !== id)
+      : [...prev.staff_ids, id]
+  }));
+
+  return (
+    <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="bg-white rounded-xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
+        <div className="p-4 border-b bg-emerald-50">
+          <h3 className="font-black text-lg text-gray-900 flex items-center gap-2">
+            <svg className="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+            Auto-Assign IT Staff
+          </h3>
+          <p className="text-xs text-gray-500 mt-0.5">Automatically assign IT teams to exam venues by faculty &amp; building</p>
+        </div>
+
+        <div className="overflow-y-auto flex-1 p-4">
+          {step === 'config' && (
+            <div className="space-y-4">
+              {/* Teams */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="font-bold text-sm text-gray-700">IT Teams</h4>
+                  <button onClick={() => setAddTeam(!addTeam)}
+                    className="text-xs text-emerald-600 hover:text-emerald-800 font-semibold">
+                    {addTeam ? 'Cancel' : '+ New Team'}
+                  </button>
+                </div>
+
+                {teams.length === 0 && !addTeam && (
+                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-center">
+                    <p className="text-sm text-amber-700 font-semibold">No teams configured yet</p>
+                    <p className="text-xs text-amber-500 mt-1">Create teams to define which IT staff cover which faculty/building</p>
+                    <button onClick={() => setAddTeam(true)}
+                      className="mt-3 bg-amber-500 text-white text-xs font-semibold px-4 py-2 rounded-lg hover:bg-amber-600">
+                      Create First Team
+                    </button>
+                  </div>
+                )}
+
+                {teams.map(t => (
+                  <div key={t.id} className={`border rounded-lg p-3 mb-2 cursor-pointer transition-colors ${
+                    selectedTeams.includes(t.id) ? 'border-emerald-400 bg-emerald-50' : 'border-gray-200 hover:border-gray-300'
+                  }`}>
+                    <div className="flex items-center justify-between">
+                      <label className="flex items-center gap-2 cursor-pointer flex-1">
+                        <input type="checkbox" checked={selectedTeams.includes(t.id)}
+                          onChange={() => toggleTeam(t.id)} className="rounded text-emerald-600" />
+                        <div>
+                          <span className="font-bold text-sm">{t.name}</span>
+                          <span className="text-xs text-gray-400 ml-2">
+                            {t.faculty_code}{t.building ? ` / ${t.building}` : ''} — {t.staff_ids.length} staff
+                          </span>
+                        </div>
+                      </label>
+                      <button onClick={() => deleteTeam(t.id)} className="text-red-400 hover:text-red-600 text-xs px-2">&times;</button>
+                    </div>
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {t.staff_ids.map(sid => {
+                        const s = staff.find(x => x.id === sid);
+                        return s ? (
+                          <span key={sid} className="text-[10px] bg-white border px-1.5 py-0.5 rounded">
+                            {s.name.split(' ')[0]}
+                          </span>
+                        ) : null;
+                      })}
+                    </div>
+                  </div>
+                ))}
+
+                {/* Add team form */}
+                {addTeam && (
+                  <div className="border-2 border-dashed border-emerald-300 rounded-lg p-4 bg-emerald-50/50">
+                    <div className="grid grid-cols-3 gap-3 mb-3">
+                      <div>
+                        <label className="text-[10px] font-semibold text-gray-500 uppercase">Team Name</label>
+                        <input value={newTeam.name} onChange={e => setNewTeam(p => ({ ...p, name: e.target.value }))}
+                          placeholder="e.g. Art Team" className="w-full border rounded-lg px-3 py-2 text-sm mt-1" />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-semibold text-gray-500 uppercase">Faculty</label>
+                        <select value={newTeam.faculty_id} onChange={e => setNewTeam(p => ({ ...p, faculty_id: Number(e.target.value) }))}
+                          className="w-full border rounded-lg px-3 py-2 text-sm mt-1">
+                          <option value="">Select...</option>
+                          {faculties.map(f => <option key={f.id} value={f.id}>{f.code || f.name}</option>)}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-semibold text-gray-500 uppercase">Building</label>
+                        <select value={newTeam.building} onChange={e => setNewTeam(p => ({ ...p, building: e.target.value }))}
+                          className="w-full border rounded-lg px-3 py-2 text-sm mt-1">
+                          <option value="">All venues</option>
+                          <option value="NCB">NCB only</option>
+                          <option value="FOBE">FOBE building only</option>
+                        </select>
+                      </div>
+                    </div>
+                    <label className="text-[10px] font-semibold text-gray-500 uppercase">
+                      Staff ({newTeam.staff_ids.length} selected)
+                    </label>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 mt-1 max-h-48 overflow-y-auto">
+                      {staff.map(s => (
+                        <button key={s.id} onClick={() => toggleStaffInTeam(s.id)}
+                          className={`text-left text-xs px-2 py-1.5 rounded-lg border transition-colors ${
+                            newTeam.staff_ids.includes(s.id)
+                              ? 'border-emerald-400 bg-emerald-100 text-emerald-800'
+                              : 'border-gray-200 hover:border-gray-300'
+                          }`}>
+                          {s.name.length > 20 ? s.name.slice(0, 20) + '...' : s.name}
+                        </button>
+                      ))}
+                    </div>
+                    <button onClick={saveTeam}
+                      className="mt-3 bg-emerald-600 text-white text-xs font-semibold px-4 py-2 rounded-lg hover:bg-emerald-700 w-full">
+                      Save Team
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Date selection */}
+              <div>
+                <h4 className="font-bold text-sm text-gray-700 mb-2">Days to assign</h4>
+                <div className="flex gap-2 flex-wrap">
+                  {dates.map(d => (
+                    <button key={d.date} onClick={() => toggleDate(d.date)}
+                      className={`px-3 py-2 rounded-lg text-sm font-semibold ${
+                        selectedDates.includes(d.date)
+                          ? 'bg-emerald-600 text-white'
+                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      }`}>
+                      {d.label}
+                    </button>
+                  ))}
+                  <button onClick={() => setSelectedDates(selectedDates.length === dates.length ? [date] : dates.map(d => d.date))}
+                    className="text-xs text-emerald-600 hover:underline px-2">
+                    {selectedDates.length === dates.length ? 'Deselect all' : 'Select all days'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {step === 'running' && (
+            <div className="text-center py-12">
+              <div className="w-16 h-16 border-4 border-emerald-200 border-t-emerald-600 rounded-full animate-spin mx-auto" />
+              <p className="text-sm text-gray-500 mt-4">Assigning staff across {selectedDates.length} day(s)...</p>
+            </div>
+          )}
+
+          {step === 'done' && result && (
+            <div className="space-y-4">
+              <div className="text-center py-6">
+                <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                </div>
+                <h3 className="font-black text-2xl text-gray-900">{result.total_assigned} Assigned</h3>
+                {result.total_skipped > 0 && <p className="text-sm text-gray-500">{result.total_skipped} skipped (already assigned)</p>}
+                {result.total_conflicts > 0 && <p className="text-sm text-amber-600">{result.total_conflicts} conflict(s)</p>}
+              </div>
+
+              {teamResults.map((r, i) => (
+                <div key={i} className={`rounded-lg p-3 text-sm ${r.error ? 'bg-red-50' : 'bg-gray-50'}`}>
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold">{dates.find(d => d.date === r.date)?.label || r.date}</span>
+                    {r.error ? (
+                      <span className="text-red-600 text-xs">{r.error}</span>
+                    ) : (
+                      <span className="text-emerald-600 font-semibold">{r.assigned} assigned</span>
+                    )}
+                  </div>
+                  {r.conflicts?.length > 0 && (
+                    <div className="mt-1 text-xs text-amber-600">
+                      {r.conflicts.slice(0, 3).map((c, j) => <div key={j}>{c.reason}</div>)}
+                      {r.conflicts.length > 3 && <div>+{r.conflicts.length - 3} more</div>}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="p-4 border-t flex gap-3">
+          {step === 'config' && (
+            <>
+              <button onClick={onClose} className="btn-ghost flex-1">Cancel</button>
+              <button onClick={runAutoAssign}
+                disabled={!selectedTeams.length || !selectedDates.length}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-6 py-2.5 rounded-lg flex-1 disabled:opacity-40 flex items-center justify-center gap-2">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                Auto-Assign {selectedDates.length} Day(s)
+              </button>
+            </>
+          )}
+          {step === 'done' && (
+            <button onClick={onDone} className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-6 py-2.5 rounded-lg w-full">
+              Done
+            </button>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

@@ -131,6 +131,214 @@ router.post('/replace', authAdmin, async (req, res) => {
   }
 });
 
+// ── IT Teams CRUD ───────────────────────────────────────────
+router.get('/teams', async (req, res) => {
+  try {
+    const { rows } = await db.query(`
+      SELECT t.*, f.code AS faculty_code, f.name AS faculty_name
+      FROM it_teams t
+      LEFT JOIN faculties f ON f.id = t.faculty_id
+      ORDER BY f.code, t.building`);
+    res.json(rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+router.post('/teams', authAdmin, async (req, res) => {
+  const { name, faculty_id, building, staff_ids } = req.body;
+  if (!name || !faculty_id || !staff_ids?.length)
+    return res.status(400).json({ error: 'Name, faculty, and staff are required' });
+  try {
+    const { rows } = await db.query(
+      `INSERT INTO it_teams (name, faculty_id, building, staff_ids)
+       VALUES ($1,$2,$3,$4)
+       ON CONFLICT (name) DO UPDATE SET faculty_id=$2, building=$3, staff_ids=$4
+       RETURNING *`,
+      [name, faculty_id, building || null, staff_ids]);
+    res.status(201).json(rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+router.delete('/teams/:id', authAdmin, async (req, res) => {
+  try {
+    await db.query('DELETE FROM it_teams WHERE id=$1', [req.params.id]);
+    res.json({ message: 'Team deleted' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// ── Auto-assign ─────────────────────────────────────────────
+router.post('/auto-assign', authAdmin, async (req, res) => {
+  const { date, team_ids } = req.body;
+  if (!date) return res.status(400).json({ error: 'Date is required' });
+
+  try {
+    let teamFilter = '';
+    const teamParams = [];
+    if (team_ids?.length) {
+      teamParams.push(team_ids);
+      teamFilter = ` WHERE t.id = ANY($1)`;
+    }
+    const { rows: teams } = await db.query(
+      `SELECT t.*, f.code AS faculty_code FROM it_teams t
+       JOIN faculties f ON f.id = t.faculty_id${teamFilter}
+       ORDER BY f.code, t.building`, teamParams);
+
+    if (!teams.length) return res.status(400).json({ error: 'No teams configured' });
+
+    const allStaffIds = [...new Set(teams.flatMap(t => t.staff_ids))];
+    const { rows: validStaff } = await db.query(
+      'SELECT id FROM staff WHERE id = ANY($1)', [allStaffIds]);
+    const validIds = new Set(validStaff.map(s => s.id));
+    for (const team of teams) {
+      team.staff_ids = team.staff_ids.filter(id => validIds.has(id));
+    }
+
+    const { rows: dayExams } = await db.query(
+      `SELECT e.id, e.session_number, e.faculty_id, e.venue, e.student_count,
+              e.course_code, f.code AS faculty_code
+       FROM exams e JOIN faculties f ON f.id = e.faculty_id
+       WHERE e.exam_date = $1
+       ORDER BY e.session_number, e.student_count DESC`, [date]);
+
+    const { rows: existingAssignments } = await db.query(
+      `SELECT ea.staff_id, e.session_number, e.faculty_id
+       FROM exam_assignments ea JOIN exams e ON e.id = ea.exam_id
+       WHERE e.exam_date = $1`, [date]);
+
+    const busyInSession = {};
+    existingAssignments.forEach(a => {
+      const key = `${a.staff_id}_${a.session_number}`;
+      if (!busyInSession[key]) busyInSession[key] = new Set();
+      busyInSession[key].add(a.faculty_id);
+    });
+
+    const alreadyAssigned = new Set();
+    existingAssignments.forEach(a => {
+      // We also need to check if this exact exam_id+staff_id combo exists
+    });
+    const { rows: exactAssignments } = await db.query(
+      `SELECT ea.exam_id, ea.staff_id FROM exam_assignments ea
+       JOIN exams e ON e.id = ea.exam_id WHERE e.exam_date = $1`, [date]);
+    exactAssignments.forEach(a => alreadyAssigned.add(`${a.exam_id}_${a.staff_id}`));
+
+    const staffAssignCount = {};
+
+    const isNCB = (venue) => {
+      if (!venue) return false;
+      const v = venue.toUpperCase().replace(/\s+/g, '');
+      return v.startsWith('NCB');
+    };
+
+    const isFOBEBuilding = (venue) => {
+      if (!venue) return false;
+      const v = venue.toUpperCase();
+      return v.startsWith('TB') || v.startsWith('NEW BLK') || v.startsWith('BT ') ||
+             v.startsWith('LE ') || v.startsWith('M ARC') || v.startsWith('DEPP') ||
+             v.includes('NEW BLK') || v.includes('TB –') || v.includes('TB-');
+    };
+
+    let totalAssigned = 0, totalSkipped = 0;
+    const conflicts = [];
+    const assignments = [];
+
+    const sessions = [...new Set(dayExams.map(e => e.session_number))].sort();
+
+    for (const sn of sessions) {
+      const sessionExams = dayExams.filter(e => e.session_number === sn);
+
+      for (const team of teams) {
+        let teamExams = sessionExams.filter(e => e.faculty_id === team.faculty_id);
+
+        if (team.building === 'NCB') {
+          teamExams = teamExams.filter(e => isNCB(e.venue));
+        } else if (team.building === 'FOBE') {
+          teamExams = teamExams.filter(e => isFOBEBuilding(e.venue));
+        }
+
+        if (!teamExams.length) continue;
+
+        teamExams.sort((a, b) => (b.student_count || 0) - (a.student_count || 0));
+
+        const sortedStaff = [...team.staff_ids].sort((a, b) =>
+          (staffAssignCount[a] || 0) - (staffAssignCount[b] || 0)
+        );
+
+        let staffIdx = 0;
+        for (const exam of teamExams) {
+          if (staffIdx >= sortedStaff.length) staffIdx = 0;
+
+          let assigned = false;
+          let attempts = 0;
+          while (attempts < sortedStaff.length) {
+            const sid = sortedStaff[(staffIdx + attempts) % sortedStaff.length];
+
+            if (alreadyAssigned.has(`${exam.id}_${sid}`)) {
+              attempts++;
+              continue;
+            }
+
+            const busyKey = `${sid}_${sn}`;
+            const busyFaculties = busyInSession[busyKey];
+            if (busyFaculties && !busyFaculties.has(exam.faculty_id)) {
+              conflicts.push({
+                staff_id: sid,
+                exam_id: exam.id,
+                reason: `Staff busy in another faculty session ${sn}`
+              });
+              attempts++;
+              continue;
+            }
+
+            assignments.push({ exam_id: exam.id, staff_id: sid });
+            alreadyAssigned.add(`${exam.id}_${sid}`);
+            staffAssignCount[sid] = (staffAssignCount[sid] || 0) + 1;
+            if (!busyInSession[busyKey]) busyInSession[busyKey] = new Set();
+            busyInSession[busyKey].add(exam.faculty_id);
+            assigned = true;
+            break;
+          }
+
+          if (!assigned) {
+            totalSkipped++;
+          }
+          staffIdx++;
+        }
+      }
+    }
+
+    for (const a of assignments) {
+      try {
+        await db.query(
+          'INSERT INTO exam_assignments (exam_id, staff_id, role, assigned_by) VALUES ($1,$2,$3,$4)',
+          [a.exam_id, a.staff_id, 'it_support', req.admin.id]);
+        totalAssigned++;
+      } catch (err) {
+        if (err.code === '23505' || err.code === '23503') totalSkipped++;
+        else throw err;
+      }
+    }
+
+    res.json({
+      assigned: totalAssigned,
+      skipped: totalSkipped,
+      conflicts,
+      sessions: sessions.length,
+      teams_used: teams.map(t => t.name),
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 router.delete('/:id', authAdmin, async (req, res) => {
   try {
     await db.query('DELETE FROM exam_assignments WHERE id=$1', [req.params.id]);
