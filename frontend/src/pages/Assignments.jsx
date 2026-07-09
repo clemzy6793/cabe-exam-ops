@@ -32,6 +32,8 @@ export default function Assignments() {
   const [bulkModal, setBulkModal] = useState(false);
   const [replaceModal, setReplaceModal] = useState(false);
   const [autoAssignModal, setAutoAssignModal] = useState(false);
+  const [mergeMode, setMergeMode] = useState(null);
+  const [mergeSelected, setMergeSelected] = useState([]);
 
   const load = () => {
     const params = { date };
@@ -90,6 +92,28 @@ export default function Assignments() {
       load();
     } catch (err) {
       toast.error('Failed');
+    }
+  };
+
+  const toggleMergeExam = (id) => setMergeSelected(prev =>
+    prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+  );
+
+  const doMerge = async () => {
+    if (mergeSelected.length < 2) return toast.error('Select at least 2 exams to merge');
+    const selectedExams = exams.filter(e => mergeSelected.includes(e.id));
+    const labels = selectedExams.map(e => e.course_code).join(' + ');
+    if (!confirm(`Merge ${labels}? This will combine their course codes, students, and IT staff into one entry.`)) return;
+    const primary_id = mergeSelected[0];
+    const merge_ids = mergeSelected.slice(1);
+    try {
+      const { data } = await api.post('/timetable/merge', { primary_id, merge_ids });
+      toast.success(data.message);
+      setMergeMode(null);
+      setMergeSelected([]);
+      load();
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Merge failed');
     }
   };
 
@@ -197,28 +221,54 @@ export default function Assignments() {
                 <span className="font-bold text-brand text-sm">Session {sn}</span>
                 <span className="text-gray-500 text-xs ml-2">{TIMES[sn-1]}</span>
               </div>
-              <span className="text-xs text-gray-400">{sessionExams.length} exam(s)</span>
+              <div className="flex items-center gap-2">
+                {mergeMode === sn ? (
+                  <>
+                    <button onClick={doMerge} disabled={mergeSelected.length < 2}
+                      className="text-xs font-semibold px-3 py-1 rounded-lg bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-40">
+                      Merge {mergeSelected.length} Selected
+                    </button>
+                    <button onClick={() => { setMergeMode(null); setMergeSelected([]); }}
+                      className="text-xs text-gray-500 hover:text-gray-700">Cancel</button>
+                  </>
+                ) : (
+                  <button onClick={() => { setMergeMode(sn); setMergeSelected([]); }}
+                    className="text-xs text-purple-600 hover:text-purple-800 font-semibold">
+                    Merge Exams
+                  </button>
+                )}
+                <span className="text-xs text-gray-400">{sessionExams.length} exam(s)</span>
+              </div>
             </div>
             <div className="divide-y">
               {sessionExams.map(e => (
-                <div key={e.id} className="px-4 py-3">
+                <div key={e.id} className={`px-4 py-3 ${mergeMode === sn && mergeSelected.includes(e.id) ? 'bg-purple-50' : ''}`}>
                   <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <div className="font-bold text-sm">
-                        {e.course_code}
-                        {e.exam_type && e.exam_type !== 'written' && (
-                          <span className={`ml-1.5 text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
-                            e.exam_type === 'CBE' ? 'bg-orange-100 text-orange-700' : 'bg-sky-100 text-sky-700'
-                          }`}>{e.exam_type}</span>
-                        )}
-                        <span className="font-normal text-gray-500 ml-1">{e.course_name}</span>
-                      </div>
-                      <div className="text-xs text-gray-400 mt-0.5">
-                        {e.venue} {e.student_count > 0 ? `| ${e.student_count} students` : ''}
-                        {facultyId === 'all' && e.faculty_code && <span className="ml-1 text-amber-600 font-semibold">({e.faculty_code})</span>}
+                    <div className="flex items-start gap-2">
+                      {mergeMode === sn && (
+                        <input type="checkbox" checked={mergeSelected.includes(e.id)}
+                          onChange={() => toggleMergeExam(e.id)}
+                          className="mt-1 rounded text-purple-600" />
+                      )}
+                      <div>
+                        <div className="font-bold text-sm">
+                          {e.course_code}
+                          {e.exam_type && e.exam_type !== 'written' && (
+                            <span className={`ml-1.5 text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
+                              e.exam_type === 'CBE' ? 'bg-orange-100 text-orange-700' : 'bg-sky-100 text-sky-700'
+                            }`}>{e.exam_type}</span>
+                          )}
+                          <span className="font-normal text-gray-500 ml-1">{e.course_name}</span>
+                        </div>
+                        <div className="text-xs text-gray-400 mt-0.5">
+                          {e.venue} {e.student_count > 0 ? `| ${e.student_count} students` : ''}
+                          {facultyId === 'all' && e.faculty_code && <span className="ml-1 text-amber-600 font-semibold">({e.faculty_code})</span>}
+                        </div>
                       </div>
                     </div>
-                    <button onClick={() => setAssignModal(e)} className="btn-brand text-xs px-3 py-1">+ Assign</button>
+                    {mergeMode !== sn && (
+                      <button onClick={() => setAssignModal(e)} className="btn-brand text-xs px-3 py-1">+ Assign</button>
+                    )}
                   </div>
                   {e.assigned_staff?.length > 0 && (
                     <div className="flex flex-wrap items-center gap-1.5 mt-2">

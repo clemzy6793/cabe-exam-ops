@@ -186,4 +186,45 @@ router.get('/stats', async (req, res) => {
   }
 });
 
+router.post('/merge', authAdmin, async (req, res) => {
+  const { primary_id, merge_ids } = req.body;
+  if (!primary_id || !merge_ids?.length) return res.status(400).json({ error: 'primary_id and merge_ids required' });
+
+  try {
+    const allIds = [primary_id, ...merge_ids];
+    const { rows: exams } = await db.query('SELECT * FROM exams WHERE id = ANY($1)', [allIds]);
+    const primary = exams.find(e => e.id === primary_id);
+    if (!primary) return res.status(404).json({ error: 'Primary exam not found' });
+    const others = exams.filter(e => e.id !== primary_id);
+    if (!others.length) return res.status(400).json({ error: 'No exams to merge' });
+
+    const codes = [primary.course_code, ...others.map(e => e.course_code)];
+    const mergedCode = [...new Set(codes)].join(' / ');
+    const names = [primary.course_name, ...others.map(e => e.course_name)].filter(Boolean);
+    const mergedName = [...new Set(names)].join(' / ');
+    const totalStudents = exams.reduce((s, e) => s + (e.student_count || 0), 0);
+
+    await db.query(
+      'UPDATE exams SET course_code=$1, course_name=$2, student_count=$3 WHERE id=$4',
+      [mergedCode, mergedName, totalStudents, primary_id]);
+
+    for (const other of others) {
+      await db.query(
+        `UPDATE exam_assignments SET exam_id=$1 WHERE exam_id=$2
+         AND staff_id NOT IN (SELECT staff_id FROM exam_assignments WHERE exam_id=$1)`,
+        [primary_id, other.id]);
+      await db.query('DELETE FROM exam_assignments WHERE exam_id=$1', [other.id]);
+      await db.query(
+        'UPDATE biometric_reports SET exam_id=$1 WHERE exam_id=$2',
+        [primary_id, other.id]);
+      await db.query('DELETE FROM exams WHERE id=$1', [other.id]);
+    }
+
+    res.json({ message: `Merged ${others.length} exam(s) into ${mergedCode}`, merged_code: mergedCode });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 module.exports = router;
