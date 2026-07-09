@@ -58,13 +58,14 @@ export default function Assignments() {
     }
   };
 
-  const removeAssignment = async (assignmentId) => {
+  const removeAssignment = async (assignmentId, e) => {
+    if (e) e.stopPropagation();
     try {
       await api.delete(`/assignments/${assignmentId}`);
       toast.success('Removed');
       load();
     } catch (err) {
-      toast.error('Failed');
+      toast.error(err.response?.data?.error || 'Failed to remove');
     }
   };
 
@@ -225,7 +226,7 @@ export default function Assignments() {
                         <span key={i} className="inline-flex items-center gap-1 text-xs bg-emerald-50 text-emerald-700 px-2 py-1 rounded-lg">
                           {s.name}
                           <span className="text-emerald-400 font-mono text-[10px]">{s.staff_code}</span>
-                          <button onClick={() => removeAssignment(s.id)} className="text-red-400 hover:text-red-600 ml-1">&times;</button>
+                          <button onClick={(e) => removeAssignment(s.id, e)} className="text-red-400 hover:text-red-600 ml-1">&times;</button>
                         </span>
                       ))}
                       {e.assigned_staff.length > 1 && (
