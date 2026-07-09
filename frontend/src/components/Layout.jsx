@@ -5,7 +5,8 @@ import toast from 'react-hot-toast';
 
 const ALL_NAV = [
   { to: '/', label: 'Dashboard', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0h4', roles: ['admin', 'superadmin', 'reviewer', 'exam_officer'] },
-  { to: '/timetable', label: 'Timetable', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z', roles: ['admin', 'superadmin', 'reviewer', 'exam_officer'] },
+  { to: '/', label: 'My Exams', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2', roles: ['examiner'] },
+  { to: '/timetable', label: 'Timetable', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z', roles: ['admin', 'superadmin', 'reviewer', 'exam_officer', 'examiner'] },
   { to: '/staff', label: 'Staff', icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z', roles: ['admin', 'superadmin'] },
   { to: '/assignments', label: 'Assignments', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01', roles: ['admin', 'superadmin'] },
   { to: '/it-report', label: 'IT Report', icon: 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', roles: ['admin', 'superadmin'] },
@@ -26,6 +27,7 @@ export default function Layout() {
   const logout = () => {
     localStorage.removeItem('exam_ops_token');
     localStorage.removeItem('exam_ops_role');
+    localStorage.removeItem('exam_ops_name');
     localStorage.removeItem('exam_ops_faculty_id');
     nav('/login');
   };
@@ -292,9 +294,10 @@ function AccountsModal({ onClose }) {
                   <div className="flex items-center gap-2">
                     <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${
                       a.role === 'admin' || a.role === 'superadmin' ? 'bg-brand/10 text-brand' :
-                      a.role === 'exam_officer' ? 'bg-purple-100 text-purple-700' : 'bg-amber-100 text-amber-700'
+                      a.role === 'exam_officer' ? 'bg-purple-100 text-purple-700' :
+                      a.role === 'examiner' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
                     }`}>{a.role === 'exam_officer' ? `officer${a.faculty_code ? ` (${a.faculty_code})` : ''}` : a.role}</span>
-                    {(a.role === 'reviewer' || a.role === 'exam_officer') && (
+                    {(a.role === 'reviewer' || a.role === 'exam_officer' || a.role === 'examiner') && (
                       <button onClick={() => deleteAccount(a.id)} className="text-xs text-red-400 hover:text-red-600">Del</button>
                     )}
                   </div>
@@ -364,6 +367,7 @@ function AccountsModal({ onClose }) {
                 <select value={form.role} onChange={e => setForm(f => ({ ...f, role: e.target.value }))}
                   className="w-full border rounded-lg px-3 py-2 text-sm mt-1">
                   <option value="reviewer">Reviewer (IT Staff)</option>
+                  <option value="examiner">Examiner</option>
                   <option value="exam_officer">Exam Officer</option>
                   <option value="admin">Admin</option>
                 </select>

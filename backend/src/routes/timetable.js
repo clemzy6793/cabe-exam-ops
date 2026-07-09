@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const db = require('../db');
-const { authAdmin, authEditor } = require('../middleware/auth');
+const { authAdmin, authEditor, authAny } = require('../middleware/auth');
 
 router.get('/exams', async (req, res) => {
   const { date, faculty_id, session, search } = req.query;
@@ -221,6 +221,26 @@ router.post('/merge', authAdmin, async (req, res) => {
     }
 
     res.json({ message: `Merged ${others.length} exam(s) into ${mergedCode}`, merged_code: mergedCode });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+router.get('/my-exams', authAny, async (req, res) => {
+  if (req.admin.role !== 'examiner') return res.status(403).json({ error: 'Examiner access only' });
+  try {
+    const { rows: [account] } = await db.query('SELECT name FROM admins WHERE id=$1', [req.admin.id]);
+    if (!account) return res.status(404).json({ error: 'Account not found' });
+    const pattern = `%${account.name}%`;
+    const { rows } = await db.query(
+      `SELECT e.*, f.name AS faculty_name, f.code AS faculty_code,
+        (SELECT json_agg(json_build_object('name', s.name, 'staff_code', s.staff_code, 'role', ea.role))
+         FROM exam_assignments ea JOIN staff s ON s.id = ea.staff_id WHERE ea.exam_id = e.id) AS assigned_staff
+       FROM exams e JOIN faculties f ON f.id = e.faculty_id
+       WHERE e.examiner ILIKE $1
+       ORDER BY e.exam_date, e.session_number`, [pattern]);
+    res.json(rows);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Internal server error' });

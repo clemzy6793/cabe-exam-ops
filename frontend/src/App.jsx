@@ -12,6 +12,7 @@ import TimetableUpload from './pages/TimetableUpload';
 import StaffLookup from './pages/StaffLookup';
 import PublicTimetable from './pages/PublicTimetable';
 import SessionReport from './pages/SessionReport';
+import ExaminerDashboard from './pages/ExaminerDashboard';
 
 function PrivateRoute({ children }) {
   const token = localStorage.getItem('exam_ops_token');
@@ -23,6 +24,12 @@ function AdminRoute({ children }) {
   return role === 'admin' || role === 'superadmin' ? children : <Navigate to="/" />;
 }
 
+function RoleHome() {
+  const role = localStorage.getItem('exam_ops_role');
+  if (role === 'examiner') return <ExaminerDashboard />;
+  return <Dashboard />;
+}
+
 export default function App() {
   return (
     <Routes>
@@ -31,7 +38,7 @@ export default function App() {
       <Route path="/public/timetable" element={<PublicTimetable />} />
       <Route path="/public/session-report" element={<SessionReport />} />
       <Route path="/" element={<PrivateRoute><Layout /></PrivateRoute>}>
-        <Route index element={<Dashboard />} />
+        <Route index element={<RoleHome />} />
         <Route path="timetable" element={<Timetable />} />
         <Route path="staff" element={<AdminRoute><StaffManagement /></AdminRoute>} />
         <Route path="assignments" element={<AdminRoute><Assignments /></AdminRoute>} />
@@ -39,6 +46,7 @@ export default function App() {
         <Route path="reports" element={<Reports />} />
         <Route path="venues" element={<AdminRoute><Venues /></AdminRoute>} />
         <Route path="upload-timetable" element={<TimetableUpload />} />
+        <Route path="my-exams" element={<ExaminerDashboard />} />
       </Route>
     </Routes>
   );

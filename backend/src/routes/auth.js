@@ -69,7 +69,7 @@ router.get('/accounts', authAdmin, async (req, res) => {
 router.post('/accounts', authAdmin, async (req, res) => {
   const { name, email, password, role } = req.body;
   if (!name || !email || !password) return res.status(400).json({ error: 'Name, email, and password are required' });
-  if (!['admin', 'reviewer', 'exam_officer'].includes(role)) return res.status(400).json({ error: 'Invalid role' });
+  if (!['admin', 'reviewer', 'exam_officer', 'examiner'].includes(role)) return res.status(400).json({ error: 'Invalid role' });
   try {
     const hash = await bcrypt.hash(password, 10);
     const faculty_id = req.body.faculty_id || null;
@@ -109,7 +109,7 @@ router.delete('/accounts/:id', authAdmin, async (req, res) => {
   try {
     const { rows } = await db.query('SELECT role FROM admins WHERE id=$1', [req.params.id]);
     if (!rows.length) return res.status(404).json({ error: 'Not found' });
-    if (rows[0].role === 'admin') return res.status(403).json({ error: 'Cannot delete admin accounts' });
+    if (rows[0].role === 'admin' || rows[0].role === 'superadmin') return res.status(403).json({ error: 'Cannot delete admin accounts' });
     await db.query('DELETE FROM admins WHERE id=$1', [req.params.id]);
     res.json({ message: 'Deleted' });
   } catch (err) {
