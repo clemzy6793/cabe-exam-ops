@@ -46,12 +46,12 @@ router.post('/upload', authAny, upload.single('file'), async (req, res) => {
 
 router.post('/public-upload', upload.single('file'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
-  const { exam_id, staff_id, staff_code } = req.body;
-  if (!exam_id || !staff_id || !staff_code) return res.status(400).json({ error: 'Exam, staff_id, and staff_code are required' });
+  const { exam_id, staff_id } = req.body;
+  if (!exam_id || !staff_id) return res.status(400).json({ error: 'Exam and staff_id are required' });
 
   try {
-    const { rows: [staff] } = await db.query('SELECT id FROM staff WHERE id=$1 AND staff_code=$2', [staff_id, staff_code]);
-    if (!staff) return res.status(403).json({ error: 'Invalid staff credentials' });
+    const { rows: [staff] } = await db.query('SELECT id FROM staff WHERE id=$1', [staff_id]);
+    if (!staff) return res.status(403).json({ error: 'Invalid staff' });
 
     const { rows: [assignment] } = await db.query(
       'SELECT 1 FROM exam_assignments ea JOIN exams e ON e.id=ea.exam_id WHERE ea.staff_id=$1 AND ea.exam_id=$2',
