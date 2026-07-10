@@ -356,10 +356,18 @@ function AccountsModal({ onClose }) {
                 )}
               </div>
               {availableStaff.length > 0 && (
-                <button onClick={addFromStaff} disabled={!selectedStaff.length || !staffPw || loading}
-                  className="btn-brand w-full py-2 text-sm disabled:opacity-40">
-                  {loading ? 'Creating...' : `Create ${selectedStaff.length} Reviewer Account(s)`}
-                </button>
+                <div>
+                  {selectedStaff.length > 0 && !staffPw && (
+                    <p className="text-xs text-amber-600 font-semibold mb-1">↑ Set a password above first</p>
+                  )}
+                  {selectedStaff.length > 0 && staffPw && staffPw.length < 6 && (
+                    <p className="text-xs text-amber-600 font-semibold mb-1">↑ Password must be at least 6 characters</p>
+                  )}
+                  <button onClick={addFromStaff} disabled={!selectedStaff.length || !staffPw || staffPw.length < 6 || loading}
+                    className="btn-brand w-full py-2 text-sm disabled:opacity-40">
+                    {loading ? 'Creating...' : `Create ${selectedStaff.length} Reviewer Account(s)`}
+                  </button>
+                </div>
               )}
             </div>
           )}
