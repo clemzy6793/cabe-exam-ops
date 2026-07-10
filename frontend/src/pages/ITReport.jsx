@@ -14,6 +14,16 @@ const TIMES = { 1: '8:15-9:15', 2: '10:00-11:00', 3: '11:45-12:45', 4: '1:30-2:3
 const RATE_SENIOR_MEMBER = 60;
 const RATE_SENIOR_STAFF = 30;
 
+const categoryLabel = (s) => {
+  if (s.role === 'systems_analyst') return 'Sys. Analyst';
+  return s.category === 'senior_member' ? 'Sr. Member' : 'Sr. Staff';
+};
+
+const categoryStyle = (s) => {
+  if (s.role === 'systems_analyst') return 'bg-indigo-100 text-indigo-700';
+  return s.category === 'senior_member' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700';
+};
+
 export default function ITReport() {
   const [data, setData] = useState([]);
   const [filter, setFilter] = useState('all');
@@ -89,8 +99,8 @@ export default function ITReport() {
       const gross = getWeeklyGross(s);
       const deduction = gross * 0.10;
       const net = gross - deduction;
-      const catLabel = s.category === 'senior_member' ? 'Senior Member' : 'Senior Staff';
-      const catStyle = s.category === 'senior_member' ? 'smBadge' : 'ssBadge';
+      const catLabel = s.role === 'systems_analyst' ? 'Systems Analyst' : (s.category === 'senior_member' ? 'Senior Member' : 'Senior Staff');
+      const catStyle = (s.role === 'systems_analyst' || s.category === 'senior_member') ? 'smBadge' : 'ssBadge';
 
       xml += '<Row>';
       xml += `<Cell ss:StyleID="center"><Data ss:Type="Number">${i + 1}</Data></Cell>`;
@@ -161,7 +171,7 @@ export default function ITReport() {
       const gross = getWeeklyGross(s);
       const ded = gross * 0.10;
       const net = gross - ded;
-      const catLabel = s.category === 'senior_member' ? 'Sr. Member' : 'Sr. Staff';
+      const catLabel = s.role === 'systems_analyst' ? 'Sys. Analyst' : (s.category === 'senior_member' ? 'Sr. Member' : 'Sr. Staff');
       const roleBadges = (s.faculty_roles || []).map(fr =>
         `<span style="display:inline-block;font-size:9px;padding:1px 5px;border-radius:9px;font-weight:bold;margin-left:4px;${
           fr.role === 'printing' ? 'background:#ede9fe;color:#6d28d9;' : 'background:#cffafe;color:#0e7490;'
@@ -311,10 +321,8 @@ export default function ITReport() {
                         <div className="text-[10px] text-gray-400 font-mono">{s.staff_code}</div>
                       </td>
                       <td className="text-center px-2 py-2.5">
-                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
-                          s.category === 'senior_member' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'
-                        }`}>
-                          {s.category === 'senior_member' ? 'Sr. Mem' : 'Sr. Staff'}
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${categoryStyle(s)}`}>
+                          {categoryLabel(s)}
                         </span>
                       </td>
                       <td className="text-center px-2 py-2.5 text-xs font-mono">{rate}</td>
@@ -405,11 +413,9 @@ export default function ITReport() {
                         <td className="px-4 py-2.5">
                           <div className="font-medium">{s.name}</div>
                           <div className="flex gap-1 mt-0.5 flex-wrap">
-                            {s.category && (
-                              <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold ${
-                                s.category === 'senior_member' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'
-                              }`}>{s.category === 'senior_member' ? 'Sr. Member' : 'Sr. Staff'}</span>
-                            )}
+                            <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold ${categoryStyle(s)}`}>
+                              {categoryLabel(s)}
+                            </span>
                             {s.faculty_roles?.length > 0 && s.faculty_roles.map((fr, i) => (
                               <span key={i} className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold ${
                                 fr.role === 'printing' ? 'bg-violet-100 text-violet-700' : 'bg-cyan-100 text-cyan-700'

@@ -277,6 +277,7 @@ function StaffModal({ staff, faculties, onSave, onClose }) {
                 <option value="examiner">Examiner</option>
                 <option value="coordinator">Coordinator</option>
                 <option value="it_support">IT Support</option>
+                <option value="systems_analyst">Systems Analyst</option>
                 <option value="supervisor">Supervisor</option>
               </select>
             </div>

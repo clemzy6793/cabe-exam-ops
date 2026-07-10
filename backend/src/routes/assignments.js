@@ -420,7 +420,7 @@ router.get('/it-report', async (req, res) => {
   try {
     // IT staff with exam assignments
     const { rows } = await db.query(`
-      SELECT s.id, s.name, s.staff_code, s.phone, s.category,
+      SELECT s.id, s.name, s.staff_code, s.phone, s.category, s.role,
         e.day_name, e.exam_date, e.session_number, e.course_code, e.venue, f.code AS faculty_code
       FROM staff s
       LEFT JOIN exam_assignments ea ON ea.staff_id = s.id
@@ -430,14 +430,46 @@ router.get('/it-report', async (req, res) => {
       ORDER BY s.name, e.exam_date, e.session_number
     `);
 
+    // Get ALL unique sessions per day (for systems analysts who cover everything)
+    const { rows: allDaySessions } = await db.query(`
+      SELECT day_name, session_number FROM exams
+      GROUP BY day_name, session_number ORDER BY day_name, session_number
+    `);
+    const allSessionsByDay = {};
+    allDaySessions.forEach(r => {
+      const day = r.day_name.toLowerCase();
+      if (!allSessionsByDay[day]) allSessionsByDay[day] = new Set();
+      allSessionsByDay[day].add(r.session_number);
+    });
+
     const staffMap = {};
     rows.forEach(r => {
       if (!staffMap[r.id]) {
-        staffMap[r.id] = { id: r.id, name: r.name, staff_code: r.staff_code, phone: r.phone, category: r.category, days: {}, faculty_roles: [] };
+        const isSysAnalyst = r.role === 'systems_analyst';
+        staffMap[r.id] = {
+          id: r.id, name: r.name, staff_code: r.staff_code, phone: r.phone,
+          category: isSysAnalyst ? 'senior_member' : r.category,
+          role: r.role, days: {}, faculty_roles: []
+        };
+        // Systems analysts get ALL sessions every day automatically
+        if (isSysAnalyst) {
+          const days = ['monday','tuesday','wednesday','thursday','friday'];
+          days.forEach(day => {
+            const sessions = allSessionsByDay[day] || new Set();
+            staffMap[r.id].days[day] = [];
+            sessions.forEach(sn => {
+              staffMap[r.id].days[day].push({
+                session: sn, course_code: 'OVERSIGHT',
+                venue: 'ALL', faculty_code: 'ALL'
+              });
+            });
+          });
+        }
       }
-      if (r.day_name) {
-        if (!staffMap[r.id].days[r.day_name]) staffMap[r.id].days[r.day_name] = [];
-        staffMap[r.id].days[r.day_name].push({
+      if (r.day_name && r.role !== 'systems_analyst') {
+        const day = r.day_name.toLowerCase();
+        if (!staffMap[r.id].days[day]) staffMap[r.id].days[day] = [];
+        staffMap[r.id].days[day].push({
           session: r.session_number, course_code: r.course_code,
           venue: r.venue, faculty_code: r.faculty_code, exam_date: r.exam_date
         });
