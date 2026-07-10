@@ -69,6 +69,16 @@ DO $$ BEGIN
   END IF;
 END $$;
 
+CREATE TABLE IF NOT EXISTS staff_manual_sessions (
+  id SERIAL PRIMARY KEY,
+  staff_id INT REFERENCES staff(id) ON DELETE CASCADE,
+  day_name VARCHAR(20) NOT NULL,
+  sessions INT DEFAULT 0,
+  note VARCHAR(200),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(staff_id, day_name)
+);
+
 CREATE TABLE IF NOT EXISTS exams (
   id SERIAL PRIMARY KEY,
   period_id INT REFERENCES exam_periods(id) ON DELETE CASCADE,

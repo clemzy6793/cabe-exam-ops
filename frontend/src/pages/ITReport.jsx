@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../api';
+import toast from 'react-hot-toast';
 
 const DAYS = [
   { key: 'monday', label: 'Mon', date: '6th' },
@@ -28,19 +29,33 @@ export default function ITReport() {
   const [data, setData] = useState([]);
   const [filter, setFilter] = useState('all');
   const [view, setView] = useState('assignments');
+  const [editingCell, setEditingCell] = useState(null);
+  const [manualInput, setManualInput] = useState('');
 
-  useEffect(() => {
-    api.get('/assignments/it-report').then(r => setData(r.data));
-  }, []);
+  const loadData = () => api.get('/assignments/it-report').then(r => setData(r.data));
+  useEffect(() => { loadData(); }, []);
 
-  const getTotal = (staff) => Object.values(staff.days).reduce((s, d) => s + new Set(d.map(a => a.session)).size, 0);
-  const getDayCount = (staff, day) => new Set((staff.days[day] || []).map(a => a.session)).size;
+  const getSystemDayCount = (staff, day) => new Set((staff.days[day] || []).map(a => a.session)).size;
+  const getManualDayCount = (staff, day) => staff.manual_sessions?.[day]?.sessions || 0;
+  const getDayCount = (staff, day) => getSystemDayCount(staff, day) + getManualDayCount(staff, day);
+  const getTotal = (staff) => DAYS.reduce((s, d) => s + getDayCount(staff, d.key), 0);
   const getRate = (staff) => staff.category === 'senior_member' ? RATE_SENIOR_MEMBER : RATE_SENIOR_STAFF;
   const getDayAmount = (staff, day) => getDayCount(staff, day) * 2 * getRate(staff);
   const getWeeklyGross = (staff) => DAYS.reduce((sum, d) => sum + getDayAmount(staff, d.key), 0);
   const getWeeklyNet = (staff) => {
     const gross = getWeeklyGross(staff);
     return gross - (gross * 0.10);
+  };
+
+  const saveManualSession = async (staffId, day) => {
+    const val = parseInt(manualInput) || 0;
+    try {
+      await api.put(`/assignments/manual-sessions/${staffId}`, { day_name: day, sessions: val });
+      toast.success(val ? `Added ${val} manual session(s)` : 'Manual sessions cleared');
+      setEditingCell(null);
+      setManualInput('');
+      loadData();
+    } catch { toast.error('Failed to save'); }
   };
 
   const sorted = [...data].sort((a, b) => getTotal(b) - getTotal(a));
@@ -327,17 +342,38 @@ export default function ITReport() {
                       </td>
                       <td className="text-center px-2 py-2.5 text-xs font-mono">{rate}</td>
                       {DAYS.map(d => {
-                        const daySess = getDayCount(s, d.key);
+                        const sysSess = getSystemDayCount(s, d.key);
+                        const manSess = getManualDayCount(s, d.key);
+                        const daySess = sysSess + manSess;
                         const dayAmt = getDayAmount(s, d.key);
+                        const cellKey = `${s.id}_${d.key}`;
+                        const isEditing = editingCell === cellKey;
                         return (
-                          <td key={d.key} className="text-center px-2 py-2.5 text-xs">
-                            {daySess > 0 ? (
-                              <div>
-                                <span className="inline-block min-w-[20px] px-1 py-0.5 rounded-full bg-blue-100 text-blue-700 font-bold">{daySess}</span>
-                                <div className="text-[10px] text-gray-500 mt-0.5">{dayAmt.toFixed(0)}</div>
+                          <td key={d.key} className="text-center px-1 py-2.5 text-xs">
+                            {isEditing ? (
+                              <div className="flex flex-col items-center gap-1">
+                                <div className="text-[9px] text-gray-400">Sys: {sysSess}</div>
+                                <input type="number" min="0" max="20" autoFocus
+                                  value={manualInput} onChange={e => setManualInput(e.target.value)}
+                                  onKeyDown={e => { if (e.key === 'Enter') saveManualSession(s.id, d.key); if (e.key === 'Escape') setEditingCell(null); }}
+                                  className="w-12 text-center border rounded px-1 py-0.5 text-xs" placeholder="0" />
+                                <div className="flex gap-0.5">
+                                  <button onClick={() => saveManualSession(s.id, d.key)} className="text-[9px] text-emerald-600 hover:underline">Save</button>
+                                  <button onClick={() => setEditingCell(null)} className="text-[9px] text-gray-400 hover:underline">Cancel</button>
+                                </div>
                               </div>
                             ) : (
-                              <span className="text-gray-300">-</span>
+                              <div className="cursor-pointer group" onClick={() => { setEditingCell(cellKey); setManualInput(String(manSess || '')); }}>
+                                {daySess > 0 ? (
+                                  <div>
+                                    <span className="inline-block min-w-[20px] px-1 py-0.5 rounded-full bg-blue-100 text-blue-700 font-bold">{daySess}</span>
+                                    {manSess > 0 && <div className="text-[9px] text-orange-500 font-semibold">+{manSess} manual</div>}
+                                    <div className="text-[10px] text-gray-500 mt-0.5">{dayAmt.toFixed(0)}</div>
+                                  </div>
+                                ) : (
+                                  <span className="text-gray-300 group-hover:text-blue-400 group-hover:underline">+ add</span>
+                                )}
+                              </div>
                             )}
                           </td>
                         );

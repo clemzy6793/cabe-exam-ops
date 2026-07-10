@@ -523,7 +523,43 @@ router.get('/it-report', async (req, res) => {
       });
     });
 
+    // Load manual session adjustments
+    const { rows: manualRows } = await db.query('SELECT staff_id, day_name, sessions, note FROM staff_manual_sessions');
+    const manualMap = {};
+    manualRows.forEach(r => {
+      if (!manualMap[r.staff_id]) manualMap[r.staff_id] = {};
+      manualMap[r.staff_id][r.day_name] = { sessions: r.sessions, note: r.note };
+    });
+
+    // Attach manual sessions to each staff
+    Object.values(staffMap).forEach(s => {
+      s.manual_sessions = manualMap[s.id] || {};
+    });
+
     res.json(Object.values(staffMap));
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Manual session adjustments
+router.put('/manual-sessions/:staffId', authAdmin, async (req, res) => {
+  const { staffId } = req.params;
+  const { day_name, sessions, note } = req.body;
+  if (!day_name) return res.status(400).json({ error: 'day_name required' });
+  try {
+    if (!sessions || sessions === 0) {
+      await db.query('DELETE FROM staff_manual_sessions WHERE staff_id=$1 AND day_name=$2', [staffId, day_name]);
+    } else {
+      await db.query(
+        `INSERT INTO staff_manual_sessions (staff_id, day_name, sessions, note)
+         VALUES ($1,$2,$3,$4)
+         ON CONFLICT (staff_id, day_name) DO UPDATE SET sessions=$3, note=$4`,
+        [staffId, day_name, sessions, note || null]
+      );
+    }
+    res.json({ ok: true });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Internal server error' });
