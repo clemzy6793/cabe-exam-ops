@@ -333,6 +333,7 @@ function AccountsModal({ onClose }) {
                 <label className="text-xs font-medium text-gray-600">Shared password for selected staff</label>
                 <input type="text" placeholder="e.g. Review2026" value={staffPw} onChange={e => setStaffPw(e.target.value)}
                   className="w-full border rounded-lg px-3 py-2 text-sm mt-1" />
+                {staffPw && staffPw.length < 6 && <p className="text-[10px] text-red-400 mt-0.5">{staffPw.length}/6 characters</p>}
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-gray-600">{selectedStaff.length} selected of {availableStaff.length} available</span>
