@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const db = require('../db');
-const { authAdmin, authAny } = require('../middleware/auth');
+const { authAdmin, authEditor, authAny } = require('../middleware/auth');
 
 router.get('/', authAny, async (req, res) => {
   const { search, faculty_id, staff_type } = req.query;
@@ -60,7 +60,7 @@ router.get('/:id', authAny, async (req, res) => {
   }
 });
 
-router.post('/', authAdmin, async (req, res) => {
+router.post('/', authEditor, async (req, res) => {
   const { name, email, phone, department, faculty_id, role, bank_name, bank_branch, account_number, account_type, category } = req.body;
   if (!name) return res.status(400).json({ error: 'Name is required' });
 
@@ -88,7 +88,7 @@ router.post('/', authAdmin, async (req, res) => {
   }
 });
 
-router.post('/bulk', authAdmin, async (req, res) => {
+router.post('/bulk', authEditor, async (req, res) => {
   const { staff: staffList } = req.body;
   if (!staffList?.length) return res.status(400).json({ error: 'No staff provided' });
 
@@ -118,7 +118,7 @@ router.post('/bulk', authAdmin, async (req, res) => {
   }
 });
 
-router.put('/:id', authAdmin, async (req, res) => {
+router.put('/:id', authEditor, async (req, res) => {
   const { name, email, phone, department, faculty_id, role, staff_type, bank_name, bank_branch, account_number, account_type, category } = req.body;
   try {
     const { rows } = await db.query(

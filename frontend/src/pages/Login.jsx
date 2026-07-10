@@ -17,6 +17,7 @@ export default function Login() {
       localStorage.setItem('exam_ops_token', data.token);
       localStorage.setItem('exam_ops_role', data.admin.role);
       localStorage.setItem('exam_ops_name', data.admin.name);
+      localStorage.setItem('exam_ops_can_edit', data.admin.can_edit ? '1' : '0');
       if (data.admin.faculty_id) localStorage.setItem('exam_ops_faculty_id', String(data.admin.faculty_id));
       else localStorage.removeItem('exam_ops_faculty_id');
       toast.success(`Welcome, ${data.admin.name}`);

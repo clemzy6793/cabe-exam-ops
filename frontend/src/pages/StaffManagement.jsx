@@ -62,6 +62,9 @@ export default function StaffManagement() {
     }
   };
 
+  const role = localStorage.getItem('exam_ops_role');
+  const canEdit = role === 'admin' || role === 'superadmin' || localStorage.getItem('exam_ops_can_edit') === '1';
+
   const itCount = staff.filter(s => s.staff_type === 'it_staff').length;
   const lecCount = staff.filter(s => s.staff_type === 'lecturer' || !s.staff_type).length;
 
@@ -72,7 +75,7 @@ export default function StaffManagement() {
           <h1 className="text-2xl font-black text-gray-900">Staff Management</h1>
           <p className="text-sm text-gray-500">{staff.length} staff members</p>
         </div>
-        <button onClick={() => setEditStaff({})} className="btn-brand text-sm">+ Add Staff</button>
+        {canEdit && <button onClick={() => setEditStaff({})} className="btn-brand text-sm">+ Add Staff</button>}
       </div>
 
       {/* Category tabs */}
@@ -139,8 +142,8 @@ export default function StaffManagement() {
                 </td>
                 <td className="px-4 py-2.5 text-right">
                   <button onClick={() => viewDetail(s.id)} className="text-xs text-brand hover:underline mr-2">View</button>
-                  <button onClick={() => setEditStaff(s)} className="text-xs text-gray-500 hover:underline mr-2">Edit</button>
-                  <button onClick={() => deleteStaff(s.id)} className="text-xs text-red-500 hover:underline">Del</button>
+                  {canEdit && <button onClick={() => setEditStaff(s)} className="text-xs text-gray-500 hover:underline mr-2">Edit</button>}
+                  {(role === 'admin' || role === 'superadmin') && <button onClick={() => deleteStaff(s.id)} className="text-xs text-red-500 hover:underline">Del</button>}
                 </td>
               </tr>
             ))}

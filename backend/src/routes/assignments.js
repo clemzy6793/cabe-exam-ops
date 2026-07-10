@@ -1,8 +1,8 @@
 const router = require('express').Router();
 const db = require('../db');
-const { authAdmin } = require('../middleware/auth');
+const { authAdmin, authEditor } = require('../middleware/auth');
 
-router.post('/', authAdmin, async (req, res) => {
+router.post('/', authEditor, async (req, res) => {
   const { exam_id, staff_id, role } = req.body;
   if (!exam_id || !staff_id) return res.status(400).json({ error: 'Exam and staff are required' });
 
@@ -39,7 +39,7 @@ router.post('/', authAdmin, async (req, res) => {
   }
 });
 
-router.post('/bulk', authAdmin, async (req, res) => {
+router.post('/bulk', authEditor, async (req, res) => {
   const { staff_ids, exam_ids } = req.body;
   if (!staff_ids?.length || !exam_ids?.length)
     return res.status(400).json({ error: 'Staff and exams are required' });
@@ -74,7 +74,7 @@ router.post('/bulk', authAdmin, async (req, res) => {
   res.json({ assigned, skipped, conflicts });
 });
 
-router.post('/replace', authAdmin, async (req, res) => {
+router.post('/replace', authEditor, async (req, res) => {
   const { old_staff_id, new_staff_id, assignment_ids } = req.body;
   if (!old_staff_id || !new_staff_id) return res.status(400).json({ error: 'Both staff members required' });
   if (old_staff_id === new_staff_id) return res.status(400).json({ error: 'Cannot replace with the same person' });
@@ -146,7 +146,7 @@ router.get('/teams', async (req, res) => {
   }
 });
 
-router.post('/teams', authAdmin, async (req, res) => {
+router.post('/teams', authEditor, async (req, res) => {
   const { name, faculty_id, building, staff_ids } = req.body;
   if (!name || !faculty_id || !staff_ids?.length)
     return res.status(400).json({ error: 'Name, faculty, and staff are required' });
@@ -164,7 +164,7 @@ router.post('/teams', authAdmin, async (req, res) => {
   }
 });
 
-router.delete('/teams/:id', authAdmin, async (req, res) => {
+router.delete('/teams/:id', authEditor, async (req, res) => {
   try {
     await db.query('DELETE FROM it_teams WHERE id=$1', [req.params.id]);
     res.json({ message: 'Team deleted' });
@@ -175,7 +175,7 @@ router.delete('/teams/:id', authAdmin, async (req, res) => {
 });
 
 // ── Auto-assign ─────────────────────────────────────────────
-router.post('/auto-assign', authAdmin, async (req, res) => {
+router.post('/auto-assign', authEditor, async (req, res) => {
   const { date, team_ids } = req.body;
   if (!date) return res.status(400).json({ error: 'Date is required' });
 
@@ -339,7 +339,7 @@ router.post('/auto-assign', authAdmin, async (req, res) => {
   }
 });
 
-router.delete('/:id', authAdmin, async (req, res) => {
+router.delete('/:id', authEditor, async (req, res) => {
   try {
     await db.query('DELETE FROM exam_assignments WHERE id=$1', [req.params.id]);
     res.json({ message: 'Removed' });
@@ -349,7 +349,7 @@ router.delete('/:id', authAdmin, async (req, res) => {
   }
 });
 
-router.delete('/exam/:examId/all', authAdmin, async (req, res) => {
+router.delete('/exam/:examId/all', authEditor, async (req, res) => {
   try {
     const { rowCount } = await db.query('DELETE FROM exam_assignments WHERE exam_id=$1', [req.params.examId]);
     res.json({ message: `Removed ${rowCount} assignment(s)` });
@@ -359,7 +359,7 @@ router.delete('/exam/:examId/all', authAdmin, async (req, res) => {
   }
 });
 
-router.delete('/faculty/:facultyId/date/:date', authAdmin, async (req, res) => {
+router.delete('/faculty/:facultyId/date/:date', authEditor, async (req, res) => {
   try {
     const { rowCount } = await db.query(
       `DELETE FROM exam_assignments WHERE exam_id IN (
@@ -544,7 +544,7 @@ router.get('/it-report', async (req, res) => {
 });
 
 // Manual session adjustments
-router.put('/manual-sessions/:staffId', authAdmin, async (req, res) => {
+router.put('/manual-sessions/:staffId', authEditor, async (req, res) => {
   const { staffId } = req.params;
   const { day_name, sessions, note } = req.body;
   if (!day_name) return res.status(400).json({ error: 'day_name required' });
@@ -585,7 +585,7 @@ router.get('/faculty-staff', async (req, res) => {
   }
 });
 
-router.post('/faculty-staff', authAdmin, async (req, res) => {
+router.post('/faculty-staff', authEditor, async (req, res) => {
   const { faculty_id, staff_id, role } = req.body;
   if (!faculty_id || !staff_id || !role) return res.status(400).json({ error: 'Faculty, staff, and role are required' });
   try {
@@ -601,7 +601,7 @@ router.post('/faculty-staff', authAdmin, async (req, res) => {
   }
 });
 
-router.delete('/faculty-staff/:id', authAdmin, async (req, res) => {
+router.delete('/faculty-staff/:id', authEditor, async (req, res) => {
   try {
     await db.query('DELETE FROM faculty_staff WHERE id=$1', [req.params.id]);
     res.json({ message: 'Removed' });

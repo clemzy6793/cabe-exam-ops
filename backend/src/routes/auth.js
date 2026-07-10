@@ -21,11 +21,11 @@ router.post('/login', loginLimiter, async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     const admin = rows[0];
     const token = jwt.sign(
-      { id: admin.id, role: admin.role, name: admin.name, faculty_id: admin.faculty_id },
+      { id: admin.id, role: admin.role, name: admin.name, faculty_id: admin.faculty_id, can_edit: !!admin.can_edit },
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
-    res.json({ token, admin: { id: admin.id, name: admin.name, email: admin.email, role: admin.role, faculty_id: admin.faculty_id } });
+    res.json({ token, admin: { id: admin.id, name: admin.name, email: admin.email, role: admin.role, faculty_id: admin.faculty_id, can_edit: !!admin.can_edit } });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Internal server error' });
@@ -57,7 +57,7 @@ router.put('/change-password', async (req, res) => {
 
 router.get('/accounts', authAdmin, async (req, res) => {
   try {
-    const { rows } = await db.query(`SELECT a.id, a.name, a.email, a.role, a.faculty_id, f.code AS faculty_code, a.created_at
+    const { rows } = await db.query(`SELECT a.id, a.name, a.email, a.role, a.faculty_id, a.can_edit, f.code AS faculty_code, a.created_at
       FROM admins a LEFT JOIN faculties f ON a.faculty_id=f.id ORDER BY a.role, a.name`);
     res.json(rows);
   } catch (err) {
@@ -103,6 +103,19 @@ router.post('/accounts/from-staff', authAdmin, async (req, res) => {
     created++;
   }
   res.json({ created, skipped });
+});
+
+router.put('/accounts/:id/toggle-edit', authAdmin, async (req, res) => {
+  try {
+    const { rows } = await db.query(
+      'UPDATE admins SET can_edit = NOT COALESCE(can_edit, false) WHERE id=$1 RETURNING id, can_edit',
+      [req.params.id]);
+    if (!rows.length) return res.status(404).json({ error: 'Not found' });
+    res.json(rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 router.delete('/accounts/:id', authAdmin, async (req, res) => {

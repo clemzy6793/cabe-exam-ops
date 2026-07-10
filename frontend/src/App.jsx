@@ -24,6 +24,11 @@ function AdminRoute({ children }) {
   return role === 'admin' || role === 'superadmin' ? children : <Navigate to="/" />;
 }
 
+function EditorRoute({ children }) {
+  const role = localStorage.getItem('exam_ops_role');
+  return ['admin', 'superadmin', 'reviewer'].includes(role) ? children : <Navigate to="/" />;
+}
+
 function RoleHome() {
   const role = localStorage.getItem('exam_ops_role');
   if (role === 'examiner') return <ExaminerDashboard />;
@@ -40,9 +45,9 @@ export default function App() {
       <Route path="/" element={<PrivateRoute><Layout /></PrivateRoute>}>
         <Route index element={<RoleHome />} />
         <Route path="timetable" element={<Timetable />} />
-        <Route path="staff" element={<AdminRoute><StaffManagement /></AdminRoute>} />
-        <Route path="assignments" element={<AdminRoute><Assignments /></AdminRoute>} />
-        <Route path="it-report" element={<AdminRoute><ITReport /></AdminRoute>} />
+        <Route path="staff" element={<EditorRoute><StaffManagement /></EditorRoute>} />
+        <Route path="assignments" element={<EditorRoute><Assignments /></EditorRoute>} />
+        <Route path="it-report" element={<EditorRoute><ITReport /></EditorRoute>} />
         <Route path="reports" element={<Reports />} />
         <Route path="venues" element={<AdminRoute><Venues /></AdminRoute>} />
         <Route path="upload-timetable" element={<TimetableUpload />} />

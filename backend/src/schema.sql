@@ -52,6 +52,9 @@ DO $$ BEGIN
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='admins' AND column_name='faculty_id') THEN
     ALTER TABLE admins ADD COLUMN faculty_id INT REFERENCES faculties(id) ON DELETE SET NULL;
   END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='admins' AND column_name='can_edit') THEN
+    ALTER TABLE admins ADD COLUMN can_edit BOOLEAN DEFAULT false;
+  END IF;
 END $$;
 
 DO $$ BEGIN

@@ -21,9 +21,9 @@ function authAdmin(req, res, next) {
 
 function authEditor(req, res, next) {
   authAny(req, res, () => {
-    if (!['admin', 'superadmin', 'reviewer'].includes(req.admin.role))
-      return res.status(403).json({ error: 'Editor access required' });
-    next();
+    if (req.admin.role === 'admin' || req.admin.role === 'superadmin') return next();
+    if (req.admin.role === 'reviewer' && req.admin.can_edit) return next();
+    return res.status(403).json({ error: 'Editing not enabled for your account' });
   });
 }
 
