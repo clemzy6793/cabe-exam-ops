@@ -114,13 +114,22 @@ export default function StaffManagement() {
                 <td className="px-4 py-2.5 font-mono text-xs text-brand font-bold">{s.staff_code}</td>
                 <td className="px-4 py-2.5 font-medium">{s.name}</td>
                 <td className="px-4 py-2.5 hidden sm:table-cell">
-                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${
-                    s.staff_type === 'it_staff'
-                      ? 'bg-cyan-100 text-cyan-700'
-                      : 'bg-purple-100 text-purple-700'
-                  }`}>
-                    {s.staff_type === 'it_staff' ? 'IT Staff' : 'Lecturer'}
-                  </span>
+                  <div className="flex items-center gap-1 flex-wrap">
+                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${
+                      s.staff_type === 'it_staff'
+                        ? 'bg-cyan-100 text-cyan-700'
+                        : 'bg-purple-100 text-purple-700'
+                    }`}>
+                      {s.staff_type === 'it_staff' ? 'IT Staff' : 'Lecturer'}
+                    </span>
+                    {s.category && (
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${
+                        s.category === 'senior_member' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'
+                      }`}>
+                        {s.category === 'senior_member' ? 'Sr. Member' : 'Sr. Staff'}
+                      </span>
+                    )}
+                  </div>
                 </td>
                 <td className="px-4 py-2.5 text-gray-500 hidden md:table-cell">{s.department || '-'}</td>
                 <td className="px-4 py-2.5 text-center">
@@ -195,6 +204,7 @@ function StaffModal({ staff, faculties, onSave, onClose }) {
     faculty_id: staff?.faculty_id || '',
     role: staff?.role || 'invigilator',
     staff_type: staff?.staff_type || 'it_staff',
+    category: staff?.category || '',
   });
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
@@ -258,16 +268,29 @@ function StaffModal({ staff, faculties, onSave, onClose }) {
               </select>
             </div>
           </div>
-          <div>
-            <label className="text-xs font-medium text-gray-600">Role</label>
-            <select value={form.role} onChange={e => set('role', e.target.value)}
-              className="w-full border rounded-lg px-3 py-2 text-sm mt-1">
-              <option value="invigilator">Invigilator</option>
-              <option value="examiner">Examiner</option>
-              <option value="coordinator">Coordinator</option>
-              <option value="it_support">IT Support</option>
-              <option value="supervisor">Supervisor</option>
-            </select>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-medium text-gray-600">Role</label>
+              <select value={form.role} onChange={e => set('role', e.target.value)}
+                className="w-full border rounded-lg px-3 py-2 text-sm mt-1">
+                <option value="invigilator">Invigilator</option>
+                <option value="examiner">Examiner</option>
+                <option value="coordinator">Coordinator</option>
+                <option value="it_support">IT Support</option>
+                <option value="supervisor">Supervisor</option>
+              </select>
+            </div>
+            {form.staff_type === 'it_staff' && (
+              <div>
+                <label className="text-xs font-medium text-gray-600">Staff Grade *</label>
+                <select value={form.category} onChange={e => set('category', e.target.value)}
+                  className="w-full border rounded-lg px-3 py-2 text-sm mt-1">
+                  <option value="">Select grade...</option>
+                  <option value="senior_member">Senior Member (GHS 60/hr)</option>
+                  <option value="senior_staff">Senior Staff (GHS 30/hr)</option>
+                </select>
+              </div>
+            )}
           </div>
           <div className="flex gap-3 pt-2">
             <button onClick={() => onSave(form)} className="btn-brand flex-1">Save</button>

@@ -44,6 +44,7 @@ CREATE TABLE IF NOT EXISTS staff (
   bank_branch VARCHAR(100),
   account_number VARCHAR(50),
   account_type VARCHAR(20),
+  category VARCHAR(20),
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -62,6 +63,9 @@ DO $$ BEGIN
     ALTER TABLE staff ADD COLUMN bank_branch VARCHAR(100);
     ALTER TABLE staff ADD COLUMN account_number VARCHAR(50);
     ALTER TABLE staff ADD COLUMN account_type VARCHAR(20);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='staff' AND column_name='category') THEN
+    ALTER TABLE staff ADD COLUMN category VARCHAR(20);
   END IF;
 END $$;
 

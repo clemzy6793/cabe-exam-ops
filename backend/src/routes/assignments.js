@@ -420,7 +420,7 @@ router.get('/it-report', async (req, res) => {
   try {
     // IT staff with exam assignments
     const { rows } = await db.query(`
-      SELECT s.id, s.name, s.staff_code, s.phone,
+      SELECT s.id, s.name, s.staff_code, s.phone, s.category,
         e.day_name, e.exam_date, e.session_number, e.course_code, e.venue, f.code AS faculty_code
       FROM staff s
       LEFT JOIN exam_assignments ea ON ea.staff_id = s.id
@@ -433,7 +433,7 @@ router.get('/it-report', async (req, res) => {
     const staffMap = {};
     rows.forEach(r => {
       if (!staffMap[r.id]) {
-        staffMap[r.id] = { id: r.id, name: r.name, staff_code: r.staff_code, phone: r.phone, days: {}, faculty_roles: [] };
+        staffMap[r.id] = { id: r.id, name: r.name, staff_code: r.staff_code, phone: r.phone, category: r.category, days: {}, faculty_roles: [] };
       }
       if (r.day_name) {
         if (!staffMap[r.id].days[r.day_name]) staffMap[r.id].days[r.day_name] = [];
@@ -447,7 +447,7 @@ router.get('/it-report', async (req, res) => {
     // Faculty-level roles (printing/biometric) — count sessions per day for their faculty
     const { rows: fRoles } = await db.query(`
       SELECT fs.role, fs.staff_id, f.code AS faculty_code, f.id AS faculty_id,
-        s.id, s.name, s.staff_code, s.phone
+        s.id, s.name, s.staff_code, s.phone, s.category
       FROM faculty_staff fs
       JOIN staff s ON s.id = fs.staff_id
       JOIN faculties f ON f.id = fs.faculty_id
@@ -470,7 +470,7 @@ router.get('/it-report', async (req, res) => {
 
     fRoles.forEach(fr => {
       if (!staffMap[fr.staff_id]) {
-        staffMap[fr.staff_id] = { id: fr.staff_id, name: fr.name, staff_code: fr.staff_code, phone: fr.phone, days: {}, faculty_roles: [] };
+        staffMap[fr.staff_id] = { id: fr.staff_id, name: fr.name, staff_code: fr.staff_code, phone: fr.phone, category: fr.category, days: {}, faculty_roles: [] };
       }
       staffMap[fr.staff_id].faculty_roles.push({ role: fr.role, faculty_code: fr.faculty_code });
 

@@ -61,7 +61,7 @@ router.get('/:id', authAny, async (req, res) => {
 });
 
 router.post('/', authAdmin, async (req, res) => {
-  const { name, email, phone, department, faculty_id, role, bank_name, bank_branch, account_number, account_type } = req.body;
+  const { name, email, phone, department, faculty_id, role, bank_name, bank_branch, account_number, account_type, category } = req.body;
   if (!name) return res.status(400).json({ error: 'Name is required' });
 
   try {
@@ -77,9 +77,9 @@ router.post('/', authAdmin, async (req, res) => {
 
     const staff_type = req.body.staff_type || 'lecturer';
     const { rows } = await db.query(
-      `INSERT INTO staff (name, staff_code, email, phone, department, faculty_id, role, staff_type, bank_name, bank_branch, account_number, account_type)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING *`,
-      [name, staffCode, email, phone, department, faculty_id, role || 'invigilator', staff_type, bank_name, bank_branch, account_number, account_type]
+      `INSERT INTO staff (name, staff_code, email, phone, department, faculty_id, role, staff_type, bank_name, bank_branch, account_number, account_type, category)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING *`,
+      [name, staffCode, email, phone, department, faculty_id, role || 'invigilator', staff_type, bank_name, bank_branch, account_number, account_type, category || null]
     );
     res.status(201).json(rows[0]);
   } catch (err) {
@@ -119,13 +119,13 @@ router.post('/bulk', authAdmin, async (req, res) => {
 });
 
 router.put('/:id', authAdmin, async (req, res) => {
-  const { name, email, phone, department, faculty_id, role, staff_type, bank_name, bank_branch, account_number, account_type } = req.body;
+  const { name, email, phone, department, faculty_id, role, staff_type, bank_name, bank_branch, account_number, account_type, category } = req.body;
   try {
     const { rows } = await db.query(
       `UPDATE staff SET name=$1, email=$2, phone=$3, department=$4, faculty_id=$5, role=$6, staff_type=$7,
-       bank_name=$8, bank_branch=$9, account_number=$10, account_type=$11
-       WHERE id=$12 RETURNING *`,
-      [name, email, phone, department, faculty_id, role, staff_type || 'lecturer', bank_name, bank_branch, account_number, account_type, req.params.id]
+       bank_name=$8, bank_branch=$9, account_number=$10, account_type=$11, category=$12
+       WHERE id=$13 RETURNING *`,
+      [name, email, phone, department, faculty_id, role, staff_type || 'lecturer', bank_name, bank_branch, account_number, account_type, category || null, req.params.id]
     );
     if (!rows.length) return res.status(404).json({ error: 'Not found' });
     res.json(rows[0]);
