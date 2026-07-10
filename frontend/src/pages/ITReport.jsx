@@ -84,7 +84,7 @@ export default function ITReport() {
     // Sheet 1: Payment Summary
     xml += '<Worksheet ss:Name="Payment Summary">\n<Table>\n';
     xml += '<Column ss:Width="30"/><Column ss:Width="80"/><Column ss:Width="180"/><Column ss:Width="90"/>';
-    DAYS.forEach(() => { xml += '<Column ss:Width="85"/><Column ss:Width="65"/>'; });
+    DAYS.forEach(() => { xml += '<Column ss:Width="65"/>'; });
     xml += '<Column ss:Width="80"/><Column ss:Width="80"/><Column ss:Width="80"/><Column ss:Width="80"/>\n';
 
     // Title rows
@@ -99,8 +99,7 @@ export default function ITReport() {
     xml += '<Cell ss:StyleID="header"><Data ss:Type="String">Name</Data></Cell>';
     xml += '<Cell ss:StyleID="header"><Data ss:Type="String">Grade</Data></Cell>';
     DAYS.forEach(d => {
-      xml += `<Cell ss:StyleID="dayHeader"><Data ss:Type="String">${d.label} Sess.</Data></Cell>`;
-      xml += `<Cell ss:StyleID="dayHeader"><Data ss:Type="String">${d.label} (GHS)</Data></Cell>`;
+      xml += `<Cell ss:StyleID="dayHeader"><Data ss:Type="String">${d.label} ${d.date}</Data></Cell>`;
     });
     xml += '<Cell ss:StyleID="header"><Data ss:Type="String">Total Sess.</Data></Cell>';
     xml += '<Cell ss:StyleID="header"><Data ss:Type="String">Gross (GHS)</Data></Cell>';
@@ -124,9 +123,7 @@ export default function ITReport() {
       xml += `<Cell ss:StyleID="${catStyle}"><Data ss:Type="String">${catLabel}</Data></Cell>`;
       DAYS.forEach(d => {
         const daySess = getDayCount(s, d.key);
-        const dayAmt = getDayAmount(s, d.key);
         xml += `<Cell ss:StyleID="center"><Data ss:Type="Number">${daySess}</Data></Cell>`;
-        xml += `<Cell ss:StyleID="num"><Data ss:Type="Number">${dayAmt}</Data></Cell>`;
       });
       xml += `<Cell ss:StyleID="center"><Data ss:Type="Number">${totalSessions}</Data></Cell>`;
       xml += `<Cell ss:StyleID="numBold"><Data ss:Type="Number">${gross}</Data></Cell>`;
@@ -143,9 +140,7 @@ export default function ITReport() {
     xml += '<Cell ss:StyleID="totalRow"></Cell>';
     DAYS.forEach(d => {
       const dayTotal = sorted.reduce((s, st) => s + getDayCount(st, d.key), 0);
-      const dayAmtTotal = sorted.reduce((s, st) => s + getDayAmount(st, d.key), 0);
       xml += `<Cell ss:StyleID="totalNum"><Data ss:Type="Number">${dayTotal}</Data></Cell>`;
-      xml += `<Cell ss:StyleID="totalNum"><Data ss:Type="Number">${dayAmtTotal}</Data></Cell>`;
     });
     const totalSess = sorted.reduce((s, st) => s + getTotal(st), 0);
     xml += `<Cell ss:StyleID="totalNum"><Data ss:Type="Number">${totalSess}</Data></Cell>`;
@@ -311,8 +306,7 @@ export default function ITReport() {
                   <th className="text-center px-2 py-3 font-bold text-gray-700">Rate</th>
                   {DAYS.map(d => (
                     <th key={d.key} className="text-center px-2 py-3 font-bold text-gray-600 text-xs">
-                      <div>{d.label}</div>
-                      <div className="text-[10px] text-gray-400 font-normal">Sess. | GHS</div>
+                      {d.label} {d.date}
                     </th>
                   ))}
                   <th className="text-center px-2 py-3 font-black text-brand">Total Sess.</th>
@@ -345,7 +339,6 @@ export default function ITReport() {
                         const sysSess = getSystemDayCount(s, d.key);
                         const manSess = getManualDayCount(s, d.key);
                         const daySess = sysSess + manSess;
-                        const dayAmt = getDayAmount(s, d.key);
                         const cellKey = `${s.id}_${d.key}`;
                         const isEditing = editingCell === cellKey;
                         return (
@@ -367,11 +360,10 @@ export default function ITReport() {
                                 {daySess > 0 ? (
                                   <div>
                                     <span className="inline-block min-w-[20px] px-1 py-0.5 rounded-full bg-blue-100 text-blue-700 font-bold">{daySess}</span>
-                                    {manSess > 0 && <div className="text-[9px] text-orange-500 font-semibold">+{manSess} manual</div>}
-                                    <div className="text-[10px] text-gray-500 mt-0.5">{dayAmt.toFixed(0)}</div>
+                                    {manSess > 0 && <div className="text-[9px] text-orange-500 font-semibold">+{manSess}</div>}
                                   </div>
                                 ) : (
-                                  <span className="text-gray-300 group-hover:text-blue-400 group-hover:underline">+ add</span>
+                                  <span className="text-gray-300 group-hover:text-blue-400 group-hover:underline">+</span>
                                 )}
                               </div>
                             )}
@@ -395,11 +387,9 @@ export default function ITReport() {
                   <td className="px-3 py-3 font-black sticky left-0 bg-amber-50 z-10" colSpan={3}>TOTAL ({sorted.length} staff)</td>
                   {DAYS.map(d => {
                     const dayTotal = sorted.reduce((s, st) => s + getDayCount(st, d.key), 0);
-                    const dayAmtTotal = sorted.reduce((s, st) => s + getDayAmount(st, d.key), 0);
                     return (
                       <td key={d.key} className="text-center px-2 py-3 font-bold text-xs">
                         <span className="bg-brand/10 text-brand px-1.5 py-0.5 rounded-full">{dayTotal}</span>
-                        <div className="text-[10px] text-gray-600 mt-0.5">{dayAmtTotal.toFixed(0)}</div>
                       </td>
                     );
                   })}
