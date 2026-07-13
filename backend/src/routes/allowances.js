@@ -12,63 +12,29 @@ const upload = multer({
   },
 });
 
-// Parse "Mon Jul 06 2026(60), Tue Jul 07 2026(120)" → sum of all parenthesised numbers
+// Parse "Mon Jul 06 2026(60), Tue Jul 07 2026(120)" → { "Mon Jul 06 2026": 60, "Tue Jul 07 2026": 120 }
 function parseMinutesPerDay(str) {
-  if (!str) return [];
-  const entries = [];
+  if (!str) return {};
+  const result = {};
   const regex = /(\w{3}\s+\w{3}\s+\d{1,2}\s+\d{4})\((\d+)\)/g;
   let m;
   while ((m = regex.exec(str)) !== null) {
-    entries.push({ day: m[1].trim(), value: parseInt(m[2], 10) });
+    const day = m[1].trim();
+    result[day] = (result[day] || 0) + parseInt(m[2], 10);
   }
-  return entries;
+  return result;
 }
 
-function classifyStaff(staffType, designation) {
-  const st = (staffType || '').toLowerCase();
-  const des = (designation || '').toLowerCase();
-
-  // Academic/invigilation staff → invigilation mode, senior rate
-  if (
-    st.includes('senior member (academic)') ||
-    st.includes('part time') ||
-    des.includes('senior lecturer') ||
-    des.includes('professor') ||
-    des.includes('lecturer') ||
-    des.includes('associate professor')
-  ) {
-    return { mode: 'invigilation', rateKey: 'senior' };
-  }
-
-  // Senior staff (admin/clerical)
-  if (st.includes('senior staff') || st.includes('senior member (administrative)')) {
-    return { mode: 'biometric', rateKey: 'senior_staff' };
-  }
-
-  // Contract staff
-  if (st.includes('contract')) {
-    return { mode: 'biometric', rateKey: 'contract' };
-  }
-
-  // Junior staff
-  if (st.includes('junior')) {
-    return { mode: 'biometric', rateKey: 'junior' };
-  }
-
-  // Default: biometric, senior_staff rate
-  return { mode: 'biometric', rateKey: 'senior_staff' };
+// ≤ 6 → biometric verifications counted as sessions directly
+// ≥ 60 → invigilation minutes divided by 60
+function toSessions(value) {
+  if (!value) return 0;
+  if (value <= 6) return value;
+  return Math.round(value / 60);
 }
 
 router.post('/calculate', authAdmin, upload.single('file'), (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
-
-  // Rates from request body (GHS per session or verification)
-  const rates = {
-    senior: parseFloat(req.body.rate_senior) || 100,        // per invigilation session (60 min)
-    senior_staff: parseFloat(req.body.rate_senior_staff) || 50,
-    contract: parseFloat(req.body.rate_contract) || 40,
-    junior: parseFloat(req.body.rate_junior) || 30,
-  };
 
   try {
     const wb = XLSX.read(req.file.buffer, { type: 'buffer' });
@@ -77,59 +43,47 @@ router.post('/calculate', authAdmin, upload.single('file'), (req, res) => {
 
     if (!rows.length) return res.status(400).json({ error: 'Empty spreadsheet' });
 
+    // Collect all days in order of first appearance
+    const daySet = [];
+    const dayIndex = {};
+
     const results = rows.map(row => {
-      const staffId = row['STAFFID'] || row['StaffID'] || row['staffid'] || '';
-      const fullName = row['FULL_NAME'] || row['FullName'] || row['full_name'] || '';
-      const department = row['DEPARTMENT'] || row['Department'] || '';
-      const designation = row['DESIGNATION'] || row['Designation'] || '';
-      const staffType = row['STAFF_TYPE'] || row['StaffType'] || row['staff_type'] || '';
+      const staffId = String(row['STAFFID'] || row['StaffID'] || row['staffid'] || '');
+      const fullName = String(row['FULL_NAME'] || row['FullName'] || row['full_name'] || '');
+      const department = String(row['DEPARTMENT'] || row['Department'] || '');
+      const designation = String(row['DESIGNATION'] || row['Designation'] || '');
+      const staffType = String(row['STAFF_TYPE'] || row['StaffType'] || row['staff_type'] || '');
       const minutesStr = String(row['MINUTES_PER_DAY'] || row['MinutesPerDay'] || '');
 
-      const entries = parseMinutesPerDay(minutesStr);
-      const { mode, rateKey } = classifyStaff(staffType, designation);
-      const rate = rates[rateKey];
+      const raw = parseMinutesPerDay(minutesStr);
 
-      let totalSessions = 0;
-      let totalVerifications = 0;
-      const breakdown = [];
-
-      if (mode === 'invigilation') {
-        // Each entry's value is minutes; 60 min = 1 session
-        for (const e of entries) {
-          const sessions = Math.round(e.value / 60);
-          totalSessions += sessions;
-          breakdown.push({ day: e.day, minutes: e.value, sessions });
-        }
-      } else {
-        // Biometric: value is count of verifications
-        for (const e of entries) {
-          totalVerifications += e.value;
-          breakdown.push({ day: e.day, verifications: e.value });
+      // Build breakdown as { day: sessions }
+      const breakdown = {};
+      for (const [day, value] of Object.entries(raw)) {
+        const sessions = toSessions(value);
+        breakdown[day] = sessions;
+        if (dayIndex[day] === undefined) {
+          dayIndex[day] = daySet.length;
+          daySet.push(day);
         }
       }
 
-      const quantity = mode === 'invigilation' ? totalSessions : totalVerifications;
-      const amount = quantity * rate;
-
-      return {
-        staffId,
-        fullName,
-        department,
-        designation,
-        staffType,
-        mode,
-        rateKey,
-        rate,
-        quantity,
-        amount,
-        breakdown,
-      };
+      return { staffId, fullName, department, designation, staffType, breakdown };
     });
 
-    // Summary
-    const grandTotal = results.reduce((s, r) => s + r.amount, 0);
+    // Sort days chronologically (they appear as "Mon Jul 06 2026" etc.)
+    daySet.sort((a, b) => {
+      const da = new Date(a.replace(/(\w+)\s+(\w+)\s+(\d+)\s+(\d+)/, '$2 $3 $4'));
+      const db = new Date(b.replace(/(\w+)\s+(\w+)\s+(\d+)\s+(\d+)/, '$2 $3 $4'));
+      return da - db;
+    });
 
-    res.json({ rates, results, grandTotal, count: results.length });
+    const grandTotal = results.reduce((s, r) => {
+      const total = Object.values(r.breakdown).reduce((a, b) => a + b, 0);
+      return s + total;
+    }, 0);
+
+    res.json({ results, days: daySet, grandTotal, count: results.length });
   } catch (err) {
     console.error('Allowance parse error:', err);
     res.status(500).json({ error: 'Failed to parse Excel file: ' + err.message });
