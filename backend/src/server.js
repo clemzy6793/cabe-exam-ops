@@ -89,6 +89,7 @@ app.use('/api/lookup', require('./routes/lookup'));
 app.use('/api/reports', require('./routes/reports'));
 app.use('/api/venues', require('./routes/venues'));
 app.use('/api/timetable-upload', require('./routes/timetable-upload'));
+app.use('/api/allowances', require('./routes/allowances'));
 
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, '../../frontend/dist')));

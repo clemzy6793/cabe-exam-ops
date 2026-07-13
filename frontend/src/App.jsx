@@ -13,6 +13,7 @@ import StaffLookup from './pages/StaffLookup';
 import PublicTimetable from './pages/PublicTimetable';
 import SessionReport from './pages/SessionReport';
 import ExaminerDashboard from './pages/ExaminerDashboard';
+import InvigilationAllowances from './pages/InvigilationAllowances';
 
 function PrivateRoute({ children }) {
   const token = localStorage.getItem('exam_ops_token');
@@ -57,6 +58,7 @@ export default function App() {
         <Route path="venues" element={<AdminRoute><Venues /></AdminRoute>} />
         <Route path="upload-timetable" element={<TimetableUpload />} />
         <Route path="my-exams" element={<ExaminerDashboard />} />
+        <Route path="allowances" element={<AdminRoute><InvigilationAllowances /></AdminRoute>} />
       </Route>
     </Routes>
   );
