@@ -140,8 +140,7 @@ app.get('/sso/callback', async (req, res) => {
       { expiresIn: '7d' }
     );
     return res.send(`<!DOCTYPE html><html><head><script>
-      localStorage.setItem('eo_token','${token}');
-      localStorage.setItem('eo_role','${admin.role}');
+      localStorage.setItem('exam_ops_token','${token}');
       window.location.href='/';
     </script></head><body>Signing in...</body></html>`);
   } catch (err) {
