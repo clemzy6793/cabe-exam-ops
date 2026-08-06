@@ -132,14 +132,15 @@ router.get('/my-exams/:query', async (req, res) => {
       else return res.status(404).json({ error: 'Staff not found' });
     }
 
+    const sessionId = req.query.session_id;
     const { rows: exams } = await db.query(`
       SELECT e.id, e.course_code, e.course_name, e.venue, e.day_name, e.session_number,
         e.exam_date, e.student_count, e.exam_type, f.code AS faculty_code, f.id AS faculty_id
       FROM exam_assignments ea
       JOIN exams e ON e.id = ea.exam_id
       JOIN faculties f ON f.id = e.faculty_id
-      WHERE ea.staff_id = $1
-      ORDER BY e.day_name, e.session_number, e.course_code`, [staff.id]);
+      WHERE ea.staff_id = $1 ${sessionId ? 'AND e.session_id = $2' : ''}
+      ORDER BY e.day_name, e.session_number, e.course_code`, sessionId ? [staff.id, sessionId] : [staff.id]);
 
     const facultyIds = [...new Set(exams.map(e => e.faculty_id))];
     res.json({ staff, exams, facultyIds });
@@ -150,19 +151,27 @@ router.get('/my-exams/:query', async (req, res) => {
 });
 
 router.get('/', async (req, res) => {
-  const { faculty_id, day } = req.query;
+  const { faculty_id, day, session_id } = req.query;
   let sql = `
     SELECT br.id, br.filename, br.file_size, br.uploaded_at,
       e.course_code, e.course_name, e.venue, e.day_name, e.session_number, e.exam_date,
       f.code AS faculty_code, f.id AS faculty_id,
-      s.name AS uploader_name, s.staff_code AS uploader_code
+      s.name AS uploader_name, s.staff_code AS uploader_code,
+      es.name AS exam_session_name, es.exam_type, es.semester,
+      ay.name AS academic_year
     FROM biometric_reports br
     JOIN exams e ON e.id = br.exam_id
     JOIN faculties f ON f.id = e.faculty_id
     LEFT JOIN staff s ON s.id = br.uploader_id
+    LEFT JOIN examination_sessions es ON es.id = e.session_id
+    LEFT JOIN academic_years ay ON ay.id = es.academic_year_id
     WHERE 1=1`;
   const params = [];
 
+  if (session_id) {
+    params.push(session_id);
+    sql += ` AND e.session_id = $${params.length}`;
+  }
   if (faculty_id) {
     params.push(faculty_id);
     sql += ` AND f.id = $${params.length}`;

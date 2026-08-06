@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api';
+import { useSession } from '../contexts/SessionContext';
 
-const DAYS = [
-  { date: '2026-07-06', label: 'Mon', full: 'Monday 6th July' },
-  { date: '2026-07-07', label: 'Tue', full: 'Tuesday 7th July' },
-  { date: '2026-07-08', label: 'Wed', full: 'Wednesday 8th July' },
-  { date: '2026-07-09', label: 'Thu', full: 'Thursday 9th July' },
-  { date: '2026-07-10', label: 'Fri', full: 'Friday 10th July' },
-];
+function formatDayFull(dateStr) {
+  const d = new Date(dateStr + 'T12:00:00');
+  return d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+}
+function formatDayLabel(dateStr) {
+  const d = new Date(dateStr + 'T12:00:00');
+  return d.toLocaleDateString('en-GB', { weekday: 'short' });
+}
 
 const SESSION_TIMES = ['8:15 AM', '10:00 AM', '11:45 AM', '1:30 PM', '3:15 PM', '5:00 PM'];
 const SESSION_LABELS = {
@@ -24,6 +26,7 @@ const FACULTY_COLORS = {
 export default function Dashboard() {
   const [stats, setStats] = useState(null);
   const nav = useNavigate();
+  const { currentSession } = useSession();
 
   const loadStats = () => api.get('/timetable/stats').then(r => setStats(r.data)).catch(() => {});
 
@@ -31,7 +34,48 @@ export default function Dashboard() {
     loadStats();
     const interval = setInterval(loadStats, 30000);
     return () => clearInterval(interval);
-  }, []);
+  }, [currentSession?.id]);
+
+  if (!currentSession) return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-black text-gray-900">Exam Operations Dashboard</h1>
+        <p className="text-sm text-gray-500 mt-1">Set up your examination session to get started</p>
+      </div>
+      <div className="card border-2 border-dashed border-brand/30 text-center py-12">
+        <svg className="w-16 h-16 text-brand/30 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+        </svg>
+        <h2 className="text-lg font-black text-gray-800 mb-2">No Examination Session Selected</h2>
+        <p className="text-sm text-gray-500 max-w-md mx-auto mb-6">
+          Create an academic year and examination session first, then upload your timetable and assign staff.
+        </p>
+        <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+          <button onClick={() => nav('/sessions')} className="btn-brand px-6 py-2.5 text-sm font-semibold">
+            Set Up Session
+          </button>
+        </div>
+        <div className="mt-8 grid grid-cols-1 sm:grid-cols-4 gap-4 max-w-2xl mx-auto text-left">
+          {[
+            { step: '1', title: 'Academic Year', desc: 'Create e.g. 2025/2026' },
+            { step: '2', title: 'Exam Session', desc: 'Mid-sem or End-of-sem' },
+            { step: '3', title: 'Upload Timetable', desc: 'Import exam schedule' },
+            { step: '4', title: 'Assign Staff', desc: 'IT staff & invigilators' },
+          ].map(s => (
+            <div key={s.step} className="flex items-start gap-3">
+              <div className="w-7 h-7 rounded-full bg-brand/10 text-brand flex items-center justify-center text-xs font-black flex-shrink-0">
+                {s.step}
+              </div>
+              <div>
+                <p className="text-sm font-bold text-gray-800">{s.title}</p>
+                <p className="text-xs text-gray-400">{s.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
 
   if (!stats) return (
     <div className="flex items-center justify-center py-32">
@@ -52,7 +96,11 @@ export default function Dashboard() {
       <div className="flex items-start justify-between flex-wrap gap-4">
         <div>
           <h1 className="text-2xl font-black text-gray-900">Exam Operations Dashboard</h1>
-          <p className="text-sm text-gray-500 mt-1">Mid-Semester Examinations — 6th to 10th July, 2026</p>
+          <p className="text-sm text-gray-500 mt-1">
+            {stats.session
+              ? `${stats.session.name} — ${stats.session.academic_year}`
+              : 'All Sessions'}
+          </p>
         </div>
         <div className="flex items-center gap-2 text-xs">
           <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full font-semibold ${todayData ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
@@ -135,34 +183,36 @@ export default function Dashboard() {
             Exams by Day
           </h3>
           <div className="space-y-3">
-            {DAYS.map(day => {
-              const d = stats.by_day?.find(b => b.exam_date?.slice(0, 10) === day.date);
-              const count = d?.count || 0;
-              const isToday = day.date === today;
+            {(stats.by_day || []).map(d => {
+              const date = d.exam_date?.slice(0, 10);
+              const isToday = date === today;
               return (
-                <div key={day.date} className="group">
+                <div key={date} className="group">
                   <div className="flex items-center justify-between mb-1">
                     <span className={`text-xs font-semibold ${isToday ? 'text-accent' : 'text-gray-600'}`}>
-                      {day.full} {isToday && '(Today)'}
+                      {formatDayFull(date)} {isToday && '(Today)'}
                     </span>
-                    <span className="text-xs font-bold text-gray-900">{count}</span>
+                    <span className="text-xs font-bold text-gray-900">{d.count}</span>
                   </div>
                   <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
                     <div
                       className={`h-full rounded-full transition-all ${isToday ? 'bg-accent' : 'bg-brand'}`}
-                      style={{ width: `${Math.max((count / maxDayCount) * 100, 3)}%` }}
+                      style={{ width: `${Math.max((d.count / maxDayCount) * 100, 3)}%` }}
                     />
                   </div>
                 </div>
               );
             })}
+            {(!stats.by_day || stats.by_day.length === 0) && (
+              <p className="text-sm text-gray-400 text-center py-4">No exam days found</p>
+            )}
           </div>
         </div>
       </div>
 
       {/* Bottom Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {/* Faculty Breakdown */}
+        {/* Faculty Breakdown — clickable to Faculty Dashboard */}
         <div className="card">
           <h3 className="font-bold text-gray-900 mb-4 text-sm flex items-center gap-2">
             <svg className="w-4 h-4 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
@@ -177,14 +227,20 @@ export default function Dashboard() {
               };
               const c = colors[f.code] || colors.FOBE;
               return (
-                <div key={f.name} className={`flex items-center justify-between ${c.light} rounded-lg px-4 py-3`}>
+                <div key={f.name} onClick={() => nav(`/faculty/${f.id}`)}
+                  className={`flex items-center justify-between ${c.light} rounded-lg px-4 py-3 cursor-pointer hover:ring-2 ${FACULTY_COLORS[f.code]?.ring || 'ring-blue-200'} transition-all`}>
                   <div className="flex items-center gap-3">
                     <div className={`w-3 h-3 rounded-full ${c.bg}`} />
                     <span className={`text-sm font-semibold ${c.text}`}>{f.code}</span>
                   </div>
-                  <div className="text-right">
-                    <span className={`text-xl font-black ${c.text}`}>{f.count}</span>
-                    <span className={`text-xs ${c.text} ml-1`}>exams</span>
+                  <div className="flex items-center gap-2">
+                    <div className="text-right">
+                      <span className={`text-xl font-black ${c.text}`}>{f.count}</span>
+                      <span className={`text-xs ${c.text} ml-1`}>exams</span>
+                    </div>
+                    <svg className={`w-4 h-4 ${c.text} opacity-40`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
                   </div>
                 </div>
               );
@@ -311,13 +367,13 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              {DAYS.map(day => {
-                const dayRows = byDay[day.date] || [];
+              {Object.keys(byDay).sort().map(dateKey => {
+                const dayRows = byDay[dateKey];
                 if (!dayRows.length) return null;
                 const dayTotal = dayRows.reduce((s, r) => s + r.total_exams, 0);
                 const dayUploaded = dayRows.reduce((s, r) => s + r.uploaded, 0);
                 const dayPct = dayTotal > 0 ? Math.round((dayUploaded / dayTotal) * 100) : 0;
-                const isToday = day.date === today;
+                const isToday = dateKey === today;
 
                 const sessions = {};
                 dayRows.forEach(r => {
@@ -326,10 +382,10 @@ export default function Dashboard() {
                 });
 
                 return (
-                  <div key={day.date} className={`mb-4 rounded-xl border overflow-hidden ${isToday ? 'border-accent/30 ring-1 ring-accent/10' : 'border-gray-100'}`}>
+                  <div key={dateKey} className={`mb-4 rounded-xl border overflow-hidden ${isToday ? 'border-accent/30 ring-1 ring-accent/10' : 'border-gray-100'}`}>
                     <div className={`px-4 py-2.5 flex items-center justify-between ${isToday ? 'bg-accent/5' : 'bg-gray-50'}`}>
                       <div className="flex items-center gap-2">
-                        <span className={`text-sm font-bold ${isToday ? 'text-accent' : 'text-gray-700'}`}>{day.full}</span>
+                        <span className={`text-sm font-bold ${isToday ? 'text-accent' : 'text-gray-700'}`}>{formatDayFull(dateKey)}</span>
                         {isToday && <span className="text-[10px] px-2 py-0.5 rounded-full bg-accent text-white font-bold">TODAY</span>}
                       </div>
                       <div className="flex items-center gap-3">

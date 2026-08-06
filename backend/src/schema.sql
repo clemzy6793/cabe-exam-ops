@@ -148,9 +148,94 @@ CREATE TABLE IF NOT EXISTS it_teams (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- ── Academic Structure ────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS academic_years (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(20) NOT NULL UNIQUE,
+  is_current BOOLEAN DEFAULT false,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS examination_sessions (
+  id SERIAL PRIMARY KEY,
+  academic_year_id INT REFERENCES academic_years(id) ON DELETE CASCADE,
+  name VARCHAR(100) NOT NULL,
+  exam_type VARCHAR(30) NOT NULL DEFAULT 'mid_semester',
+  status VARCHAR(20) DEFAULT 'draft',
+  start_date DATE,
+  end_date DATE,
+  assignments_locked BOOLEAN DEFAULT false,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(academic_year_id, name)
+);
+
+-- ── Payment Rates ────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS payment_rates (
+  id SERIAL PRIMARY KEY,
+  staff_type VARCHAR(100) NOT NULL,
+  grade VARCHAR(100) NOT NULL,
+  exam_type VARCHAR(30) NOT NULL,
+  hourly_rate DECIMAL(10,2) NOT NULL DEFAULT 0,
+  daily_rate DECIMAL(10,2),
+  UNIQUE(staff_type, grade, exam_type)
+);
+
+-- ── Attendance ───────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS attendance (
+  id SERIAL PRIMARY KEY,
+  session_id INT REFERENCES examination_sessions(id) ON DELETE CASCADE,
+  staff_id INT REFERENCES staff(id) ON DELETE CASCADE,
+  staff_type VARCHAR(30) NOT NULL,
+  faculty_id INT REFERENCES faculties(id) ON DELETE SET NULL,
+  attendance_date DATE NOT NULL,
+  present BOOLEAN DEFAULT false,
+  verified BOOLEAN DEFAULT false,
+  verified_by INT REFERENCES admins(id),
+  notes TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(session_id, staff_id, attendance_date)
+);
+
+-- ── Published toggle + semester for sessions ────────────────
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='examination_sessions' AND column_name='published') THEN
+    ALTER TABLE examination_sessions ADD COLUMN published BOOLEAN DEFAULT false;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='examination_sessions' AND column_name='semester') THEN
+    ALTER TABLE examination_sessions ADD COLUMN semester VARCHAR(10) DEFAULT 'first';
+  END IF;
+END $$;
+
+-- ── Add session_id to exams ──────────────────────────────────
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='exams' AND column_name='session_id') THEN
+    ALTER TABLE exams ADD COLUMN session_id INT REFERENCES examination_sessions(id) ON DELETE SET NULL;
+  END IF;
+END $$;
+
 CREATE INDEX IF NOT EXISTS idx_exams_date ON exams(exam_date);
 CREATE INDEX IF NOT EXISTS idx_exams_faculty ON exams(faculty_id);
 CREATE INDEX IF NOT EXISTS idx_exams_session ON exams(exam_date, session_number);
+CREATE INDEX IF NOT EXISTS idx_exams_session_id ON exams(session_id);
 CREATE INDEX IF NOT EXISTS idx_assignments_staff ON exam_assignments(staff_id);
 CREATE INDEX IF NOT EXISTS idx_assignments_exam ON exam_assignments(exam_id);
 CREATE INDEX IF NOT EXISTS idx_staff_code ON staff(staff_code);
+CREATE INDEX IF NOT EXISTS idx_attendance_session ON attendance(session_id);
+CREATE INDEX IF NOT EXISTS idx_attendance_date ON attendance(attendance_date);
+
+-- ── Exam Check-ins (per-exam attendance for invigilators/IT) ────
+CREATE TABLE IF NOT EXISTS exam_checkins (
+  id SERIAL PRIMARY KEY,
+  session_id INT REFERENCES examination_sessions(id) ON DELETE CASCADE,
+  exam_id INT REFERENCES exams(id) ON DELETE CASCADE,
+  staff_id INT REFERENCES staff(id) ON DELETE CASCADE,
+  checked_in BOOLEAN DEFAULT false,
+  verified BOOLEAN DEFAULT false,
+  verified_by INT REFERENCES admins(id),
+  notes TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(exam_id, staff_id)
+);
+CREATE INDEX IF NOT EXISTS idx_exam_checkins_session ON exam_checkins(session_id);
+CREATE INDEX IF NOT EXISTS idx_exam_checkins_exam ON exam_checkins(exam_id);
+CREATE INDEX IF NOT EXISTS idx_exam_checkins_staff ON exam_checkins(staff_id);

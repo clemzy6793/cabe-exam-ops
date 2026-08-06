@@ -2,16 +2,15 @@ import { useState, useEffect, useRef } from 'react';
 import api from '../api';
 import toast from 'react-hot-toast';
 
-const DAYS = [
-  { key: 'monday', label: 'Mon 6th' }, { key: 'tuesday', label: 'Tue 7th' },
-  { key: 'wednesday', label: 'Wed 8th' }, { key: 'thursday', label: 'Thu 9th' },
-  { key: 'friday', label: 'Fri 10th' },
-];
 const TIMES = { 1: '8:15-9:15', 2: '10:00-11:00', 3: '11:45-12:45', 4: '1:30-2:30', 5: '3:15-4:15', 6: '5:00-6:00' };
+const FORMAT_LABELS = { excel: 'Excel (.xlsx)', pdf: 'PDF', docx: 'Word (.docx)' };
+const FORMAT_COLORS = { excel: 'bg-emerald-100 text-emerald-700', pdf: 'bg-red-100 text-red-700', docx: 'bg-blue-100 text-blue-700' };
 
 export default function TimetableUpload() {
   const [faculties, setFaculties] = useState([]);
+  const [sessions, setSessions] = useState([]);
   const [facultyId, setFacultyId] = useState('');
+  const [sessionId, setSessionId] = useState('');
   const [step, setStep] = useState(1);
   const [file, setFile] = useState(null);
   const [parsed, setParsed] = useState(null);
@@ -23,7 +22,6 @@ export default function TimetableUpload() {
   const fileRef = useRef();
 
   const role = localStorage.getItem('exam_ops_role');
-  const isAdmin = role === 'admin' || role === 'superadmin';
   const isOfficer = role === 'exam_officer';
   const officerFacultyId = localStorage.getItem('exam_ops_faculty_id');
 
@@ -32,6 +30,15 @@ export default function TimetableUpload() {
       setFaculties(r.data);
       if (isOfficer && officerFacultyId) setFacultyId(officerFacultyId);
     });
+    api.get('/sessions').then(r => {
+      const allSessions = [];
+      (r.data || []).forEach(ay => {
+        (ay.sessions || []).forEach(s => {
+          allSessions.push({ ...s, academic_year: ay.name });
+        });
+      });
+      setSessions(allSessions);
+    }).catch(() => {});
   }, []);
 
   const downloadTemplate = () => {
@@ -47,12 +54,21 @@ export default function TimetableUpload() {
     });
   };
 
+  const getFileExt = (name) => (name || '').split('.').pop().toLowerCase();
+  const getFileIcon = (name) => {
+    const ext = getFileExt(name);
+    if (ext === 'pdf') return '📄';
+    if (ext === 'docx' || ext === 'doc') return '📝';
+    return '📊';
+  };
+
   const parseFile = async () => {
     if (!file || !facultyId) return;
     setUploading(true);
     const formData = new FormData();
     formData.append('file', file);
     formData.append('faculty_id', facultyId);
+    if (sessionId) formData.append('session_id', sessionId);
     try {
       const { data } = await api.post('/timetable-upload/parse', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
@@ -74,6 +90,7 @@ export default function TimetableUpload() {
         faculty_id: Number(facultyId),
         exams: parsed.exams,
         replace,
+        session_id: sessionId ? Number(sessionId) : undefined,
       });
       toast.success(`${data.inserted} exams saved!`);
       setStep(4);
@@ -109,12 +126,17 @@ export default function TimetableUpload() {
     if (!examsByDaySession[k]) examsByDaySession[k] = { day: e.day_name, session: e.session_number, exams: [] };
     examsByDaySession[k].exams.push(e);
   });
+
+  const dayOrder = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
   const groups = Object.values(examsByDaySession).sort((a, b) => {
-    const di = DAYS.findIndex(d => d.key === a.day) - DAYS.findIndex(d => d.key === b.day);
+    const di = dayOrder.indexOf(a.day) - dayOrder.indexOf(b.day);
     return di || a.session - b.session;
   });
 
+  const uniqueDays = [...new Set(parsed?.exams?.map(e => e.day_name) || [])].sort((a, b) => dayOrder.indexOf(a) - dayOrder.indexOf(b));
+
   const selectedFac = faculties.find(f => f.id === Number(facultyId));
+  const selectedSession = sessions.find(s => s.id === Number(sessionId));
 
   const reset = () => { setStep(1); setFile(null); setParsed(null); setDayFilter('all'); };
 
@@ -128,12 +150,14 @@ export default function TimetableUpload() {
       examsByDay[e.day_name][e.session_number].push(e);
     });
 
-    const dayLabels = { monday: 'Monday, 6th July', tuesday: 'Tuesday, 7th July', wednesday: 'Wednesday, 8th July', thursday: 'Thursday, 9th July', friday: 'Friday, 10th July' };
     let rows = '';
-    DAYS.forEach(d => {
-      const sessions = examsByDay[d.key];
+    uniqueDays.forEach(day => {
+      const sessions = examsByDay[day];
       if (!sessions) return;
-      rows += `<tr><td colspan="5" style="background:#1a3a5c;color:#fff;padding:10px;font-weight:bold;font-size:14px;">${dayLabels[d.key]}</td></tr>`;
+      const dayLabel = day.charAt(0).toUpperCase() + day.slice(1);
+      const dateStr = parsed.exams.find(e => e.day_name === day)?.exam_date;
+      const displayDate = dateStr ? new Date(dateStr + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'long' }) : '';
+      rows += `<tr><td colspan="5" style="background:#1a3a5c;color:#fff;padding:10px;font-weight:bold;font-size:14px;">${dayLabel}${displayDate ? ', ' + displayDate : ''}</td></tr>`;
       [1,2,3,4,5,6].forEach(sn => {
         const exams = sessions[sn];
         if (!exams) return;
@@ -149,6 +173,7 @@ export default function TimetableUpload() {
       });
     });
 
+    const sessionInfo = selectedSession ? `${selectedSession.name} — ${selectedSession.academic_year}` : '';
     const win = window.open('', '_blank');
     win.document.write(`<!DOCTYPE html><html><head><title>${fac?.name || ''} Timetable</title>
       <style>body{font-family:Arial,sans-serif;padding:30px;} table{border-collapse:collapse;width:100%;} @media print{button{display:none;} body{padding:15px;}}</style>
@@ -157,8 +182,7 @@ export default function TimetableUpload() {
         <p style="margin:0;font-size:13px;">KWAME NKRUMAH UNIVERSITY OF SCIENCE AND TECHNOLOGY, KUMASI</p>
         <p style="margin:2px 0;font-size:13px;">COLLEGE OF ART AND BUILT ENVIRONMENT</p>
         <p style="margin:2px 0;font-size:15px;font-weight:bold;">${fac?.name?.toUpperCase() || ''}</p>
-        <p style="margin:4px 0;font-size:13px;">SECOND SEMESTER MID-SEMESTER EXAMINATIONS TIMETABLE</p>
-        <p style="margin:2px 0;font-size:13px;">2025/2026 ACADEMIC YEAR (6th - 10th July, 2026)</p>
+        ${sessionInfo ? `<p style="margin:4px 0;font-size:13px;">${sessionInfo}</p>` : ''}
       </div>
       <table>
         <thead><tr style="background:#f0f0f0;"><th style="padding:8px;border:1px solid #ddd;">Session</th><th style="padding:8px;border:1px solid #ddd;">Course Code</th><th style="padding:8px;border:1px solid #ddd;">Course Name</th><th style="padding:8px;border:1px solid #ddd;">Venue</th><th style="padding:8px;border:1px solid #ddd;">Students</th></tr></thead>
@@ -174,8 +198,8 @@ export default function TimetableUpload() {
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-black text-gray-900">Timetable Upload</h1>
-          <p className="text-sm text-gray-500 mt-1">Upload faculty exam timetable from Excel template</p>
+          <h1 className="text-2xl font-black text-gray-900">Timetable Import</h1>
+          <p className="text-sm text-gray-500 mt-1">Import exam timetable from PDF, Word, or Excel</p>
         </div>
         {step > 1 && step < 4 && (
           <button onClick={reset} className="text-sm text-gray-500 hover:text-gray-700">Start Over</button>
@@ -184,7 +208,7 @@ export default function TimetableUpload() {
 
       {/* Progress */}
       <div className="flex gap-1">
-        {['Select faculty', 'Upload Excel', 'Preview & confirm', 'Done'].map((label, i) => (
+        {['Select faculty', 'Upload file', 'Preview & confirm', 'Done'].map((label, i) => (
           <div key={i} className="flex-1">
             <div className={`h-1.5 rounded-full ${step > i ? 'bg-brand' : 'bg-gray-200'}`} />
             <p className={`text-[10px] mt-1 ${step === i + 1 ? 'text-brand font-bold' : 'text-gray-400'}`}>{label}</p>
@@ -192,7 +216,7 @@ export default function TimetableUpload() {
         ))}
       </div>
 
-      {/* Step 1: Select Faculty */}
+      {/* Step 1: Select Faculty + Session */}
       {step === 1 && (
         <div className="card space-y-4">
           <div>
@@ -205,6 +229,17 @@ export default function TimetableUpload() {
             </select>
             {isOfficer && <p className="text-xs text-gray-400 mt-1">Locked to your assigned faculty</p>}
           </div>
+          <div>
+            <label className="text-sm font-semibold text-gray-700">Exam Session <span className="text-gray-400 font-normal">(optional)</span></label>
+            <select value={sessionId} onChange={e => setSessionId(e.target.value)}
+              className="w-full border rounded-lg px-3 py-2.5 text-sm mt-1">
+              <option value="">No session selected</option>
+              {sessions.map(s => (
+                <option key={s.id} value={s.id}>{s.name} — {s.academic_year}</option>
+              ))}
+            </select>
+            <p className="text-xs text-gray-400 mt-1">Links exams to a session and maps day names to exam dates automatically</p>
+          </div>
           {facultyId && (
             <div className="flex gap-3">
               <button onClick={downloadTemplate}
@@ -214,7 +249,7 @@ export default function TimetableUpload() {
               </button>
               <button onClick={() => setStep(2)}
                 className="flex-1 btn-brand text-sm py-3">
-                I have a filled template
+                Upload Timetable File
               </button>
             </div>
           )}
@@ -224,31 +259,43 @@ export default function TimetableUpload() {
       {/* Step 2: Upload File */}
       {step === 2 && (
         <div className="card space-y-4">
-          <div className="bg-brand/5 rounded-lg p-3">
+          <div className="bg-brand/5 rounded-lg p-3 flex items-center justify-between">
             <p className="text-sm font-bold text-brand">{selectedFac?.code} — {selectedFac?.name}</p>
+            {selectedSession && <p className="text-xs text-gray-500">{selectedSession.name}</p>}
           </div>
+
+          <div className="bg-gray-50 rounded-lg p-3 border">
+            <p className="text-xs font-semibold text-gray-700 mb-2">Supported formats</p>
+            <div className="flex gap-2">
+              <span className="text-[10px] px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 font-semibold">Excel .xlsx</span>
+              <span className="text-[10px] px-2 py-1 rounded-full bg-red-100 text-red-700 font-semibold">PDF .pdf</span>
+              <span className="text-[10px] px-2 py-1 rounded-full bg-blue-100 text-blue-700 font-semibold">Word .docx</span>
+            </div>
+            <p className="text-[10px] text-gray-400 mt-1.5">The system auto-detects format and extracts course codes, sessions, venues, and student counts</p>
+          </div>
+
           <div onClick={() => fileRef.current?.click()}
             className="border-2 border-dashed rounded-xl p-10 text-center cursor-pointer hover:border-brand/50 hover:bg-brand/5 transition-colors">
             {file ? (
               <div>
-                <svg className="w-12 h-12 text-brand mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <p className="text-3xl mb-2">{getFileIcon(file.name)}</p>
                 <p className="text-sm font-bold text-brand">{file.name}</p>
                 <p className="text-xs text-gray-400">{(file.size / 1024).toFixed(0)} KB</p>
               </div>
             ) : (
               <div>
                 <svg className="w-12 h-12 text-gray-300 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
-                <p className="text-sm text-gray-500">Click to select filled Excel template</p>
-                <p className="text-xs text-gray-400">.xls or .xlsx</p>
+                <p className="text-sm text-gray-500">Click to select timetable file</p>
+                <p className="text-xs text-gray-400">PDF, Word, or Excel</p>
               </div>
             )}
           </div>
-          <input ref={fileRef} type="file" accept=".xls,.xlsx" className="hidden"
+          <input ref={fileRef} type="file" accept=".xls,.xlsx,.pdf,.doc,.docx" className="hidden"
             onChange={e => setFile(e.target.files[0])} />
           <div className="flex gap-3">
             <button onClick={() => setStep(1)} className="btn-ghost flex-1">Back</button>
             <button onClick={parseFile} disabled={!file || uploading} className="btn-brand flex-1 disabled:opacity-40">
-              {uploading ? 'Parsing...' : 'Upload & Parse'}
+              {uploading ? 'Analyzing...' : 'Upload & Analyze'}
             </button>
           </div>
         </div>
@@ -258,10 +305,10 @@ export default function TimetableUpload() {
       {step === 3 && parsed && (
         <div className="space-y-4">
           {/* Summary cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
             <div className="card text-center">
               <p className="text-2xl font-black text-brand">{parsed.total}</p>
-              <p className="text-xs text-gray-500">Exams parsed</p>
+              <p className="text-xs text-gray-500">Exams found</p>
             </div>
             <div className="card text-center">
               <p className={`text-2xl font-black ${parsed.warnings.length ? 'text-amber-500' : 'text-emerald-500'}`}>{parsed.warnings.length}</p>
@@ -272,8 +319,16 @@ export default function TimetableUpload() {
               <p className="text-xs text-gray-500">Venue clashes</p>
             </div>
             <div className="card text-center">
-              <p className="text-2xl font-black text-purple-600">{new Set(parsed.exams.map(e => e.day_name)).size}</p>
+              <p className="text-2xl font-black text-purple-600">{uniqueDays.length}</p>
               <p className="text-xs text-gray-500">Days</p>
+            </div>
+            <div className="card text-center">
+              {parsed.format && (
+                <span className={`text-xs px-2 py-1 rounded-full font-bold ${FORMAT_COLORS[parsed.format] || 'bg-gray-100 text-gray-600'}`}>
+                  {FORMAT_LABELS[parsed.format] || parsed.format}
+                </span>
+              )}
+              <p className="text-xs text-gray-500 mt-1">Source format</p>
             </div>
           </div>
 
@@ -304,13 +359,13 @@ export default function TimetableUpload() {
               className={`px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap ${dayFilter === 'all' ? 'bg-brand text-white' : 'bg-white border text-gray-600'}`}>
               All ({parsed.exams.length})
             </button>
-            {DAYS.map(d => {
-              const count = parsed.exams.filter(e => e.day_name === d.key).length;
-              if (!count) return null;
+            {uniqueDays.map(day => {
+              const count = parsed.exams.filter(e => e.day_name === day).length;
+              const label = day.charAt(0).toUpperCase() + day.slice(1);
               return (
-                <button key={d.key} onClick={() => setDayFilter(d.key)}
-                  className={`px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap ${dayFilter === d.key ? 'bg-brand text-white' : 'bg-white border text-gray-600'}`}>
-                  {d.label} ({count})
+                <button key={day} onClick={() => setDayFilter(day)}
+                  className={`px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap ${dayFilter === day ? 'bg-brand text-white' : 'bg-white border text-gray-600'}`}>
+                  {label} ({count})
                 </button>
               );
             })}
@@ -318,7 +373,7 @@ export default function TimetableUpload() {
 
           {/* Exam list */}
           {groups.map(g => {
-            const dayLabel = DAYS.find(d => d.key === g.day)?.label || g.day;
+            const dayLabel = g.day.charAt(0).toUpperCase() + g.day.slice(1);
             return (
               <div key={`${g.day}_${g.session}`} className="card p-0 overflow-hidden">
                 <div className="bg-brand/5 px-4 py-2 border-b flex justify-between items-center">
@@ -343,6 +398,7 @@ export default function TimetableUpload() {
                           <div className="flex gap-3 text-[10px] text-gray-400 mt-0.5">
                             {e.venue && <span>Venue: {e.venue}</span>}
                             {e.student_count > 0 && <span>{e.student_count} students</span>}
+                            {e.examiner && <span>Examiner: {e.examiner}</span>}
                           </div>
                         </div>
                         <div className="flex items-center gap-1.5 ml-2">
@@ -356,6 +412,10 @@ export default function TimetableUpload() {
               </div>
             );
           })}
+
+          {filteredExams.length === 0 && (
+            <div className="text-center py-8 text-gray-400 text-sm">No exams for the selected filter.</div>
+          )}
 
           {/* Actions */}
           <div className="card flex flex-col sm:flex-row gap-3">
@@ -376,8 +436,11 @@ export default function TimetableUpload() {
       {step === 4 && (
         <div className="card text-center py-12">
           <svg className="w-16 h-16 text-emerald-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-          <h2 className="text-xl font-black text-gray-900 mb-2">Timetable Uploaded</h2>
-          <p className="text-sm text-gray-500 mb-6">Exams have been saved for {selectedFac?.name}</p>
+          <h2 className="text-xl font-black text-gray-900 mb-2">Timetable Imported</h2>
+          <p className="text-sm text-gray-500 mb-6">
+            Exams have been saved for {selectedFac?.name}
+            {selectedSession && <span className="block text-xs text-gray-400 mt-1">Session: {selectedSession.name}</span>}
+          </p>
           <div className="flex justify-center gap-3">
             <button onClick={reset} className="btn-ghost text-sm">Upload Another</button>
             <a href="/timetable" className="btn-brand text-sm inline-block px-4 py-2">View Timetable</a>
@@ -405,7 +468,7 @@ export default function TimetableUpload() {
                 <label className="text-xs font-semibold text-gray-600">Day</label>
                 <select value={editForm.day_name} onChange={e => setEditForm({ ...editForm, day_name: e.target.value })}
                   className="w-full border rounded-lg px-3 py-2 text-sm mt-1">
-                  {DAYS.map(d => <option key={d.key} value={d.key}>{d.label}</option>)}
+                  {dayOrder.map(d => <option key={d} value={d}>{d.charAt(0).toUpperCase() + d.slice(1)}</option>)}
                 </select>
               </div>
               <div>
@@ -428,14 +491,21 @@ export default function TimetableUpload() {
                   className="w-full border rounded-lg px-3 py-2 text-sm mt-1" />
               </div>
             </div>
-            <div>
-              <label className="text-xs font-semibold text-gray-600">Exam Type</label>
-              <select value={editForm.exam_type} onChange={e => setEditForm({ ...editForm, exam_type: e.target.value })}
-                className="w-full border rounded-lg px-3 py-2 text-sm mt-1">
-                <option value="written">Written</option>
-                <option value="CBE">CBE</option>
-                <option value="BYOD">BYOD</option>
-              </select>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs font-semibold text-gray-600">Exam Type</label>
+                <select value={editForm.exam_type} onChange={e => setEditForm({ ...editForm, exam_type: e.target.value })}
+                  className="w-full border rounded-lg px-3 py-2 text-sm mt-1">
+                  <option value="written">Written</option>
+                  <option value="CBE">CBE</option>
+                  <option value="BYOD">BYOD</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-gray-600">Examiner</label>
+                <input value={editForm.examiner || ''} onChange={e => setEditForm({ ...editForm, examiner: e.target.value })}
+                  className="w-full border rounded-lg px-3 py-2 text-sm mt-1" />
+              </div>
             </div>
             <div className="flex gap-3 pt-2">
               <button onClick={() => setEditIdx(null)} className="btn-ghost flex-1">Cancel</button>

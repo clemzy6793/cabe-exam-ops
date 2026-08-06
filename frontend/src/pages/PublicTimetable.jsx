@@ -1,14 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../api';
 
-const DAYS = [
-  { date: '2026-07-06', label: 'Monday 6th' },
-  { date: '2026-07-07', label: 'Tuesday 7th' },
-  { date: '2026-07-08', label: 'Wednesday 8th' },
-  { date: '2026-07-09', label: 'Thursday 9th' },
-  { date: '2026-07-10', label: 'Friday 10th' },
-];
-
 const SESSION_TIMES = {
   1: '8:15 - 9:15 AM',
   2: '10:00 - 11:00 AM',
@@ -18,12 +10,37 @@ const SESSION_TIMES = {
   6: '5:00 - 6:00 PM',
 };
 
+const DAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
 export default function PublicTimetable() {
-  const [date, setDate] = useState('2026-07-06');
+  const [info, setInfo] = useState(null);
+  const [days, setDays] = useState([]);
+  const [date, setDate] = useState('');
   const [faculty, setFaculty] = useState('');
   const [exams, setExams] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    api.get('/lookup/info').then(r => {
+      setInfo(r.data);
+      if (r.data.published && r.data.exam_dates?.length) {
+        const d = r.data.exam_dates.map(ed => {
+          const dt = new Date(ed.exam_date.slice(0, 10) + 'T00:00:00');
+          const dayName = ed.day_name?.charAt(0).toUpperCase() + ed.day_name?.slice(1) || DAY_NAMES[dt.getDay()];
+          return {
+            date: ed.exam_date.slice(0, 10),
+            label: `${dayName} ${dt.getDate()}${ordinal(dt.getDate())}`,
+          };
+        });
+        setDays(d);
+        setDate(d[0].date);
+      }
+      setLoading(false);
+    }).catch(() => setLoading(false));
+  }, []);
+
+  useEffect(() => {
+    if (!date) return;
     const params = {};
     if (date) params.date = date;
     if (faculty) params.faculty = faculty;
@@ -37,19 +54,47 @@ export default function PublicTimetable() {
     grouped[key].push(e);
   });
 
+  if (loading) return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="w-8 h-8 border-4 border-brand/30 border-t-brand rounded-full animate-spin" />
+    </div>
+  );
+
+  if (!info?.published) return (
+    <div className="min-h-screen bg-gray-50">
+      <div className="bg-brand-dark text-white px-4 py-6">
+        <div className="max-w-4xl mx-auto">
+          <h1 className="text-xl font-black">CABE Exam Timetable</h1>
+        </div>
+      </div>
+      <div className="max-w-4xl mx-auto p-4">
+        <div className="text-center py-16">
+          <p className="text-gray-400 text-lg">No timetable is currently published.</p>
+          <p className="text-gray-300 text-sm mt-2">Check back later for exam schedules.</p>
+        </div>
+        <div className="text-center py-6">
+          <a href="/lookup" className="text-brand text-sm hover:underline">Staff Assignment Lookup</a>
+        </div>
+      </div>
+    </div>
+  );
+
+  const session = info.sessions[0];
+  const headerText = session.name || `${session.semester === 'second' ? '2nd' : '1st'} Semester ${session.exam_type === 'mid_semester' ? 'Mid-Semester' : 'End of Semester'} Exams`;
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="bg-brand-dark text-white px-4 py-6">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-xl font-black">CABE Exam Timetable</h1>
-          <p className="text-blue-200 text-sm">Mid-Semester Examinations — 6th to 10th July 2026</p>
+          <p className="text-blue-200 text-sm">{headerText} — {session.academic_year}</p>
         </div>
       </div>
 
       <div className="max-w-4xl mx-auto p-4 space-y-4">
         {/* Filters */}
         <div className="flex flex-wrap gap-2">
-          {DAYS.map(d => (
+          {days.map(d => (
             <button key={d.date} onClick={() => setDate(d.date)}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold ${
                 date === d.date ? 'bg-brand text-white' : 'bg-white border text-gray-600 hover:bg-gray-50'
@@ -116,4 +161,10 @@ export default function PublicTimetable() {
       </div>
     </div>
   );
+}
+
+function ordinal(n) {
+  const s = ['th','st','nd','rd'];
+  const v = n % 100;
+  return s[(v - 20) % 10] || s[v] || s[0];
 }

@@ -14,6 +14,12 @@ import PublicTimetable from './pages/PublicTimetable';
 import SessionReport from './pages/SessionReport';
 import ExaminerDashboard from './pages/ExaminerDashboard';
 import InvigilationAllowances from './pages/InvigilationAllowances';
+import SessionManagement from './pages/SessionManagement';
+import PaymentRates from './pages/PaymentRates';
+import AttendanceTracking from './pages/AttendanceTracking';
+import FacultyDashboard from './pages/FacultyDashboard';
+import PaymentCalculation from './pages/PaymentCalculation';
+import AuditLog from './pages/AuditLog';
 
 function PrivateRoute({ children }) {
   const token = localStorage.getItem('exam_ops_token');
@@ -59,6 +65,12 @@ export default function App() {
         <Route path="upload-timetable" element={<TimetableUpload />} />
         <Route path="my-exams" element={<ExaminerDashboard />} />
         <Route path="allowances" element={<AdminRoute><InvigilationAllowances /></AdminRoute>} />
+        <Route path="sessions" element={<AdminRoute><SessionManagement /></AdminRoute>} />
+        <Route path="payment-rates" element={<AdminRoute><PaymentRates /></AdminRoute>} />
+        <Route path="attendance-tracking" element={<EditorRoute><AttendanceTracking /></EditorRoute>} />
+        <Route path="faculty/:id" element={<FacultyDashboard />} />
+        <Route path="payment-calc" element={<AdminRoute><PaymentCalculation /></AdminRoute>} />
+        <Route path="audit" element={<AdminRoute><AuditLog /></AdminRoute>} />
       </Route>
     </Routes>
   );

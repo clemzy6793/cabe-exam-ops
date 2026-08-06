@@ -3,26 +3,26 @@ const multer = require('multer');
 const XLSX = require('xlsx');
 const db = require('../db');
 const { authAny, authAdmin } = require('../middleware/auth');
+const { parseFile, applyDateMap, detectVenueClashes, validateVenues, buildDateMap, SESSION_TIMES } = require('../lib/smart-parser');
+
+const ALLOWED_EXTS = /\.(xlsx?|pdf|docx?)$/i;
+const ALLOWED_MIMES = [
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'application/vnd.ms-excel',
+  'application/pdf',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/msword',
+  'application/octet-stream',
+];
 
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 5 * 1024 * 1024 },
+  limits: { fileSize: 10 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
-    if (file.originalname.match(/\.xlsx?$/i)) cb(null, true);
-    else cb(new Error('Only Excel files allowed'));
+    if (ALLOWED_EXTS.test(file.originalname)) cb(null, true);
+    else cb(new Error('Only PDF, Word, or Excel files allowed'));
   },
 });
-
-const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
-const SESSION_TIMES = {
-  1: { start: '08:15', end: '09:15' }, 2: { start: '10:00', end: '11:00' },
-  3: { start: '11:45', end: '12:45' }, 4: { start: '13:30', end: '14:30' },
-  5: { start: '15:15', end: '16:15' }, 6: { start: '17:00', end: '18:00' },
-};
-const EXAM_DATES = {
-  monday: '2026-07-06', tuesday: '2026-07-07', wednesday: '2026-07-08',
-  thursday: '2026-07-09', friday: '2026-07-10',
-};
 
 router.get('/template/:facultyId', authAny, async (req, res) => {
   try {
@@ -40,14 +40,11 @@ router.get('/template/:facultyId', authAny, async (req, res) => {
     ];
 
     const wb = XLSX.utils.book_new();
-
     const wsData = [headers, ...example];
     const ws = XLSX.utils.aoa_to_sheet(wsData);
-
     ws['!cols'] = [
       { wch: 12 }, { wch: 8 }, { wch: 14 }, { wch: 40 }, { wch: 20 }, { wch: 10 }, { wch: 12 },
     ];
-
     XLSX.utils.book_append_sheet(wb, ws, 'Timetable');
 
     const venueData = [['Venue', 'Capacity', 'Type']];
@@ -95,77 +92,52 @@ router.post('/parse', authAny, upload.single('file'), async (req, res) => {
   try {
     const { rows: venues } = await db.query(
       'SELECT name FROM venues WHERE faculty_id=$1 OR faculty_id IS NULL', [facultyId]);
-    const venueNames = new Set(venues.map(v => v.name.toLowerCase()));
+    const venueNames = venues.map(v => v.name);
 
-    const wb = XLSX.read(req.file.buffer, { type: 'buffer' });
-    const ws = wb.Sheets[wb.SheetNames[0]];
-    const raw = XLSX.utils.sheet_to_json(ws, { defval: '' });
-
-    const exams = [];
-    const warnings = [];
-
-    raw.forEach((row, i) => {
-      const rowNum = i + 2;
-      const dayRaw = String(row['Day'] || row['day'] || '').trim().toLowerCase();
-      const sessionRaw = parseInt(row['Session'] || row['session']);
-      const code = String(row['Course Code'] || row['course_code'] || row['Course code'] || '').trim();
-      const name = String(row['Course Name'] || row['course_name'] || row['Course name'] || '').trim();
-      const venue = String(row['Venue'] || row['venue'] || '').trim();
-      const students = parseInt(row['Students'] || row['students'] || row['Student Count'] || 0) || 0;
-      const typeRaw = String(row['Exam Type'] || row['exam_type'] || row['Type'] || 'written').trim();
-
-      if (!code && !name) return;
-      if (!code) { warnings.push({ row: rowNum, msg: 'Missing course code' }); return; }
-
-      const day = DAYS.find(d => d.startsWith(dayRaw.slice(0, 3)));
-      if (!day) { warnings.push({ row: rowNum, msg: `Invalid day: "${row['Day'] || ''}"` }); return; }
-      if (!sessionRaw || sessionRaw < 1 || sessionRaw > 6) {
-        warnings.push({ row: rowNum, msg: `Invalid session: "${row['Session'] || ''}"` }); return;
-      }
-
-      let examType = 'written';
-      if (/cbe/i.test(typeRaw)) examType = 'CBE';
-      else if (/byod/i.test(typeRaw)) examType = 'BYOD';
-
-      if (venue && !venueNames.has(venue.toLowerCase())) {
-        warnings.push({ row: rowNum, msg: `Unknown venue: "${venue}" (not in faculty/shared list)` });
-      }
-      if (!students) {
-        warnings.push({ row: rowNum, msg: `Missing student count for ${code}` });
-      }
-
-      exams.push({
-        row: rowNum, day_name: day, session_number: sessionRaw,
-        course_code: code.toUpperCase(), course_name: name, venue,
-        student_count: students, exam_type: examType,
-        exam_date: EXAM_DATES[day],
-        start_time: SESSION_TIMES[sessionRaw].start,
-        end_time: SESSION_TIMES[sessionRaw].end,
-      });
-    });
-
-    const clashes = [];
-    for (let i = 0; i < exams.length; i++) {
-      for (let j = i + 1; j < exams.length; j++) {
-        if (exams[i].venue && exams[i].venue === exams[j].venue &&
-            exams[i].day_name === exams[j].day_name &&
-            exams[i].session_number === exams[j].session_number) {
-          clashes.push({
-            venue: exams[i].venue, day: exams[i].day_name, session: exams[i].session_number,
-            courses: [exams[i].course_code, exams[j].course_code],
-          });
-        }
+    const sessionId = parseInt(req.body.session_id) || null;
+    let dateMap = {};
+    if (sessionId) {
+      const { rows: [session] } = await db.query(
+        'SELECT start_date, end_date FROM examination_sessions WHERE id=$1', [sessionId]);
+      if (session?.start_date && session?.end_date) {
+        const sd = typeof session.start_date === 'string' ? session.start_date : session.start_date.toISOString().slice(0, 10);
+        const ed = typeof session.end_date === 'string' ? session.end_date : session.end_date.toISOString().slice(0, 10);
+        dateMap = buildDateMap(sd, ed);
       }
     }
 
-    res.json({ exams, warnings, clashes, total: exams.length });
+    const result = await parseFile(req.file.buffer, req.file.originalname);
+
+    if (Object.keys(dateMap).length) {
+      applyDateMap(result.exams, dateMap);
+    }
+
+    const venueWarnings = validateVenues(result.exams, venueNames);
+    const allWarnings = [...result.warnings, ...venueWarnings];
+
+    for (const e of result.exams) {
+      if (!e.student_count) {
+        allWarnings.push({ row: e.row, msg: `Missing student count for ${e.course_code}` });
+      }
+    }
+
+    const clashes = detectVenueClashes(result.exams);
+
+    res.json({
+      exams: result.exams,
+      warnings: allWarnings,
+      clashes,
+      total: result.exams.length,
+      format: result.format,
+    });
   } catch (err) {
+    console.error('Parse error:', err);
     res.status(500).json({ error: err.message });
   }
 });
 
 router.post('/confirm', authAny, async (req, res) => {
-  const { faculty_id, exams, replace } = req.body;
+  const { faculty_id, exams, replace, session_id } = req.body;
   if (!faculty_id || !exams?.length) return res.status(400).json({ error: 'Faculty and exams required' });
   if (req.admin.role === 'exam_officer' && req.admin.faculty_id !== faculty_id)
     return res.status(403).json({ error: 'You can only upload for your assigned faculty' });
@@ -175,17 +147,22 @@ router.post('/confirm', authAny, async (req, res) => {
     const periodId = period?.id;
 
     if (replace) {
-      await db.query('DELETE FROM exams WHERE faculty_id=$1 AND period_id=$2', [faculty_id, periodId]);
+      if (session_id) {
+        await db.query('DELETE FROM exams WHERE faculty_id=$1 AND session_id=$2', [faculty_id, session_id]);
+      } else {
+        await db.query('DELETE FROM exams WHERE faculty_id=$1 AND period_id=$2', [faculty_id, periodId]);
+      }
     }
 
     let inserted = 0;
     for (const e of exams) {
       await db.query(
         `INSERT INTO exams (period_id, faculty_id, course_code, course_name, exam_date, day_name,
-          session_number, start_time, end_time, venue, student_count, exam_type)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
+          session_number, start_time, end_time, venue, student_count, exam_type, session_id, examiner, year_group)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)`,
         [periodId, faculty_id, e.course_code, e.course_name, e.exam_date, e.day_name,
-         e.session_number, e.start_time, e.end_time, e.venue, e.student_count || 0, e.exam_type || 'written']
+         e.session_number, e.start_time, e.end_time, e.venue, e.student_count || 0, e.exam_type || 'written',
+         session_id || null, e.examiner || null, e.year_group || null]
       );
       inserted++;
     }

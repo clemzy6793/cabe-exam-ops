@@ -2,11 +2,22 @@ const router = require('express').Router();
 const db = require('../db');
 const { authAdmin, authEditor } = require('../middleware/auth');
 
+async function checkSessionLock(examId) {
+  const { rows } = await db.query(
+    `SELECT es.assignments_locked FROM exams e
+     JOIN examination_sessions es ON es.id = e.session_id
+     WHERE e.id = $1`, [examId]);
+  return rows[0]?.assignments_locked === true;
+}
+
 router.post('/', authEditor, async (req, res) => {
   const { exam_id, staff_id, role } = req.body;
   if (!exam_id || !staff_id) return res.status(400).json({ error: 'Exam and staff are required' });
 
   try {
+    if (await checkSessionLock(exam_id))
+      return res.status(403).json({ error: 'Assignments are locked for this session' });
+
     const { rows: conflicts } = await db.query(`
       SELECT ea.id, e.course_code, e.venue, e.faculty_id, f.code AS faculty_code, f.name AS faculty_name
       FROM exam_assignments ea
@@ -43,6 +54,9 @@ router.post('/bulk', authEditor, async (req, res) => {
   const { staff_ids, exam_ids } = req.body;
   if (!staff_ids?.length || !exam_ids?.length)
     return res.status(400).json({ error: 'Staff and exams are required' });
+
+  if (exam_ids[0] && await checkSessionLock(exam_ids[0]))
+    return res.status(403).json({ error: 'Assignments are locked for this session' });
 
   let assigned = 0, skipped = 0, conflicts = [];
   for (const exam_id of exam_ids) {
@@ -417,30 +431,53 @@ router.get('/unassigned', async (req, res) => {
 });
 
 router.get('/it-report', async (req, res) => {
+  const { session_id } = req.query;
+  const sessionFilter = session_id ? 'AND e.session_id = $1' : '';
+  const sessionParams = session_id ? [session_id] : [];
+
   try {
+    // Session metadata
+    let sessionMeta = null;
+    if (session_id) {
+      const { rows: [sm] } = await db.query(
+        `SELECT es.*, ay.name AS academic_year
+         FROM examination_sessions es
+         JOIN academic_years ay ON ay.id = es.academic_year_id
+         WHERE es.id = $1`, [session_id]);
+      sessionMeta = sm;
+    }
+
     // IT staff with exam assignments
     const { rows } = await db.query(`
       SELECT s.id, s.name, s.staff_code, s.phone, s.category, s.role,
         e.day_name, e.exam_date, e.session_number, e.course_code, e.venue, f.code AS faculty_code
       FROM staff s
       LEFT JOIN exam_assignments ea ON ea.staff_id = s.id
-      LEFT JOIN exams e ON e.id = ea.exam_id
+      LEFT JOIN exams e ON e.id = ea.exam_id ${sessionFilter}
       LEFT JOIN faculties f ON f.id = e.faculty_id
       WHERE s.staff_type = 'it_staff'
       ORDER BY s.name, e.exam_date, e.session_number
-    `);
+    `, sessionParams);
 
     // Get ALL unique sessions per day (for systems analysts who cover everything)
     const { rows: allDaySessions } = await db.query(`
       SELECT day_name, session_number FROM exams
+      ${session_id ? 'WHERE session_id = $1' : ''}
       GROUP BY day_name, session_number ORDER BY day_name, session_number
-    `);
+    `, sessionParams);
     const allSessionsByDay = {};
     allDaySessions.forEach(r => {
       const day = r.day_name.toLowerCase();
       if (!allSessionsByDay[day]) allSessionsByDay[day] = new Set();
       allSessionsByDay[day].add(r.session_number);
     });
+
+    // Get unique exam dates for dynamic day columns
+    const { rows: examDates } = await db.query(`
+      SELECT DISTINCT day_name, exam_date FROM exams
+      ${session_id ? 'WHERE session_id = $1' : ''}
+      ORDER BY exam_date
+    `, sessionParams);
 
     const staffMap = {};
     rows.forEach(r => {
@@ -451,11 +488,9 @@ router.get('/it-report', async (req, res) => {
           category: isSysAnalyst ? 'senior_member' : r.category,
           role: r.role, days: {}, faculty_roles: []
         };
-        // Systems analysts get ALL sessions every day automatically
         if (isSysAnalyst) {
-          const days = ['monday','tuesday','wednesday','thursday','friday'];
-          days.forEach(day => {
-            const sessions = allSessionsByDay[day] || new Set();
+          Object.keys(allSessionsByDay).forEach(day => {
+            const sessions = allSessionsByDay[day];
             staffMap[r.id].days[day] = [];
             sessions.forEach(sn => {
               staffMap[r.id].days[day].push({
@@ -476,7 +511,7 @@ router.get('/it-report', async (req, res) => {
       }
     });
 
-    // Faculty-level roles (printing/biometric) — count sessions per day for their faculty
+    // Faculty-level roles (printing/biometric)
     const { rows: fRoles } = await db.query(`
       SELECT fs.role, fs.staff_id, f.code AS faculty_code, f.id AS faculty_id,
         s.id, s.name, s.staff_code, s.phone, s.category
@@ -485,13 +520,13 @@ router.get('/it-report', async (req, res) => {
       JOIN faculties f ON f.id = fs.faculty_id
     `);
 
-    // Get unique sessions per faculty per day
     const { rows: facSessions } = await db.query(`
       SELECT f.id AS faculty_id, e.day_name, e.session_number
       FROM exams e JOIN faculties f ON f.id = e.faculty_id
+      ${session_id ? 'WHERE e.session_id = $1' : ''}
       GROUP BY f.id, e.day_name, e.session_number
       ORDER BY e.day_name, e.session_number
-    `);
+    `, sessionParams);
 
     const facDaySessions = {};
     facSessions.forEach(r => {
@@ -506,9 +541,7 @@ router.get('/it-report', async (req, res) => {
       }
       staffMap[fr.staff_id].faculty_roles.push({ role: fr.role, faculty_code: fr.faculty_code });
 
-      // Add every session for their faculty (printing happens every session)
-      const days = ['monday','tuesday','wednesday','thursday','friday'];
-      days.forEach(day => {
+      Object.keys(allSessionsByDay).forEach(day => {
         const sessions = facDaySessions[`${fr.faculty_id}_${day}`] || [];
         if (!staffMap[fr.staff_id].days[day]) staffMap[fr.staff_id].days[day] = [];
         sessions.forEach(sn => {
@@ -531,12 +564,28 @@ router.get('/it-report', async (req, res) => {
       manualMap[r.staff_id][r.day_name] = { sessions: r.sessions, note: r.note };
     });
 
-    // Attach manual sessions to each staff
     Object.values(staffMap).forEach(s => {
       s.manual_sessions = manualMap[s.id] || {};
     });
 
-    res.json(Object.values(staffMap));
+    // Build dynamic day columns from actual exam dates
+    const dayColumns = [];
+    const seenDays = new Set();
+    examDates.forEach(r => {
+      const key = r.day_name.toLowerCase();
+      if (!seenDays.has(key)) {
+        seenDays.add(key);
+        const d = new Date(r.exam_date + 'T12:00:00');
+        dayColumns.push({
+          key,
+          label: key.charAt(0).toUpperCase() + key.slice(1, 3),
+          date: d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }),
+          fullDate: r.exam_date,
+        });
+      }
+    });
+
+    res.json({ staff: Object.values(staffMap), days: dayColumns, session: sessionMeta });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Internal server error' });

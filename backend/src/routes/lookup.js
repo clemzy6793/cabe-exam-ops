@@ -1,8 +1,36 @@
 const router = require('express').Router();
 const db = require('../db');
 
+async function getPublishedSessionIds() {
+  const { rows } = await db.query("SELECT id FROM examination_sessions WHERE published=true");
+  return rows.map(r => r.id);
+}
+
+router.get('/info', async (req, res) => {
+  try {
+    const { rows } = await db.query(`
+      SELECT es.id, es.name, es.exam_type, es.semester, es.start_date, es.end_date,
+        ay.name AS academic_year
+      FROM examination_sessions es
+      JOIN academic_years ay ON ay.id = es.academic_year_id
+      WHERE es.published = true
+      ORDER BY es.created_at DESC`);
+    if (!rows.length) return res.json({ published: false, sessions: [] });
+    const { rows: dates } = await db.query(`
+      SELECT DISTINCT e.exam_date, e.day_name
+      FROM exams e WHERE e.session_id = ANY($1)
+      ORDER BY e.exam_date`, [rows.map(r => r.id)]);
+    res.json({ published: true, sessions: rows, exam_dates: dates });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 router.get('/staff', async (req, res) => {
   const { name, code } = req.query;
+  const publishedIds = await getPublishedSessionIds();
+  const hasPublished = publishedIds.length > 0;
 
   if (code) {
     try {
@@ -12,6 +40,8 @@ router.get('/staff', async (req, res) => {
       );
       if (!rows.length) return res.status(404).json({ error: 'Staff not found' });
       const staff = rows[0];
+      if (!hasPublished) return res.json({ staff, assignments: [] });
+
       const { rows: assignments } = await db.query(`
         SELECT ea.role AS assignment_role,
           e.course_code, e.course_name, e.exam_date, e.day_name,
@@ -20,8 +50,8 @@ router.get('/staff', async (req, res) => {
         FROM exam_assignments ea
         JOIN exams e ON e.id = ea.exam_id
         JOIN faculties f ON f.id = e.faculty_id
-        WHERE ea.staff_id = $1
-        ORDER BY e.exam_date, e.session_number`, [staff.id]);
+        WHERE ea.staff_id = $1 AND e.session_id = ANY($2)
+        ORDER BY e.exam_date, e.session_number`, [staff.id, publishedIds]);
 
       const { rows: fRoles } = await db.query(`
         SELECT fs.role, f.name AS faculty_name, f.code AS faculty_code, f.id AS faculty_id
@@ -31,9 +61,9 @@ router.get('/staff', async (req, res) => {
         for (const fr of fRoles) {
           const { rows: sessions } = await db.query(`
             SELECT e.exam_date, e.day_name, e.session_number, MIN(e.start_time) AS start_time, MAX(e.end_time) AS end_time
-            FROM exams e WHERE e.faculty_id=$1
+            FROM exams e WHERE e.faculty_id=$1 AND e.session_id = ANY($2)
             GROUP BY e.exam_date, e.day_name, e.session_number
-            ORDER BY e.exam_date, e.session_number`, [fr.faculty_id]);
+            ORDER BY e.exam_date, e.session_number`, [fr.faculty_id, publishedIds]);
           for (const s of sessions) {
             const already = assignments.some(a => a.exam_date === s.exam_date && a.session_number === s.session_number && a.faculty_code === fr.faculty_code);
             if (!already) {
@@ -76,12 +106,16 @@ router.get('/staff', async (req, res) => {
 
 router.get('/staff/:id', async (req, res) => {
   try {
+    const publishedIds = await getPublishedSessionIds();
+    const hasPublished = publishedIds.length > 0;
     const { rows } = await db.query(
       'SELECT id, name, staff_code, department, role, phone FROM staff WHERE id=$1',
       [req.params.id]
     );
     if (!rows.length) return res.status(404).json({ error: 'Staff not found' });
     const staff = rows[0];
+    if (!hasPublished) return res.json({ staff, assignments: [] });
+
     const { rows: assignments } = await db.query(`
       SELECT ea.role AS assignment_role, e.id AS exam_id,
         e.course_code, e.course_name, e.exam_date, e.day_name,
@@ -90,8 +124,8 @@ router.get('/staff/:id', async (req, res) => {
       FROM exam_assignments ea
       JOIN exams e ON e.id = ea.exam_id
       JOIN faculties f ON f.id = e.faculty_id
-      WHERE ea.staff_id = $1
-      ORDER BY e.exam_date, e.session_number`, [staff.id]);
+      WHERE ea.staff_id = $1 AND e.session_id = ANY($2)
+      ORDER BY e.exam_date, e.session_number`, [staff.id, publishedIds]);
 
     if (assignments.length) {
       const examIds = assignments.map(a => a.exam_id).filter(Boolean);
@@ -119,9 +153,9 @@ router.get('/staff/:id', async (req, res) => {
       for (const fr of fRoles) {
         const { rows: sessions } = await db.query(`
           SELECT e.exam_date, e.day_name, e.session_number, MIN(e.start_time) AS start_time, MAX(e.end_time) AS end_time
-          FROM exams e WHERE e.faculty_id=$1
+          FROM exams e WHERE e.faculty_id=$1 AND e.session_id = ANY($2)
           GROUP BY e.exam_date, e.day_name, e.session_number
-          ORDER BY e.exam_date, e.session_number`, [fr.faculty_id]);
+          ORDER BY e.exam_date, e.session_number`, [fr.faculty_id, publishedIds]);
         for (const s of sessions) {
           const already = assignments.some(a => a.exam_date === s.exam_date && a.session_number === s.session_number && a.faculty_code === fr.faculty_code);
           if (!already) {
@@ -150,6 +184,9 @@ router.get('/staff/:id', async (req, res) => {
 
 router.get('/timetable', async (req, res) => {
   const { date, faculty } = req.query;
+  const publishedIds = await getPublishedSessionIds();
+  if (!publishedIds.length) return res.json([]);
+
   let sql = `
     SELECT e.course_code, e.course_name, e.examiner, e.year_group,
       e.exam_date, e.day_name, e.session_number, e.start_time, e.end_time,
@@ -158,8 +195,8 @@ router.get('/timetable', async (req, res) => {
        FROM exam_assignments ea JOIN staff s ON s.id = ea.staff_id WHERE ea.exam_id = e.id) AS assigned_staff
     FROM exams e
     JOIN faculties f ON f.id = e.faculty_id
-    WHERE 1=1`;
-  const params = [];
+    WHERE e.session_id = ANY($1)`;
+  const params = [publishedIds];
   if (date) {
     params.push(date);
     sql += ` AND e.exam_date = $${params.length}`;

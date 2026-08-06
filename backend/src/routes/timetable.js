@@ -3,7 +3,7 @@ const db = require('../db');
 const { authAdmin, authEditor, authAny } = require('../middleware/auth');
 
 router.get('/exams', async (req, res) => {
-  const { date, faculty_id, session, search } = req.query;
+  const { date, faculty_id, session, search, session_id } = req.query;
   let sql = `
     SELECT e.*, f.name AS faculty_name, f.code AS faculty_code,
       (SELECT json_agg(json_build_object('id', ea.id, 'staff_id', s.id, 'name', s.name, 'staff_code', s.staff_code, 'role', ea.role))
@@ -13,6 +13,10 @@ router.get('/exams', async (req, res) => {
     WHERE 1=1`;
   const params = [];
 
+  if (session_id) {
+    params.push(session_id);
+    sql += ` AND e.session_id = $${params.length}`;
+  }
   if (date) {
     params.push(date);
     sql += ` AND e.exam_date = $${params.length}`;
@@ -132,25 +136,34 @@ router.get('/periods', async (req, res) => {
 });
 
 router.get('/stats', async (req, res) => {
+  const { session_id } = req.query;
+  const sf = session_id ? ' AND e.session_id = $1' : '';
+  const sp = session_id ? [session_id] : [];
+  const ew = session_id ? ` WHERE e.session_id = $1` : '';
+
   try {
     const [exams, staff, venues, assignments, byDay, byFaculty, unassigned, byType, recentActivity] = await Promise.all([
-      db.query('SELECT COUNT(*)::int AS count FROM exams'),
+      db.query(`SELECT COUNT(*)::int AS count FROM exams e WHERE 1=1${sf}`, sp),
       db.query('SELECT COUNT(*)::int AS count FROM staff'),
       db.query('SELECT COUNT(*)::int AS count FROM venues'),
-      db.query('SELECT COUNT(*)::int AS count FROM exam_assignments'),
+      db.query(session_id
+        ? 'SELECT COUNT(*)::int AS count FROM exam_assignments ea JOIN exams e ON e.id=ea.exam_id WHERE e.session_id=$1'
+        : 'SELECT COUNT(*)::int AS count FROM exam_assignments', sp),
       db.query(`SELECT exam_date, day_name, COUNT(*)::int AS count
-                FROM exams GROUP BY exam_date, day_name ORDER BY exam_date`),
+                FROM exams e WHERE 1=1${sf} GROUP BY exam_date, day_name ORDER BY exam_date`, sp),
       db.query(`SELECT f.name, f.code, COUNT(e.id)::int AS count
-                FROM faculties f LEFT JOIN exams e ON e.faculty_id=f.id
-                GROUP BY f.id ORDER BY f.name`),
+                FROM faculties f LEFT JOIN exams e ON e.faculty_id=f.id${sf}
+                GROUP BY f.id ORDER BY f.name`, sp),
       db.query(`SELECT COUNT(*)::int AS count FROM exams e
-                WHERE NOT EXISTS (SELECT 1 FROM exam_assignments ea WHERE ea.exam_id=e.id)`),
-      db.query(`SELECT exam_type, COUNT(*)::int AS count FROM exams GROUP BY exam_type ORDER BY count DESC`),
+                WHERE NOT EXISTS (SELECT 1 FROM exam_assignments ea WHERE ea.exam_id=e.id)${sf}`, sp),
+      db.query(`SELECT exam_type, COUNT(*)::int AS count FROM exams e WHERE 1=1${sf} GROUP BY exam_type ORDER BY count DESC`, sp),
       db.query(`SELECT al.action, al.details, al.created_at, a.name AS admin_name
                 FROM activity_log al LEFT JOIN admins a ON a.id=al.admin_id
                 ORDER BY al.created_at DESC LIMIT 8`),
     ]);
-    const assignedStaff = await db.query('SELECT COUNT(DISTINCT staff_id)::int AS count FROM exam_assignments');
+    const assignedStaff = session_id
+      ? await db.query('SELECT COUNT(DISTINCT ea.staff_id)::int AS count FROM exam_assignments ea JOIN exams e ON e.id=ea.exam_id WHERE e.session_id=$1', sp)
+      : await db.query('SELECT COUNT(DISTINCT staff_id)::int AS count FROM exam_assignments');
 
     const reportStats = await db.query(`
       SELECT f.code AS faculty_code, e.exam_date::text, e.session_number,
@@ -159,11 +172,20 @@ router.get('/stats', async (req, res) => {
       FROM exams e
       JOIN faculties f ON f.id = e.faculty_id
       LEFT JOIN biometric_reports br ON br.exam_id = e.id
+      WHERE 1=1${sf}
       GROUP BY f.code, e.exam_date, e.session_number
-      ORDER BY e.exam_date, e.session_number, f.code`);
+      ORDER BY e.exam_date, e.session_number, f.code`, sp);
 
-    const totalReports = await db.query('SELECT COUNT(*)::int AS count FROM biometric_reports');
-    const examsWithReports = await db.query('SELECT COUNT(DISTINCT exam_id)::int AS count FROM biometric_reports');
+    const totalReports = session_id
+      ? await db.query('SELECT COUNT(*)::int AS count FROM biometric_reports br JOIN exams e ON e.id=br.exam_id WHERE e.session_id=$1', sp)
+      : await db.query('SELECT COUNT(*)::int AS count FROM biometric_reports');
+    const examsWithReports = session_id
+      ? await db.query('SELECT COUNT(DISTINCT br.exam_id)::int AS count FROM biometric_reports br JOIN exams e ON e.id=br.exam_id WHERE e.session_id=$1', sp)
+      : await db.query('SELECT COUNT(DISTINCT exam_id)::int AS count FROM biometric_reports');
+
+    const sessionInfo = session_id
+      ? (await db.query(`SELECT es.*, ay.name AS academic_year FROM examination_sessions es JOIN academic_years ay ON ay.id=es.academic_year_id WHERE es.id=$1`, sp)).rows[0]
+      : null;
 
     res.json({
       total_exams: exams.rows[0].count,
@@ -179,6 +201,7 @@ router.get('/stats', async (req, res) => {
       report_stats: reportStats.rows,
       total_reports: totalReports.rows[0].count,
       exams_with_reports: examsWithReports.rows[0].count,
+      session: sessionInfo,
     });
   } catch (err) {
     console.error(err);
@@ -229,17 +252,24 @@ router.post('/merge', authAdmin, async (req, res) => {
 
 router.get('/my-exams', authAny, async (req, res) => {
   if (req.admin.role !== 'examiner') return res.status(403).json({ error: 'Examiner access only' });
+  const { session_id } = req.query;
   try {
     const { rows: [account] } = await db.query('SELECT name FROM admins WHERE id=$1', [req.admin.id]);
     if (!account) return res.status(404).json({ error: 'Account not found' });
     const pattern = `%${account.name}%`;
+    const params = [pattern];
+    let sessionFilter = '';
+    if (session_id) {
+      params.push(session_id);
+      sessionFilter = ` AND e.session_id = $${params.length}`;
+    }
     const { rows } = await db.query(
       `SELECT e.*, f.name AS faculty_name, f.code AS faculty_code,
         (SELECT json_agg(json_build_object('name', s.name, 'staff_code', s.staff_code, 'role', ea.role))
          FROM exam_assignments ea JOIN staff s ON s.id = ea.staff_id WHERE ea.exam_id = e.id) AS assigned_staff
        FROM exams e JOIN faculties f ON f.id = e.faculty_id
-       WHERE e.examiner ILIKE $1
-       ORDER BY e.exam_date, e.session_number`, [pattern]);
+       WHERE e.examiner ILIKE $1${sessionFilter}
+       ORDER BY e.exam_date, e.session_number`, params);
     res.json(rows);
   } catch (err) {
     console.error(err);

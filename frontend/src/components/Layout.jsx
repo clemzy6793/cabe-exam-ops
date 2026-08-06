@@ -1,20 +1,130 @@
 import { useState, useEffect } from 'react';
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import api from '../api';
 import toast from 'react-hot-toast';
+import { useSession } from '../contexts/SessionContext';
+import NotificationsBanner from './NotificationsBanner';
 
-const ALL_NAV = [
-  { to: '/', label: 'Dashboard', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0h4', roles: ['admin', 'superadmin', 'reviewer', 'exam_officer'] },
-  { to: '/', label: 'My Exams', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2', roles: ['examiner'] },
-  { to: '/timetable', label: 'Timetable', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z', roles: ['admin', 'superadmin', 'reviewer', 'exam_officer', 'examiner'] },
-  { to: '/staff', label: 'Staff', icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z', roles: ['admin', 'superadmin', 'reviewer'] },
-  { to: '/assignments', label: 'Assignments', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01', roles: ['admin', 'superadmin', 'reviewer'] },
-  { to: '/it-report', label: 'IT Report', icon: 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', roles: ['admin', 'superadmin', 'reviewer', 'exam_officer'] },
-  { to: '/reports', label: 'Reports', icon: 'M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12', roles: ['admin', 'superadmin', 'reviewer', 'exam_officer'] },
-  { to: '/upload-timetable', label: 'Upload Timetable', icon: 'M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', roles: ['admin', 'superadmin', 'exam_officer'] },
-  { to: '/venues', label: 'Venues', icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4', roles: ['admin', 'superadmin'] },
-  { to: '/allowances', label: 'Allowances', icon: 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z', roles: ['admin', 'superadmin'] },
+const NAV_GROUPS = [
+  {
+    items: [
+      { to: '/', label: 'Dashboard', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0h4', roles: ['admin', 'superadmin', 'reviewer', 'exam_officer'] },
+      { to: '/', label: 'My Exams', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2', roles: ['examiner'] },
+    ],
+  },
+  {
+    label: 'Exams',
+    icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z',
+    roles: ['admin', 'superadmin', 'reviewer', 'exam_officer', 'examiner'],
+    items: [
+      { to: '/timetable', label: 'Timetable', roles: ['admin', 'superadmin', 'reviewer', 'exam_officer', 'examiner'] },
+      { to: '/upload-timetable', label: 'Upload Timetable', roles: ['admin', 'superadmin', 'exam_officer'] },
+      { to: '/staff', label: 'Staff', roles: ['admin', 'superadmin', 'reviewer'] },
+      { to: '/assignments', label: 'Assignments', roles: ['admin', 'superadmin', 'reviewer'] },
+      { to: '/venues', label: 'Venues', roles: ['admin', 'superadmin'] },
+      { to: '/attendance-tracking', label: 'Staff Check-In', roles: ['admin', 'superadmin', 'reviewer'] },
+    ],
+  },
+  {
+    label: 'Reports',
+    icon: 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
+    roles: ['admin', 'superadmin', 'reviewer', 'exam_officer'],
+    items: [
+      { to: '/it-report', label: 'IT Report', roles: ['admin', 'superadmin', 'reviewer', 'exam_officer'] },
+      { to: '/reports', label: 'Downloads', roles: ['admin', 'superadmin', 'reviewer', 'exam_officer'] },
+    ],
+  },
+  {
+    label: 'Finance',
+    icon: 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
+    roles: ['admin', 'superadmin'],
+    items: [
+      { to: '/payment-rates', label: 'Pay Rates', roles: ['admin', 'superadmin'] },
+      { to: '/payment-calc', label: 'Payments', roles: ['admin', 'superadmin'] },
+      { to: '/allowances', label: 'Allowances', roles: ['admin', 'superadmin'] },
+    ],
+  },
+  {
+    label: 'Admin',
+    icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z',
+    roles: ['admin', 'superadmin'],
+    items: [
+      { to: '/sessions', label: 'Sessions', roles: ['admin', 'superadmin'] },
+      { to: '/audit', label: 'Audit Log', roles: ['admin', 'superadmin'] },
+    ],
+  },
 ];
+
+function NavGroup({ group, role, closeMobile }) {
+  const location = useLocation();
+  const items = group.items.filter(n => n.roles.includes(role));
+  if (!items.length) return null;
+
+  if (!group.label) {
+    return items.map(n => (
+      <NavLink
+        key={n.label}
+        to={n.to}
+        end={n.to === '/'}
+        onClick={closeMobile}
+        className={({ isActive }) =>
+          `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+            isActive ? 'bg-white/15 text-white' : 'text-blue-200 hover:bg-white/5 hover:text-white'
+          }`
+        }
+      >
+        <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d={n.icon} />
+        </svg>
+        {n.label}
+      </NavLink>
+    ));
+  }
+
+  const childPaths = items.map(i => i.to);
+  const isChildActive = childPaths.some(p => p === '/' ? location.pathname === '/' : location.pathname.startsWith(p));
+  const [open, setOpen] = useState(isChildActive);
+
+  return (
+    <div>
+      <button
+        onClick={() => setOpen(!open)}
+        className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+          isChildActive ? 'text-white' : 'text-blue-200 hover:bg-white/5 hover:text-white'
+        }`}
+      >
+        <span className="flex items-center gap-3">
+          <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d={group.icon} />
+          </svg>
+          {group.label}
+        </span>
+        <svg className={`w-4 h-4 transition-transform ${open ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      {open && (
+        <div className="ml-5 pl-3 border-l border-white/10 mt-1 space-y-0.5">
+          {items.map(n => (
+            <NavLink
+              key={n.to}
+              to={n.to}
+              end={n.to === '/'}
+              onClick={closeMobile}
+              className={({ isActive }) =>
+                `block px-3 py-2 rounded-lg text-[13px] font-medium transition-colors ${
+                  isActive ? 'bg-white/15 text-white' : 'text-blue-300 hover:bg-white/5 hover:text-white'
+                }`
+              }
+            >
+              {n.label}
+            </NavLink>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function Layout() {
   const [open, setOpen] = useState(false);
@@ -23,7 +133,7 @@ export default function Layout() {
   const nav = useNavigate();
   const role = localStorage.getItem('exam_ops_role') || 'admin';
   const isAdmin = role === 'admin' || role === 'superadmin';
-  const NAV = ALL_NAV.filter(n => n.roles.includes(role));
+  const { sessions, currentSession, selectSession } = useSession();
 
   const logout = () => {
     localStorage.removeItem('exam_ops_token');
@@ -36,37 +146,24 @@ export default function Layout() {
   return (
     <div className="min-h-screen flex">
       {/* Sidebar */}
-      <aside className={`fixed inset-y-0 left-0 z-30 w-64 bg-brand-dark text-white transform transition-transform lg:translate-x-0 lg:static ${open ? 'translate-x-0' : '-translate-x-full'}`}>
+      <aside className={`fixed inset-y-0 left-0 z-30 w-64 bg-brand-dark text-white transform transition-transform lg:translate-x-0 lg:static flex flex-col ${open ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="p-5 border-b border-white/10">
           <h1 className="text-lg font-black tracking-tight">CABE Exam Ops</h1>
-          <p className="text-xs text-blue-200 mt-0.5">Mid-Semester 2025/2026</p>
+          <p className="text-xs text-blue-200 mt-0.5">
+            {currentSession ? currentSession.name : 'No session selected'}
+          </p>
         </div>
-        <nav className="mt-4 space-y-1 px-3">
-          {NAV.map(n => (
-            <NavLink
-              key={n.to}
-              to={n.to}
-              end={n.to === '/'}
-              onClick={() => setOpen(false)}
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                  isActive ? 'bg-white/15 text-white' : 'text-blue-200 hover:bg-white/5 hover:text-white'
-                }`
-              }
-            >
-              <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d={n.icon} />
-              </svg>
-              {n.label}
-            </NavLink>
+        <nav className="mt-4 space-y-1 px-3 flex-1 overflow-y-auto">
+          {NAV_GROUPS.filter(g => !g.roles || g.roles.includes(role)).map((g, i) => (
+            <NavGroup key={g.label || i} group={g} role={role} closeMobile={() => setOpen(false)} />
           ))}
         </nav>
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-white/10">
-          <a href="/lookup" target="_blank" className="block text-xs text-blue-300 hover:text-white mb-3">Staff Lookup Portal</a>
-          <a href="/public/timetable" target="_blank" className="block text-xs text-blue-300 hover:text-white mb-3">Public Timetable</a>
-          {isAdmin && <button onClick={() => setShowAccounts(true)} className="w-full text-left text-xs text-blue-300 hover:text-white mb-3">Manage Accounts</button>}
-          <button onClick={() => setShowPwModal(true)} className="w-full text-left text-xs text-blue-300 hover:text-white mb-3">Account Settings</button>
-          <button onClick={logout} className="w-full text-left text-sm text-red-300 hover:text-red-200">Logout</button>
+        <div className="p-4 border-t border-white/10 space-y-2">
+          <a href="/lookup" target="_blank" className="block text-xs text-blue-300 hover:text-white">Staff Lookup Portal</a>
+          <a href="/public/timetable" target="_blank" className="block text-xs text-blue-300 hover:text-white">Public Timetable</a>
+          {isAdmin && <button onClick={() => setShowAccounts(true)} className="w-full text-left text-xs text-blue-300 hover:text-white">Manage Accounts</button>}
+          <button onClick={() => setShowPwModal(true)} className="w-full text-left text-xs text-blue-300 hover:text-white">Account Settings</button>
+          <button onClick={logout} className="w-full text-left text-sm text-red-300 hover:text-red-200 mt-1">Logout</button>
         </div>
       </aside>
 
@@ -76,14 +173,31 @@ export default function Layout() {
       {/* Main content */}
       <div className="flex-1 min-w-0">
         <header className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between lg:px-6">
-          <button className="lg:hidden p-2 -ml-2" onClick={() => setOpen(true)}>
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
-          </button>
-          <div className="text-sm text-gray-500">
-            KNUST - College of Art and Built Environment
+          <div className="flex items-center gap-3">
+            <button className="lg:hidden p-2 -ml-2" onClick={() => setOpen(true)}>
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
+            </button>
+            <span className="text-sm text-gray-500 hidden sm:inline">KNUST - College of Art and Built Environment</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
+            <select
+              value={currentSession?.id || ''}
+              onChange={e => e.target.value && selectSession(parseInt(e.target.value))}
+              className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-gray-50 font-medium text-gray-700 max-w-[220px]"
+            >
+              {sessions.length === 0 && <option value="">No sessions</option>}
+              {sessions.map(s => (
+                <option key={s.id} value={s.id}>
+                  {s.academic_year} — {s.name}
+                  {s.status === 'active' ? ' (Active)' : ''}
+                </option>
+              ))}
+            </select>
           </div>
         </header>
         <main className="p-4 lg:p-6">
+          <NotificationsBanner />
           <Outlet />
         </main>
       </div>
@@ -359,10 +473,10 @@ function AccountsModal({ onClose }) {
               {availableStaff.length > 0 && (
                 <div>
                   {selectedStaff.length > 0 && !staffPw && (
-                    <p className="text-xs text-amber-600 font-semibold mb-1">↑ Set a password above first</p>
+                    <p className="text-xs text-amber-600 font-semibold mb-1">Set a password above first</p>
                   )}
                   {selectedStaff.length > 0 && staffPw && staffPw.length < 6 && (
-                    <p className="text-xs text-amber-600 font-semibold mb-1">↑ Password must be at least 6 characters</p>
+                    <p className="text-xs text-amber-600 font-semibold mb-1">Password must be at least 6 characters</p>
                   )}
                   <button onClick={addFromStaff} disabled={!selectedStaff.length || !staffPw || staffPw.length < 6 || loading}
                     className="btn-brand w-full py-2 text-sm disabled:opacity-40">

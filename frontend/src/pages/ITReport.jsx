@@ -1,14 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../api';
 import toast from 'react-hot-toast';
-
-const DAYS = [
-  { key: 'monday', label: 'Mon', date: '6th' },
-  { key: 'tuesday', label: 'Tue', date: '7th' },
-  { key: 'wednesday', label: 'Wed', date: '8th' },
-  { key: 'thursday', label: 'Thu', date: '9th' },
-  { key: 'friday', label: 'Fri', date: '10th' },
-];
+import { useSession } from '../contexts/SessionContext';
 
 const TIMES = { 1: '8:15-9:15', 2: '10:00-11:00', 3: '11:45-12:45', 4: '1:30-2:30', 5: '3:15-4:15', 6: '5:00-6:00' };
 
@@ -26,22 +19,39 @@ const categoryStyle = (s) => {
 };
 
 export default function ITReport() {
+  const { sessions, currentSession } = useSession();
   const [data, setData] = useState([]);
+  const [days, setDays] = useState([]);
+  const [sessionMeta, setSessionMeta] = useState(null);
+  const [selectedSessionId, setSelectedSessionId] = useState('');
   const [filter, setFilter] = useState('all');
   const [view, setView] = useState('assignments');
   const [editingCell, setEditingCell] = useState(null);
   const [manualInput, setManualInput] = useState('');
 
-  const loadData = () => api.get('/assignments/it-report').then(r => setData(r.data));
-  useEffect(() => { loadData(); }, []);
+  useEffect(() => {
+    if (currentSession) setSelectedSessionId(String(currentSession.id));
+  }, [currentSession]);
+
+  const loadData = () => {
+    if (!selectedSessionId) return;
+    api.get('/assignments/it-report', { params: { session_id: selectedSessionId } })
+      .then(r => {
+        setData(r.data.staff || r.data);
+        setDays(r.data.days || []);
+        setSessionMeta(r.data.session || null);
+      });
+  };
+
+  useEffect(() => { loadData(); }, [selectedSessionId]);
 
   const getSystemDayCount = (staff, day) => new Set((staff.days[day] || []).map(a => a.session)).size;
   const getManualDayCount = (staff, day) => staff.manual_sessions?.[day]?.sessions || 0;
   const getDayCount = (staff, day) => getSystemDayCount(staff, day) + getManualDayCount(staff, day);
-  const getTotal = (staff) => DAYS.reduce((s, d) => s + getDayCount(staff, d.key), 0);
+  const getTotal = (staff) => days.reduce((s, d) => s + getDayCount(staff, d.key), 0);
   const getRate = (staff) => staff.category === 'senior_member' ? RATE_SENIOR_MEMBER : RATE_SENIOR_STAFF;
   const getDayAmount = (staff, day) => getDayCount(staff, day) * 2 * getRate(staff);
-  const getWeeklyGross = (staff) => DAYS.reduce((sum, d) => sum + getDayAmount(staff, d.key), 0);
+  const getWeeklyGross = (staff) => days.reduce((sum, d) => sum + getDayAmount(staff, d.key), 0);
   const getWeeklyNet = (staff) => {
     const gross = getWeeklyGross(staff);
     return gross - (gross * 0.10);
@@ -58,10 +68,31 @@ export default function ITReport() {
     } catch { toast.error('Failed to save'); }
   };
 
-  const sorted = [...data].sort((a, b) => getTotal(b) - getTotal(a));
+  const getRoleRank = (s) => {
+    if (s.role === 'systems_analyst') return 0;
+    if (s.category === 'senior_member') return 1;
+    return 2;
+  };
+  const sorted = [...data].sort((a, b) => {
+    const rankDiff = getRoleRank(a) - getRoleRank(b);
+    if (rankDiff !== 0) return rankDiff;
+    return a.name.localeCompare(b.name);
+  });
 
   const grandTotalGross = sorted.reduce((s, d) => s + getWeeklyGross(d), 0);
   const grandTotalNet = sorted.reduce((s, d) => s + getWeeklyNet(d), 0);
+
+  const sessionTitle = sessionMeta
+    ? `${sessionMeta.exam_type === 'mid_semester' ? 'Mid-Semester' : 'End of Semester'} Examinations ${sessionMeta.academic_year}`
+    : 'IT Staff Report';
+
+  const sessionSubtitle = sessionMeta
+    ? `${sessionMeta.semester === 'second' ? '2nd' : '1st'} Semester | ${sessionMeta.academic_year}`
+    : '';
+
+  const dateRange = days.length
+    ? `${days[0].date} - ${days[days.length - 1].date}`
+    : '';
 
   const exportExcel = () => {
     let xml = '<?xml version="1.0"?>\n<?mso-application progid="Excel.Sheet"?>\n';
@@ -81,24 +112,21 @@ export default function ITReport() {
     xml += '<Style ss:ID="ssBadge"><Font ss:Bold="1" ss:Color="#065F46"/><Interior ss:Color="#D1FAE5" ss:Pattern="Solid"/><Alignment ss:Horizontal="Center"/></Style>\n';
     xml += '</Styles>\n';
 
-    // Sheet 1: Payment Summary
     xml += '<Worksheet ss:Name="Payment Summary">\n<Table>\n';
     xml += '<Column ss:Width="30"/><Column ss:Width="80"/><Column ss:Width="180"/><Column ss:Width="90"/>';
-    DAYS.forEach(() => { xml += '<Column ss:Width="65"/>'; });
+    days.forEach(() => { xml += '<Column ss:Width="65"/>'; });
     xml += '<Column ss:Width="80"/><Column ss:Width="80"/><Column ss:Width="80"/><Column ss:Width="80"/>\n';
 
-    // Title rows
-    xml += '<Row><Cell ss:StyleID="title"><Data ss:Type="String">CABE Exam Operations — IT Staff Payment Report</Data></Cell></Row>\n';
-    xml += '<Row><Cell ss:StyleID="subtitle"><Data ss:Type="String">Mid-Semester Examinations 2025/2026 | 6th - 10th July, 2026</Data></Cell></Row>\n';
+    xml += `<Row><Cell ss:StyleID="title"><Data ss:Type="String">CABE Exam Operations — IT Staff Payment Report</Data></Cell></Row>\n`;
+    xml += `<Row><Cell ss:StyleID="subtitle"><Data ss:Type="String">${sessionTitle} | ${dateRange}</Data></Cell></Row>\n`;
     xml += '<Row></Row>\n';
 
-    // Headers
     xml += '<Row>';
     xml += '<Cell ss:StyleID="header"><Data ss:Type="String">No.</Data></Cell>';
     xml += '<Cell ss:StyleID="header"><Data ss:Type="String">Code</Data></Cell>';
     xml += '<Cell ss:StyleID="header"><Data ss:Type="String">Name</Data></Cell>';
     xml += '<Cell ss:StyleID="header"><Data ss:Type="String">Grade</Data></Cell>';
-    DAYS.forEach(d => {
+    days.forEach(d => {
       xml += `<Cell ss:StyleID="dayHeader"><Data ss:Type="String">${d.label} ${d.date}</Data></Cell>`;
     });
     xml += '<Cell ss:StyleID="header"><Data ss:Type="String">Total Sess.</Data></Cell>';
@@ -108,7 +136,6 @@ export default function ITReport() {
     xml += '</Row>\n';
 
     sorted.forEach((s, i) => {
-      const rate = getRate(s);
       const totalSessions = getTotal(s);
       const gross = getWeeklyGross(s);
       const deduction = gross * 0.10;
@@ -121,9 +148,8 @@ export default function ITReport() {
       xml += `<Cell><Data ss:Type="String">${s.staff_code}</Data></Cell>`;
       xml += `<Cell><Data ss:Type="String">${s.name}</Data></Cell>`;
       xml += `<Cell ss:StyleID="${catStyle}"><Data ss:Type="String">${catLabel}</Data></Cell>`;
-      DAYS.forEach(d => {
-        const daySess = getDayCount(s, d.key);
-        xml += `<Cell ss:StyleID="center"><Data ss:Type="Number">${daySess}</Data></Cell>`;
+      days.forEach(d => {
+        xml += `<Cell ss:StyleID="center"><Data ss:Type="Number">${getDayCount(s, d.key)}</Data></Cell>`;
       });
       xml += `<Cell ss:StyleID="center"><Data ss:Type="Number">${totalSessions}</Data></Cell>`;
       xml += `<Cell ss:StyleID="numBold"><Data ss:Type="Number">${gross}</Data></Cell>`;
@@ -132,13 +158,12 @@ export default function ITReport() {
       xml += '</Row>\n';
     });
 
-    // Total row
     xml += '<Row>';
     xml += '<Cell ss:StyleID="totalRow"></Cell>';
     xml += '<Cell ss:StyleID="totalRow"></Cell>';
     xml += `<Cell ss:StyleID="totalRow"><Data ss:Type="String">TOTAL (${sorted.length} staff)</Data></Cell>`;
     xml += '<Cell ss:StyleID="totalRow"></Cell>';
-    DAYS.forEach(d => {
+    days.forEach(d => {
       const dayTotal = sorted.reduce((s, st) => s + getDayCount(st, d.key), 0);
       xml += `<Cell ss:StyleID="totalNum"><Data ss:Type="Number">${dayTotal}</Data></Cell>`;
     });
@@ -149,21 +174,22 @@ export default function ITReport() {
     xml += `<Cell ss:StyleID="totalNum"><Data ss:Type="Number">${grandTotalNet}</Data></Cell>`;
     xml += '</Row>\n';
 
-    // Rate legend
     xml += '<Row></Row>\n';
     xml += '<Row><Cell></Cell><Cell ss:StyleID="bold"><Data ss:Type="String">Rate Legend:</Data></Cell></Row>\n';
     xml += '<Row><Cell></Cell><Cell><Data ss:Type="String">Senior Member: GHS 60/hr × 2 hrs per session</Data></Cell></Row>\n';
     xml += '<Row><Cell></Cell><Cell><Data ss:Type="String">Senior Staff: GHS 30/hr × 2 hrs per session</Data></Cell></Row>\n';
     xml += '<Row><Cell></Cell><Cell><Data ss:Type="String">Deduction: 10% of gross</Data></Cell></Row>\n';
 
-    xml += '</Table>\n</Worksheet>\n';
-    xml += '</Workbook>';
+    xml += '</Table>\n</Worksheet>\n</Workbook>';
 
     const blob = new Blob([xml], { type: 'application/vnd.ms-excel' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'CABE_IT_Staff_Payment_Report.xls';
+    const filename = sessionMeta
+      ? `CABE_IT_Payment_${sessionMeta.exam_type === 'mid_semester' ? 'MidSem' : 'EndSem'}_${sessionMeta.academic_year?.replace('/', '-')}.xls`
+      : 'CABE_IT_Staff_Payment_Report.xls';
+    a.download = filename;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -171,7 +197,7 @@ export default function ITReport() {
   const printReport = () => {
     const win = window.open('', '_blank');
     const header = `<tr><th style="padding:8px;border:1px solid #ddd;text-align:left;">Name</th><th style="padding:8px;border:1px solid #ddd;">Code</th><th style="padding:8px;border:1px solid #ddd;">Grade</th>` +
-      DAYS.map(d => `<th style="padding:8px;border:1px solid #ddd;">${d.label} ${d.date}</th>`).join('') +
+      days.map(d => `<th style="padding:8px;border:1px solid #ddd;">${d.label} ${d.date}</th>`).join('') +
       `<th style="padding:8px;border:1px solid #ddd;font-weight:bold;">Total</th>` +
       `<th style="padding:8px;border:1px solid #ddd;">Gross</th>` +
       `<th style="padding:8px;border:1px solid #ddd;">10%</th>` +
@@ -181,21 +207,21 @@ export default function ITReport() {
       const gross = getWeeklyGross(s);
       const ded = gross * 0.10;
       const net = gross - ded;
-      const catLabel = s.role === 'systems_analyst' ? 'Sys. Analyst' : (s.category === 'senior_member' ? 'Sr. Member' : 'Sr. Staff');
+      const catLbl = s.role === 'systems_analyst' ? 'Sys. Analyst' : (s.category === 'senior_member' ? 'Sr. Member' : 'Sr. Staff');
       const roleBadges = (s.faculty_roles || []).map(fr =>
         `<span style="display:inline-block;font-size:9px;padding:1px 5px;border-radius:9px;font-weight:bold;margin-left:4px;${
           fr.role === 'printing' ? 'background:#ede9fe;color:#6d28d9;' : 'background:#cffafe;color:#0e7490;'
         }">${fr.role} (${fr.faculty_code})</span>`
       ).join('');
-      return `<tr><td style="padding:8px;border:1px solid #ddd;">${s.name}${roleBadges}</td><td style="padding:8px;border:1px solid #ddd;font-family:monospace;font-size:12px;">${s.staff_code}</td><td style="padding:8px;border:1px solid #ddd;text-align:center;font-size:11px;">${catLabel}</td>` +
-        DAYS.map(d => `<td style="padding:8px;border:1px solid #ddd;text-align:center;">${getDayCount(s, d.key) || '-'}</td>`).join('') +
+      return `<tr><td style="padding:8px;border:1px solid #ddd;">${s.name}${roleBadges}</td><td style="padding:8px;border:1px solid #ddd;font-family:monospace;font-size:12px;">${s.staff_code}</td><td style="padding:8px;border:1px solid #ddd;text-align:center;font-size:11px;">${catLbl}</td>` +
+        days.map(d => `<td style="padding:8px;border:1px solid #ddd;text-align:center;">${getDayCount(s, d.key) || '-'}</td>`).join('') +
         `<td style="padding:8px;border:1px solid #ddd;text-align:center;font-weight:bold;">${total}</td>` +
         `<td style="padding:8px;border:1px solid #ddd;text-align:right;">${gross.toFixed(2)}</td>` +
         `<td style="padding:8px;border:1px solid #ddd;text-align:right;">${ded.toFixed(2)}</td>` +
         `<td style="padding:8px;border:1px solid #ddd;text-align:right;font-weight:bold;">${net.toFixed(2)}</td></tr>`;
     }).join('');
     const totalRow = `<tr style="background:#FFF2CC;font-weight:bold;"><td style="padding:8px;border:1px solid #ddd;" colspan="3">TOTAL (${sorted.length} staff)</td>` +
-      DAYS.map(d => `<td style="padding:8px;border:1px solid #ddd;text-align:center;">${sorted.reduce((s, st) => s + getDayCount(st, d.key), 0)}</td>`).join('') +
+      days.map(d => `<td style="padding:8px;border:1px solid #ddd;text-align:center;">${sorted.reduce((s, st) => s + getDayCount(st, d.key), 0)}</td>`).join('') +
       `<td style="padding:8px;border:1px solid #ddd;text-align:center;">${sorted.reduce((s, st) => s + getTotal(st), 0)}</td>` +
       `<td style="padding:8px;border:1px solid #ddd;text-align:right;">${grandTotalGross.toFixed(2)}</td>` +
       `<td style="padding:8px;border:1px solid #ddd;text-align:right;">${(grandTotalGross * 0.10).toFixed(2)}</td>` +
@@ -204,7 +230,7 @@ export default function ITReport() {
       <style>body{font-family:Arial,sans-serif;padding:30px;}table{border-collapse:collapse;width:100%;margin-top:15px;font-size:12px;}th{background:#1a3a5c;color:#fff;} @media print{button{display:none;}}</style>
     </head><body>
       <h1 style="margin:0;color:#1a3a5c;">CABE Exam Operations</h1>
-      <p style="color:#666;margin:4px 0;">IT Staff Payment Report — Mid-Semester 2025/2026 | 6th - 10th July, 2026</p>
+      <p style="color:#666;margin:4px 0;">IT Staff Payment Report — ${sessionTitle} | ${dateRange}</p>
       <p style="font-size:11px;color:#888;">Senior Member: GHS 60/hr | Senior Staff: GHS 30/hr | Each session = 2 hrs | 10% deduction applied</p>
       <hr style="margin:15px 0;border-color:#c8a951;">
       <table>${header}${rows}${totalRow}</table>
@@ -216,10 +242,10 @@ export default function ITReport() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between flex-wrap gap-3">
+      <div className="flex items-start justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-black text-gray-900">IT Staff Report</h1>
-          <p className="text-sm text-gray-500 mt-1">Session assignments & payment calculations</p>
+          <p className="text-sm text-gray-500 mt-1">{sessionTitle}{dateRange ? ` | ${dateRange}` : ''}</p>
         </div>
         <div className="flex gap-2">
           <button onClick={exportExcel} className="bg-emerald-600 hover:bg-emerald-700 text-white text-sm px-4 py-2 rounded-lg font-semibold flex items-center gap-2">
@@ -228,9 +254,31 @@ export default function ITReport() {
           </button>
           <button onClick={printReport} className="btn-brand text-sm flex items-center gap-2">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
-            Print Report
+            Print
           </button>
         </div>
+      </div>
+
+      {/* Session selector */}
+      <div className="card">
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="flex-1 min-w-[220px]">
+            <label className="text-xs font-medium text-gray-600">Examination Session</label>
+            <select value={selectedSessionId} onChange={e => setSelectedSessionId(e.target.value)}
+              className="w-full border rounded-lg px-3 py-2 text-sm mt-1 font-medium">
+              {sessions.length === 0 && <option value="">No sessions</option>}
+              {sessions.map(s => (
+                <option key={s.id} value={s.id}>
+                  {s.academic_year} — {s.semester === 'second' ? '2nd' : '1st'} Sem — {s.exam_type === 'mid_semester' ? 'Mid-Semester' : 'End of Semester'}
+                  {s.status === 'active' ? ' (Current)' : s.status === 'closed' ? ' (Ended)' : ''}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+        {sessionSubtitle && (
+          <p className="text-xs text-brand font-semibold mt-2">{sessionSubtitle}</p>
+        )}
       </div>
 
       {/* View toggle */}
@@ -249,7 +297,7 @@ export default function ITReport() {
         </button>
       </div>
 
-      {view === 'assignments' && (
+      {view === 'assignments' && days.length > 0 && (
         <div className="flex gap-2 overflow-x-auto">
           <button onClick={() => setFilter('all')}
             className={`px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap ${
@@ -257,7 +305,7 @@ export default function ITReport() {
             }`}>
             Full Week
           </button>
-          {DAYS.map(d => (
+          {days.map(d => (
             <button key={d.key} onClick={() => setFilter(d.key)}
               className={`px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap ${
                 filter === d.key ? 'bg-brand text-white' : 'bg-white border text-gray-600 hover:bg-gray-50'
@@ -295,7 +343,7 @@ export default function ITReport() {
       </div>
 
       {/* Payment View */}
-      {view === 'payment' && (
+      {view === 'payment' && days.length > 0 && (
         <div className="card p-0 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -304,7 +352,7 @@ export default function ITReport() {
                   <th className="text-left px-3 py-3 font-bold text-gray-700 sticky left-0 bg-white z-10">Name</th>
                   <th className="text-center px-2 py-3 font-bold text-gray-700">Grade</th>
                   <th className="text-center px-2 py-3 font-bold text-gray-700">Rate</th>
-                  {DAYS.map(d => (
+                  {days.map(d => (
                     <th key={d.key} className="text-center px-2 py-3 font-bold text-gray-600 text-xs">
                       {d.label} {d.date}
                     </th>
@@ -335,7 +383,7 @@ export default function ITReport() {
                         </span>
                       </td>
                       <td className="text-center px-2 py-2.5 text-xs font-mono">{rate}</td>
-                      {DAYS.map(d => {
+                      {days.map(d => {
                         const sysSess = getSystemDayCount(s, d.key);
                         const manSess = getManualDayCount(s, d.key);
                         const daySess = sysSess + manSess;
@@ -385,7 +433,7 @@ export default function ITReport() {
               <tfoot>
                 <tr className="bg-amber-50 border-t-2 border-brand">
                   <td className="px-3 py-3 font-black sticky left-0 bg-amber-50 z-10" colSpan={3}>TOTAL ({sorted.length} staff)</td>
-                  {DAYS.map(d => {
+                  {days.map(d => {
                     const dayTotal = sorted.reduce((s, st) => s + getDayCount(st, d.key), 0);
                     return (
                       <td key={d.key} className="text-center px-2 py-3 font-bold text-xs">
@@ -405,7 +453,7 @@ export default function ITReport() {
       )}
 
       {/* Assignments View */}
-      {view === 'assignments' && (
+      {view === 'assignments' && days.length > 0 && (
         <div className="card p-0 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -415,7 +463,7 @@ export default function ITReport() {
                   <th className="text-left px-3 py-3 font-bold text-gray-700">Code</th>
                   {filter === 'all' ? (
                     <>
-                      {DAYS.map(d => (
+                      {days.map(d => (
                         <th key={d.key} className="text-center px-3 py-3 font-bold text-gray-700">{d.label}</th>
                       ))}
                       <th className="text-center px-3 py-3 font-black text-brand">Total</th>
@@ -450,7 +498,7 @@ export default function ITReport() {
                           </div>
                         </td>
                         <td className="px-3 py-2.5 text-gray-400 font-mono text-xs">{s.staff_code}</td>
-                        {DAYS.map(d => {
+                        {days.map(d => {
                           const cnt = getDayCount(s, d.key);
                           return (
                             <td key={d.key} className="text-center px-3 py-2.5">
@@ -530,7 +578,11 @@ export default function ITReport() {
 
       {data.length === 0 && (
         <div className="card text-center py-12">
-          <p className="text-gray-400 text-sm">No IT staff found</p>
+          <svg className="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          <p className="text-gray-400 text-sm">No IT staff data for this session</p>
+          <p className="text-gray-300 text-xs mt-1">Select a session with exam assignments above</p>
         </div>
       )}
     </div>

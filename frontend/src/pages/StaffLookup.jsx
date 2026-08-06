@@ -22,8 +22,14 @@ export default function StaffLookup() {
   const [sessionPanel, setSessionPanel] = useState(null);
   const [sessionData, setSessionData] = useState(null);
   const [sessionLoading, setSessionLoading] = useState(false);
+  const [info, setInfo] = useState(null);
+  const [infoLoading, setInfoLoading] = useState(true);
   const fileRef = useRef(null);
   const debounce = useRef(null);
+
+  useEffect(() => {
+    api.get('/lookup/info').then(r => setInfo(r.data)).catch(() => {}).finally(() => setInfoLoading(false));
+  }, []);
 
   useEffect(() => {
     if (query.length < 2) { setSuggestions([]); return; }
@@ -137,7 +143,7 @@ export default function StaffLookup() {
       <style>body{font-family:Arial,sans-serif;padding:30px;} table{border-collapse:collapse;width:100%;margin-top:15px;} th{background:#1a3a5c;color:#fff;padding:10px;text-align:left;} @media print{button{display:none;}}</style>
     </head><body>
       <h1 style="margin:0;color:#1a3a5c;">CABE Exam Operations</h1>
-      <p style="color:#666;margin:4px 0 0;">Mid-Semester Examination Schedule 2025/2026 | 6th - 10th July, 2026</p>
+      <p style="color:#666;margin:4px 0 0;">${headerText} ${sessionInfo?.academic_year || ''} ${dateRange ? '| ' + dateRange : ''}</p>
       <hr style="margin:15px 0;border-color:#c8a951;">
       <h2 style="margin:0;">${data.staff.name}</h2>
       <p style="color:#666;margin:4px 0;">Staff Code: ${data.staff.staff_code || 'N/A'} | Role: ${data.staff.role} | Total: ${data.assignments.length}</p>
@@ -149,14 +155,48 @@ export default function StaffLookup() {
     w.document.close();
   };
 
+  if (infoLoading) return (
+    <div className="min-h-screen bg-gradient-to-br from-brand-dark to-brand flex items-center justify-center">
+      <div className="w-8 h-8 border-4 border-white/30 border-t-white rounded-full animate-spin" />
+    </div>
+  );
+
+  if (!info?.published) return (
+    <div className="min-h-screen bg-gradient-to-br from-brand-dark to-brand">
+      <div className="max-w-lg mx-auto p-4 pt-12">
+        <div className="text-center mb-8">
+          <h1 className="text-2xl font-black text-white">Staff Assignment Lookup</h1>
+        </div>
+        <div className="card text-center py-12">
+          <p className="text-gray-400 text-lg">No exam session is currently published.</p>
+          <p className="text-gray-300 text-sm mt-2">Check back later for your assignments.</p>
+        </div>
+        <div className="text-center mt-8">
+          <a href="/public/timetable" className="text-blue-200 text-sm hover:text-white">View Full Timetable</a>
+          <span className="text-blue-300/30 mx-3">|</span>
+          <a href="/login" className="text-blue-200 text-sm hover:text-white">Admin Login</a>
+        </div>
+      </div>
+    </div>
+  );
+
+  const sessionInfo = info.sessions[0];
+  const headerText = sessionInfo.name || 'Exam Session';
+  const dateRange = info.exam_dates?.length ? (() => {
+    const first = new Date(info.exam_dates[0].exam_date.slice(0,10) + 'T00:00:00');
+    const last = new Date(info.exam_dates[info.exam_dates.length-1].exam_date.slice(0,10) + 'T00:00:00');
+    const fmt = (d) => d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+    return `${first.getDate()}${ordinal(first.getDate())} - ${last.getDate()}${ordinal(last.getDate())} ${last.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}`;
+  })() : '';
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-brand-dark to-brand">
       <Toaster position="top-center" />
       <div className="max-w-lg mx-auto p-4 pt-12">
         <div className="text-center mb-8">
           <h1 className="text-2xl font-black text-white">Staff Assignment Lookup</h1>
-          <p className="text-blue-200 text-sm mt-1">CABE Mid-Semester Exams 2025/2026</p>
-          <p className="text-blue-300/50 text-xs mt-0.5">6th - 10th July, 2026</p>
+          <p className="text-blue-200 text-sm mt-1">CABE {headerText} {sessionInfo.academic_year}</p>
+          {dateRange && <p className="text-blue-300/50 text-xs mt-0.5">{dateRange}</p>}
         </div>
 
         {/* Search */}
@@ -424,4 +464,10 @@ export default function StaffLookup() {
       </div>
     </div>
   );
+}
+
+function ordinal(n) {
+  const s = ['th','st','nd','rd'];
+  const v = n % 100;
+  return s[(v - 20) % 10] || s[v] || s[0];
 }

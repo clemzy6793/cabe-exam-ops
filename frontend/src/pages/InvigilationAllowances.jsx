@@ -1,13 +1,6 @@
 import { useState, useRef } from 'react';
 import api from '../api';
-
-const FIXED_DAYS = [
-  { key: 'Mon Jul 06 2026', label: 'Mon 6th' },
-  { key: 'Tue Jul 07 2026', label: 'Tue 7th' },
-  { key: 'Wed Jul 08 2026', label: 'Wed 8th' },
-  { key: 'Thu Jul 09 2026', label: 'Thu 9th' },
-  { key: 'Fri Jul 10 2026', label: 'Fri 10th' },
-];
+import { useSession } from '../contexts/SessionContext';
 
 const FACULTY_MAP = {
   'Architecture': 'FOBE',
@@ -40,38 +33,38 @@ function getFaculty(dept) { return FACULTY_MAP[dept] || 'Other'; }
 function getDayVal(r, key) { return r.breakdown[key] || 0; }
 function isSeniorMember(staffType) { return staffType.toLowerCase().includes('senior member'); }
 function getRate(r) { return isSeniorMember(r.staffType) ? 60 : 30; }
-function getTotal(r) { return FIXED_DAYS.reduce((s, d) => s + getDayVal(r, d.key), 0); }
-function getGross(r) { return getTotal(r) * getRate(r); }
-function getNet(r) { return getGross(r) * 0.9; }
+function getTotal(r, days) { return days.reduce((s, d) => s + getDayVal(r, d.key), 0); }
+function getGross(r, days) { return getTotal(r, days) * getRate(r); }
+function getNet(r, days) { return getGross(r, days) * 0.9; }
 
 // ── Invigilators Table ────────────────────────────────────────────────────────
-function InvigilatorsTable({ rows, faculty }) {
+function InvigilatorsTable({ rows, faculty, days }) {
   const filtered = rows.filter(r => faculty === 'all' || getFaculty(r.department) === faculty);
-  const grandGross = filtered.reduce((s, r) => s + getGross(r), 0);
-  const grandNet   = filtered.reduce((s, r) => s + getNet(r), 0);
+  const grandGross = filtered.reduce((s, r) => s + getGross(r, days), 0);
+  const grandNet   = filtered.reduce((s, r) => s + getNet(r, days), 0);
 
   const printReport = () => {
     const win = window.open('', '_blank');
     const facultyLabel = FACULTY_LABELS[faculty] || 'All';
     const header = `<tr>
       <th>#</th><th>Staff ID</th><th>Full Name</th><th>Department</th><th>Designation</th><th>Staff Type</th>
-      ${FIXED_DAYS.map(d => `<th>${d.label}</th>`).join('')}
+      ${days.map(d => `<th>${d.label}</th>`).join('')}
       <th>Total</th><th>Rate</th><th>Gross</th><th>10%</th><th>Net</th>
     </tr>`;
     const bodyRows = filtered.map((r, i) => `<tr>
       <td>${i+1}</td><td style="font-family:monospace">${r.staffId}</td>
       <td>${r.fullName}</td><td>${r.department}</td><td>${r.designation}</td><td>${r.staffType}</td>
-      ${FIXED_DAYS.map(d => `<td style="text-align:center">${getDayVal(r,d.key)||'-'}</td>`).join('')}
-      <td style="text-align:center;font-weight:bold">${getTotal(r)}</td>
+      ${days.map(d => `<td style="text-align:center">${getDayVal(r,d.key)||'-'}</td>`).join('')}
+      <td style="text-align:center;font-weight:bold">${getTotal(r, days)}</td>
       <td style="text-align:right">${getRate(r)}.00</td>
-      <td style="text-align:right">${getGross(r).toFixed(2)}</td>
-      <td style="text-align:right">${(getGross(r)*0.10).toFixed(2)}</td>
-      <td style="text-align:right;font-weight:bold">${getNet(r).toFixed(2)}</td>
+      <td style="text-align:right">${getGross(r, days).toFixed(2)}</td>
+      <td style="text-align:right">${(getGross(r, days)*0.10).toFixed(2)}</td>
+      <td style="text-align:right;font-weight:bold">${getNet(r, days).toFixed(2)}</td>
     </tr>`).join('');
     const totalRow = `<tr style="background:#FFF2CC;font-weight:bold;">
       <td colspan="6">TOTAL (${filtered.length} staff)</td>
-      ${FIXED_DAYS.map(d=>`<td style="text-align:center">${filtered.reduce((s,r)=>s+getDayVal(r,d.key),0)}</td>`).join('')}
-      <td style="text-align:center">${filtered.reduce((s,r)=>s+getTotal(r),0)}</td>
+      ${days.map(d=>`<td style="text-align:center">${filtered.reduce((s,r)=>s+getDayVal(r,d.key),0)}</td>`).join('')}
+      <td style="text-align:center">${filtered.reduce((s,r)=>s+getTotal(r, days),0)}</td>
       <td></td>
       <td style="text-align:right">${grandGross.toFixed(2)}</td>
       <td style="text-align:right">${(grandGross*0.10).toFixed(2)}</td>
@@ -101,7 +94,7 @@ function InvigilatorsTable({ rows, faculty }) {
     xml += '<Style ss:ID="tot"><Font ss:Bold="1"/><Interior ss:Color="#FFF2CC" ss:Pattern="Solid"/></Style></Styles>\n';
     xml += `<Worksheet ss:Name="Invigilators">\n<Table>\n`;
     const cols = ['#','Staff ID','Full Name','Department','Designation','Staff Type',
-      ...FIXED_DAYS.map(d=>d.label),'Total','Rate (GHS)','Gross','10% Ded.','Net'];
+      ...days.map(d=>d.label),'Total','Rate (GHS)','Gross','10% Ded.','Net'];
     xml += '<Row>'+cols.map(c=>`<Cell ss:StyleID="h"><Data ss:Type="String">${c}</Data></Cell>`).join('')+'</Row>\n';
     filtered.forEach((r,i) => {
       xml += '<Row>';
@@ -111,20 +104,20 @@ function InvigilatorsTable({ rows, faculty }) {
       xml += `<Cell><Data ss:Type="String">${r.department}</Data></Cell>`;
       xml += `<Cell><Data ss:Type="String">${r.designation}</Data></Cell>`;
       xml += `<Cell><Data ss:Type="String">${r.staffType}</Data></Cell>`;
-      FIXED_DAYS.forEach(d => xml += `<Cell><Data ss:Type="Number">${getDayVal(r,d.key)}</Data></Cell>`);
-      xml += `<Cell><Data ss:Type="Number">${getTotal(r)}</Data></Cell>`;
+      days.forEach(d => xml += `<Cell><Data ss:Type="Number">${getDayVal(r,d.key)}</Data></Cell>`);
+      xml += `<Cell><Data ss:Type="Number">${getTotal(r, days)}</Data></Cell>`;
       xml += `<Cell><Data ss:Type="Number">${getRate(r)}</Data></Cell>`;
-      xml += `<Cell><Data ss:Type="Number">${getGross(r).toFixed(2)}</Data></Cell>`;
-      xml += `<Cell><Data ss:Type="Number">${(getGross(r)*0.10).toFixed(2)}</Data></Cell>`;
-      xml += `<Cell><Data ss:Type="Number">${getNet(r).toFixed(2)}</Data></Cell>`;
+      xml += `<Cell><Data ss:Type="Number">${getGross(r, days).toFixed(2)}</Data></Cell>`;
+      xml += `<Cell><Data ss:Type="Number">${(getGross(r, days)*0.10).toFixed(2)}</Data></Cell>`;
+      xml += `<Cell><Data ss:Type="Number">${getNet(r, days).toFixed(2)}</Data></Cell>`;
       xml += '</Row>\n';
     });
     xml += '<Row>';
     xml += `<Cell ss:StyleID="tot"></Cell><Cell ss:StyleID="tot"></Cell>`;
     xml += `<Cell ss:StyleID="tot"><Data ss:Type="String">TOTAL (${filtered.length})</Data></Cell>`;
     xml += `<Cell ss:StyleID="tot"></Cell><Cell ss:StyleID="tot"></Cell><Cell ss:StyleID="tot"></Cell>`;
-    FIXED_DAYS.forEach(d => xml += `<Cell ss:StyleID="tot"><Data ss:Type="Number">${filtered.reduce((s,r)=>s+getDayVal(r,d.key),0)}</Data></Cell>`);
-    xml += `<Cell ss:StyleID="tot"><Data ss:Type="Number">${filtered.reduce((s,r)=>s+getTotal(r),0)}</Data></Cell>`;
+    days.forEach(d => xml += `<Cell ss:StyleID="tot"><Data ss:Type="Number">${filtered.reduce((s,r)=>s+getDayVal(r,d.key),0)}</Data></Cell>`);
+    xml += `<Cell ss:StyleID="tot"><Data ss:Type="Number">${filtered.reduce((s,r)=>s+getTotal(r, days),0)}</Data></Cell>`;
     xml += `<Cell ss:StyleID="tot"></Cell>`;
     xml += `<Cell ss:StyleID="tot"><Data ss:Type="Number">${grandGross.toFixed(2)}</Data></Cell>`;
     xml += `<Cell ss:StyleID="tot"><Data ss:Type="Number">${(grandGross*0.10).toFixed(2)}</Data></Cell>`;
@@ -166,7 +159,7 @@ function InvigilatorsTable({ rows, faculty }) {
                 <th className="px-3 py-2.5 text-left text-xs">Department</th>
                 <th className="px-3 py-2.5 text-left text-xs">Designation</th>
                 <th className="px-3 py-2.5 text-left text-xs">Staff Type</th>
-                {FIXED_DAYS.map(d => <th key={d.key} className="px-3 py-2.5 text-center text-xs whitespace-nowrap">{d.label}</th>)}
+                {days.map(d => <th key={d.key} className="px-3 py-2.5 text-center text-xs whitespace-nowrap">{d.label}</th>)}
                 <th className="px-3 py-2.5 text-center text-xs font-bold">Total</th>
                 <th className="px-3 py-2.5 text-right text-xs">Rate</th>
                 <th className="px-3 py-2.5 text-right text-xs">Gross</th>
@@ -188,24 +181,24 @@ function InvigilatorsTable({ rows, faculty }) {
                       {r.staffType}
                     </span>
                   </td>
-                  {FIXED_DAYS.map(d => (
+                  {days.map(d => (
                     <td key={d.key} className="px-3 py-2 text-center text-sm">
                       {getDayVal(r,d.key)||<span className="text-gray-300">-</span>}
                     </td>
                   ))}
-                  <td className="px-3 py-2 text-center font-bold text-gray-900">{getTotal(r)}</td>
+                  <td className="px-3 py-2 text-center font-bold text-gray-900">{getTotal(r, days)}</td>
                   <td className="px-3 py-2 text-right text-gray-500 text-xs">{getRate(r)}</td>
-                  <td className="px-3 py-2 text-right text-gray-700">{getGross(r).toFixed(2)}</td>
-                  <td className="px-3 py-2 text-right text-gray-400 text-xs">{(getGross(r)*0.10).toFixed(2)}</td>
-                  <td className="px-3 py-2 text-right font-bold text-gray-900">{getNet(r).toFixed(2)}</td>
+                  <td className="px-3 py-2 text-right text-gray-700">{getGross(r, days).toFixed(2)}</td>
+                  <td className="px-3 py-2 text-right text-gray-400 text-xs">{(getGross(r, days)*0.10).toFixed(2)}</td>
+                  <td className="px-3 py-2 text-right font-bold text-gray-900">{getNet(r, days).toFixed(2)}</td>
                 </tr>
               ))}
             </tbody>
             <tfoot className="bg-yellow-50 border-t-2 border-yellow-300">
               <tr>
                 <td colSpan={6} className="px-3 py-2.5 font-bold text-gray-800 text-sm">TOTAL — {filtered.length} staff</td>
-                {FIXED_DAYS.map(d => <td key={d.key} className="px-3 py-2.5 text-center font-bold text-gray-800">{filtered.reduce((s,r)=>s+getDayVal(r,d.key),0)}</td>)}
-                <td className="px-3 py-2.5 text-center font-bold text-gray-800">{filtered.reduce((s,r)=>s+getTotal(r),0)}</td>
+                {days.map(d => <td key={d.key} className="px-3 py-2.5 text-center font-bold text-gray-800">{filtered.reduce((s,r)=>s+getDayVal(r,d.key),0)}</td>)}
+                <td className="px-3 py-2.5 text-center font-bold text-gray-800">{filtered.reduce((s,r)=>s+getTotal(r, days),0)}</td>
                 <td></td>
                 <td className="px-3 py-2.5 text-right font-bold text-gray-800">{grandGross.toFixed(2)}</td>
                 <td className="px-3 py-2.5 text-right font-bold text-gray-600">{(grandGross*0.10).toFixed(2)}</td>
@@ -220,7 +213,7 @@ function InvigilatorsTable({ rows, faculty }) {
 }
 
 // ── Office Staff Table (count only, no payment) ───────────────────────────────
-function OfficeStaffTable({ rows, faculty }) {
+function OfficeStaffTable({ rows, faculty, days }) {
   const filtered = rows.filter(r => faculty === 'all' || getFaculty(r.department) === faculty);
 
   const printReport = () => {
@@ -228,18 +221,18 @@ function OfficeStaffTable({ rows, faculty }) {
     const facultyLabel = FACULTY_LABELS[faculty] || 'All';
     const header = `<tr>
       <th>#</th><th>Staff ID</th><th>Full Name</th><th>Department</th><th>Designation</th><th>Staff Type</th>
-      ${FIXED_DAYS.map(d=>`<th>${d.label}</th>`).join('')}<th>Total</th>
+      ${days.map(d=>`<th>${d.label}</th>`).join('')}<th>Total</th>
     </tr>`;
     const bodyRows = filtered.map((r,i) => `<tr>
       <td>${i+1}</td><td style="font-family:monospace">${r.staffId}</td>
       <td>${r.fullName}</td><td>${r.department}</td><td>${r.designation}</td><td>${r.staffType}</td>
-      ${FIXED_DAYS.map(d=>`<td style="text-align:center">${getDayVal(r,d.key)||'-'}</td>`).join('')}
-      <td style="text-align:center;font-weight:bold">${getTotal(r)}</td>
+      ${days.map(d=>`<td style="text-align:center">${getDayVal(r,d.key)||'-'}</td>`).join('')}
+      <td style="text-align:center;font-weight:bold">${getTotal(r, days)}</td>
     </tr>`).join('');
     const totalRow = `<tr style="background:#FFF2CC;font-weight:bold;">
       <td colspan="6">TOTAL (${filtered.length} staff)</td>
-      ${FIXED_DAYS.map(d=>`<td style="text-align:center">${filtered.reduce((s,r)=>s+getDayVal(r,d.key),0)}</td>`).join('')}
-      <td style="text-align:center">${filtered.reduce((s,r)=>s+getTotal(r),0)}</td>
+      ${days.map(d=>`<td style="text-align:center">${filtered.reduce((s,r)=>s+getDayVal(r,d.key),0)}</td>`).join('')}
+      <td style="text-align:center">${filtered.reduce((s,r)=>s+getTotal(r, days),0)}</td>
     </tr>`;
     win.document.write(`<!DOCTYPE html><html><head><title>Office/Support Staff — ${facultyLabel}</title>
       <style>body{font-family:Arial,sans-serif;padding:30px;}table{border-collapse:collapse;width:100%;margin-top:15px;font-size:11px;}
@@ -251,7 +244,7 @@ function OfficeStaffTable({ rows, faculty }) {
       <p style="font-size:11px;color:#888;">Biometric verification count per day</p>
       <hr style="margin:12px 0;border-color:#c8a951;">
       <table><thead>${header}</thead><tbody>${bodyRows}${totalRow}</tbody></table>
-      <p style="margin-top:15px;font-size:11px;color:#999;">Staff: ${filtered.length} | Total Verifications: ${filtered.reduce((s,r)=>s+getTotal(r),0)}</p>
+      <p style="margin-top:15px;font-size:11px;color:#999;">Staff: ${filtered.length} | Total Verifications: ${filtered.reduce((s,r)=>s+getTotal(r, days),0)}</p>
       <button onclick="window.print()" style="margin-top:15px;padding:10px 20px;background:#1a3a5c;color:#fff;border:none;border-radius:6px;cursor:pointer;">Print</button>
     </body></html>`);
     win.document.close();
@@ -264,7 +257,7 @@ function OfficeStaffTable({ rows, faculty }) {
     xml += '<Styles><Style ss:ID="h"><Font ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#1a3a5c" ss:Pattern="Solid"/></Style>';
     xml += '<Style ss:ID="tot"><Font ss:Bold="1"/><Interior ss:Color="#FFF2CC" ss:Pattern="Solid"/></Style></Styles>\n';
     xml += `<Worksheet ss:Name="Office Staff">\n<Table>\n`;
-    const cols = ['#','Staff ID','Full Name','Department','Designation','Staff Type',...FIXED_DAYS.map(d=>d.label),'Total'];
+    const cols = ['#','Staff ID','Full Name','Department','Designation','Staff Type',...days.map(d=>d.label),'Total'];
     xml += '<Row>'+cols.map(c=>`<Cell ss:StyleID="h"><Data ss:Type="String">${c}</Data></Cell>`).join('')+'</Row>\n';
     filtered.forEach((r,i) => {
       xml += '<Row>';
@@ -274,16 +267,16 @@ function OfficeStaffTable({ rows, faculty }) {
       xml += `<Cell><Data ss:Type="String">${r.department}</Data></Cell>`;
       xml += `<Cell><Data ss:Type="String">${r.designation}</Data></Cell>`;
       xml += `<Cell><Data ss:Type="String">${r.staffType}</Data></Cell>`;
-      FIXED_DAYS.forEach(d => xml += `<Cell><Data ss:Type="Number">${getDayVal(r,d.key)}</Data></Cell>`);
-      xml += `<Cell><Data ss:Type="Number">${getTotal(r)}</Data></Cell>`;
+      days.forEach(d => xml += `<Cell><Data ss:Type="Number">${getDayVal(r,d.key)}</Data></Cell>`);
+      xml += `<Cell><Data ss:Type="Number">${getTotal(r, days)}</Data></Cell>`;
       xml += '</Row>\n';
     });
     xml += '<Row>';
     xml += `<Cell ss:StyleID="tot"></Cell><Cell ss:StyleID="tot"></Cell>`;
     xml += `<Cell ss:StyleID="tot"><Data ss:Type="String">TOTAL (${filtered.length})</Data></Cell>`;
     xml += `<Cell ss:StyleID="tot"></Cell><Cell ss:StyleID="tot"></Cell><Cell ss:StyleID="tot"></Cell>`;
-    FIXED_DAYS.forEach(d => xml += `<Cell ss:StyleID="tot"><Data ss:Type="Number">${filtered.reduce((s,r)=>s+getDayVal(r,d.key),0)}</Data></Cell>`);
-    xml += `<Cell ss:StyleID="tot"><Data ss:Type="Number">${filtered.reduce((s,r)=>s+getTotal(r),0)}</Data></Cell>`;
+    days.forEach(d => xml += `<Cell ss:StyleID="tot"><Data ss:Type="Number">${filtered.reduce((s,r)=>s+getDayVal(r,d.key),0)}</Data></Cell>`);
+    xml += `<Cell ss:StyleID="tot"><Data ss:Type="Number">${filtered.reduce((s,r)=>s+getTotal(r, days),0)}</Data></Cell>`;
     xml += '</Row>\n</Table>\n</Worksheet>\n</Workbook>';
     const blob = new Blob([xml],{type:'application/vnd.ms-excel'});
     const url = URL.createObjectURL(blob);
@@ -321,7 +314,7 @@ function OfficeStaffTable({ rows, faculty }) {
                 <th className="px-3 py-2.5 text-left text-xs">Department</th>
                 <th className="px-3 py-2.5 text-left text-xs">Designation</th>
                 <th className="px-3 py-2.5 text-left text-xs">Staff Type</th>
-                {FIXED_DAYS.map(d => <th key={d.key} className="px-3 py-2.5 text-center text-xs whitespace-nowrap">{d.label}</th>)}
+                {days.map(d => <th key={d.key} className="px-3 py-2.5 text-center text-xs whitespace-nowrap">{d.label}</th>)}
                 <th className="px-3 py-2.5 text-center text-xs font-bold">Total</th>
               </tr>
             </thead>
@@ -337,20 +330,20 @@ function OfficeStaffTable({ rows, faculty }) {
                   <td className="px-3 py-2">
                     <span className="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700 whitespace-nowrap">{r.staffType}</span>
                   </td>
-                  {FIXED_DAYS.map(d => (
+                  {days.map(d => (
                     <td key={d.key} className="px-3 py-2 text-center text-sm">
                       {getDayVal(r,d.key)||<span className="text-gray-300">-</span>}
                     </td>
                   ))}
-                  <td className="px-3 py-2 text-center font-bold text-gray-900">{getTotal(r)}</td>
+                  <td className="px-3 py-2 text-center font-bold text-gray-900">{getTotal(r, days)}</td>
                 </tr>
               ))}
             </tbody>
             <tfoot className="bg-yellow-50 border-t-2 border-yellow-300">
               <tr>
                 <td colSpan={6} className="px-3 py-2.5 font-bold text-gray-800 text-sm">TOTAL — {filtered.length} staff</td>
-                {FIXED_DAYS.map(d => <td key={d.key} className="px-3 py-2.5 text-center font-bold text-gray-800">{filtered.reduce((s,r)=>s+getDayVal(r,d.key),0)}</td>)}
-                <td className="px-3 py-2.5 text-center font-bold text-gray-800">{filtered.reduce((s,r)=>s+getTotal(r),0)}</td>
+                {days.map(d => <td key={d.key} className="px-3 py-2.5 text-center font-bold text-gray-800">{filtered.reduce((s,r)=>s+getDayVal(r,d.key),0)}</td>)}
+                <td className="px-3 py-2.5 text-center font-bold text-gray-800">{filtered.reduce((s,r)=>s+getTotal(r, days),0)}</td>
               </tr>
             </tfoot>
           </table>
@@ -362,8 +355,10 @@ function OfficeStaffTable({ rows, faculty }) {
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function InvigilationAllowances() {
+  const { currentSession } = useSession();
   const [invigilators, setInvigilators] = useState(null);
   const [officeStaff, setOfficeStaff]   = useState(null);
+  const [days, setDays]                 = useState([]);
   const [loading, setLoading]           = useState(false);
   const [error, setError]               = useState('');
   const [faculty, setFaculty]           = useState('all');
@@ -373,7 +368,7 @@ export default function InvigilationAllowances() {
     e.preventDefault();
     const file = fileRef.current?.files[0];
     if (!file) { setError('Please select an Excel file'); return; }
-    setError(''); setLoading(true); setInvigilators(null); setOfficeStaff(null);
+    setError(''); setLoading(true); setInvigilators(null); setOfficeStaff(null); setDays([]);
     const form = new FormData();
     form.append('file', file);
     try {
@@ -382,6 +377,11 @@ export default function InvigilationAllowances() {
       });
       setInvigilators(data.invigilators);
       setOfficeStaff(data.officeStaff);
+      const dayKeys = data.days || [];
+      setDays(dayKeys.map(k => {
+        const d = new Date(k);
+        return { key: k, label: d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric' }) };
+      }));
     } catch (err) {
       setError(err.response?.data?.error || err.message);
     } finally {
@@ -393,7 +393,9 @@ export default function InvigilationAllowances() {
     <div className="space-y-5">
       <div>
         <h1 className="text-2xl font-black text-gray-900">Invigilation Allowances</h1>
-        <p className="text-sm text-gray-500 mt-1">Mid-Semester 2025/2026 · 6th–10th July 2026</p>
+        <p className="text-sm text-gray-500 mt-1">
+          {currentSession ? `${currentSession.name} — ${currentSession.academic_year}` : 'All Sessions'}
+        </p>
       </div>
 
       <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-gray-200 p-5 space-y-4">
@@ -425,8 +427,8 @@ export default function InvigilationAllowances() {
             ))}
           </div>
 
-          <InvigilatorsTable rows={invigilators} faculty={faculty} />
-          <OfficeStaffTable  rows={officeStaff}  faculty={faculty} />
+          <InvigilatorsTable rows={invigilators} faculty={faculty} days={days} />
+          <OfficeStaffTable  rows={officeStaff}  faculty={faculty} days={days} />
         </div>
       )}
     </div>

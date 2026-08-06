@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../api';
+import { useSession } from '../contexts/SessionContext';
 
 const SESSION_TIMES = {
   1: '8:15 - 9:15 AM', 2: '10:00 - 11:00 AM', 3: '11:45 - 12:45 PM',
@@ -10,13 +11,16 @@ export default function ExaminerDashboard() {
   const [exams, setExams] = useState([]);
   const [loading, setLoading] = useState(true);
   const name = localStorage.getItem('exam_ops_name') || 'Examiner';
+  const { currentSession } = useSession();
 
   useEffect(() => {
+    if (!currentSession?.id) { setExams([]); setLoading(false); return; }
+    setLoading(true);
     api.get('/timetable/my-exams')
       .then(r => setExams(r.data))
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, []);
+  }, [currentSession?.id]);
 
   const byDate = {};
   exams.forEach(e => {
@@ -34,7 +38,9 @@ export default function ExaminerDashboard() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-black text-gray-900">Welcome, {name}</h1>
-        <p className="text-sm text-gray-500 mt-1">Your exam schedule and venue details</p>
+        <p className="text-sm text-gray-500 mt-1">
+          {currentSession ? `${currentSession.name} — Your exam schedule` : 'No session selected'}
+        </p>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
