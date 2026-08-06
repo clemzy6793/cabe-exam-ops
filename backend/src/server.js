@@ -16,7 +16,14 @@ const app = express();
 const PORT = process.env.PORT || 5003;
 
 app.set('trust proxy', 1);
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+      'script-src': ["'self'", "'unsafe-inline'"],
+    },
+  },
+}));
 app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:5176',
   credentials: true
