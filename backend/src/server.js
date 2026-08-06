@@ -25,7 +25,9 @@ app.use(express.json());
 
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 1000,
+  max: 5000,
+  standardHeaders: true,
+  legacyHeaders: false,
   message: { error: 'Too many requests, slow down' }
 });
 app.use('/api', apiLimiter);
@@ -90,6 +92,56 @@ app.use('/api/reports', require('./routes/reports'));
 app.use('/api/venues', require('./routes/venues'));
 app.use('/api/timetable-upload', require('./routes/timetable-upload'));
 app.use('/api/allowances', require('./routes/allowances'));
+app.use('/api/sessions', require('./routes/sessions'));
+app.use('/api/payment-rates', require('./routes/payment-rates'));
+app.use('/api/attendance-tracking', require('./routes/attendance-tracking'));
+app.use('/api/exam-checkins', require('./routes/exam-checkins'));
+app.use('/api/notifications', require('./routes/notifications'));
+app.use('/api/payments', require('./routes/payments'));
+app.use('/api/audit', require('./routes/audit'));
+
+// ── SSO callback ────────────────────────────────────────────
+const SSO_API = process.env.SSO_API_URL || 'https://sso.campusmarketgh.com';
+const jwt = require('jsonwebtoken');
+app.get('/sso/callback', async (req, res) => {
+  const { code } = req.query;
+  if (!code) return res.status(400).send('Missing code');
+  try {
+    const resp = await fetch(`${SSO_API}/auth/exchange`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code }),
+    });
+    if (!resp.ok) return res.redirect('/login?error=sso_failed');
+    const { user: ssoUser, role } = await resp.json();
+
+    // Find or create admin in local DB
+    let { rows } = await db.query('SELECT * FROM admins WHERE LOWER(email)=LOWER($1)', [ssoUser.email]);
+    if (!rows.length) {
+      const bcrypt = require('bcryptjs');
+      const hash = await bcrypt.hash(require('crypto').randomBytes(32).toString('hex'), 12);
+      const result = await db.query(
+        'INSERT INTO admins (name, email, password_hash, role) VALUES ($1,$2,$3,$4) RETURNING *',
+        [ssoUser.name, ssoUser.email, hash, role || 'admin']
+      );
+      rows = result.rows;
+    }
+    const admin = rows[0];
+    const token = jwt.sign(
+      { id: admin.id, role: admin.role, name: admin.name, faculty_id: admin.faculty_id, can_edit: !!admin.can_edit },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+    return res.send(`<!DOCTYPE html><html><head><script>
+      localStorage.setItem('eo_token','${token}');
+      localStorage.setItem('eo_role','${admin.role}');
+      window.location.href='/';
+    </script></head><body>Signing in...</body></html>`);
+  } catch (err) {
+    console.error('SSO callback error:', err);
+    return res.redirect('/login?error=sso_error');
+  }
+});
 
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, '../../frontend/dist')));
