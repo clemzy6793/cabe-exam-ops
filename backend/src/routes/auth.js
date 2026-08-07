@@ -40,8 +40,8 @@ router.put('/change-password', async (req, res) => {
     const { current_password, new_password } = req.body;
     if (!current_password || !new_password)
       return res.status(400).json({ error: 'Current and new password required' });
-    if (new_password.length < 6)
-      return res.status(400).json({ error: 'New password must be at least 6 characters' });
+    if (new_password.length < 8)
+      return res.status(400).json({ error: 'New password must be at least 8 characters' });
     const { rows } = await db.query('SELECT * FROM admins WHERE id=$1', [decoded.id]);
     if (!rows.length) return res.status(404).json({ error: 'Admin not found' });
     if (!await bcrypt.compare(current_password, rows[0].password_hash))
@@ -87,7 +87,7 @@ router.post('/accounts', authAdmin, async (req, res) => {
 router.post('/accounts/from-staff', authAdmin, async (req, res) => {
   const { staff_ids, password } = req.body;
   if (!staff_ids?.length || !password) return res.status(400).json({ error: 'Staff and password required' });
-  if (password.length < 6) return res.status(400).json({ error: 'Minimum 6 characters' });
+  if (password.length < 8) return res.status(400).json({ error: 'Minimum 8 characters' });
 
   const hash = await bcrypt.hash(password, 10);
   let created = 0, skipped = 0;

@@ -11,11 +11,11 @@ const pool = process.env.PGHOST
       host: process.env.PGHOST,
       port: parseInt(process.env.PGPORT || '5432'),
       database: process.env.PGDATABASE,
-      ssl: noSsl ? false : { rejectUnauthorized: false },
+      ssl: noSsl ? false : { rejectUnauthorized: process.env.PGSSL_NO_VERIFY === 'true' ? false : true, ca: process.env.PGSSL_CA || undefined },
     })
   : new Pool({
       connectionString: process.env.DATABASE_URL,
-      ssl: noSsl ? false : { rejectUnauthorized: false },
+      ssl: noSsl ? false : { rejectUnauthorized: process.env.PGSSL_NO_VERIFY === 'true' ? false : true, ca: process.env.PGSSL_CA || undefined },
     });
 
 module.exports = {

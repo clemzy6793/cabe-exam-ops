@@ -7,7 +7,7 @@ async function seed() {
   const noSsl = process.env.PGSSL === 'disable' || process.env.DATABASE_URL?.includes('localhost');
   const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    ssl: noSsl ? false : { rejectUnauthorized: false },
+    ssl: noSsl ? false : { rejectUnauthorized: process.env.PGSSL_NO_VERIFY === 'true' ? false : true, ca: process.env.PGSSL_CA || undefined },
   });
 
   const data = JSON.parse(fs.readFileSync(path.join(__dirname, '../parsers/seed_data.json'), 'utf8'));

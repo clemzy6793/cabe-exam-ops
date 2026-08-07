@@ -6,15 +6,21 @@ const { Pool } = require('pg');
 async function init() {
   const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    ssl: process.env.DATABASE_URL?.includes('localhost') ? false : { rejectUnauthorized: false },
+    ssl: process.env.DATABASE_URL?.includes('localhost')
+      ? false
+      : { rejectUnauthorized: process.env.PGSSL_NO_VERIFY === 'true' ? false : true, ca: process.env.PGSSL_CA || undefined },
   });
 
   const schema = fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8');
   await pool.query(schema);
   console.log('Schema created successfully');
 
+  if (!process.env.ADMIN_PASSWORD) {
+    console.error('FATAL: ADMIN_PASSWORD environment variable is required (no insecure default)');
+    process.exit(1);
+  }
   const bcrypt = require('bcryptjs');
-  const hash = await bcrypt.hash(process.env.ADMIN_PASSWORD || 'admin123', 12);
+  const hash = await bcrypt.hash(process.env.ADMIN_PASSWORD, 12);
   await pool.query(
     `INSERT INTO admins (name, email, password_hash, role)
      VALUES ($1, $2, $3, 'superadmin')

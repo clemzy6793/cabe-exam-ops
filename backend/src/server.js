@@ -39,6 +39,8 @@ const apiLimiter = rateLimit({
 });
 app.use('/api', apiLimiter);
 
+app.get('/healthz', (req, res) => res.json({ ok: true, t: Date.now() }));
+
 (async () => {
   try {
     const schema = fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8');
@@ -107,44 +109,88 @@ app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/payments', require('./routes/payments'));
 app.use('/api/audit', require('./routes/audit'));
 
-// ── SSO callback ────────────────────────────────────────────
+// ── SSO (single sign-on) — DISABLED by default; hardened when enabled ─────────
+//  SECURITY MODEL (do not weaken):
+//   • OFF unless SSO_ENABLED=true, and only with a trusted identity provider.
+//   • Privilege is NEVER taken from the IdP response. Only e-mails listed in
+//     SSO_SUPERADMINS may sign in via SSO; everyone else is denied (fail closed).
+//   • CSRF-protected with a random `state` nonce cookie set at /sso/login.
+//   • Token delivered as a base64 blob decoded by a nonce'd script — no user
+//     data is interpolated into the page (no XSS surface) and the per-response
+//     CSP nonce lets it run without relying on the global 'unsafe-inline'.
+//   • Uses the SAME storage keys the app reads (exam_ops_token / exam_ops_role).
+const SSO_ENABLED = process.env.SSO_ENABLED === 'true';
 const SSO_API = process.env.SSO_API_URL || 'https://sso.campusmarketgh.com';
+const SSO_SUPERADMINS = (process.env.SSO_SUPERADMINS || '')
+  .split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+const SSO_COOKIE_SECURE = process.env.NODE_ENV === 'production';
 const jwt = require('jsonwebtoken');
-app.get('/sso/callback', async (req, res) => {
-  const { code } = req.query;
-  if (!code) return res.status(400).send('Missing code');
+const crypto = require('crypto');
+const ssoLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 20, standardHeaders: true, legacyHeaders: false, message: { error: 'Too many SSO attempts' } });
+function readCookie(req, name) {
+  for (const part of (req.headers.cookie || '').split(';')) {
+    const i = part.indexOf('=');
+    if (i > -1 && part.slice(0, i).trim() === name) return decodeURIComponent(part.slice(i + 1).trim());
+  }
+  return null;
+}
+
+// Step 1 — begin SSO: set a random `state` nonce and bounce to the portal.
+app.get('/sso/login', ssoLimiter, (req, res) => {
+  if (!SSO_ENABLED) return res.status(404).send('SSO is disabled');
+  const state = crypto.randomBytes(16).toString('hex');
+  res.cookie('sso_state', state, { httpOnly: true, secure: SSO_COOKIE_SECURE, sameSite: 'lax', maxAge: 10 * 60 * 1000, path: '/sso' });
+  const redirectUri = `${process.env.APP_URL || ''}/sso/callback`;
+  res.redirect(`${SSO_API}/authorize?response_type=code&state=${state}&redirect_uri=${encodeURIComponent(redirectUri)}`);
+});
+
+// Step 2 — the portal redirects back here with ?code & ?state.
+app.get('/sso/callback', ssoLimiter, async (req, res) => {
+  if (!SSO_ENABLED) return res.status(404).send('SSO is disabled');
+  const { code, state } = req.query;
+  if (!code) return res.redirect('/login?error=sso_missing_code');
+  const expected = readCookie(req, 'sso_state');
+  res.clearCookie('sso_state', { path: '/sso' });
+  if (!expected || !state || String(state) !== expected) return res.redirect('/login?error=sso_bad_state');
   try {
     const resp = await fetch(`${SSO_API}/auth/exchange`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(process.env.SSO_CLIENT_SECRET ? { Authorization: 'Bearer ' + process.env.SSO_CLIENT_SECRET } : {}),
+      },
       body: JSON.stringify({ code }),
     });
     if (!resp.ok) return res.redirect('/login?error=sso_failed');
-    const { user: ssoUser, role } = await resp.json();
+    const data = await resp.json();
+    const ssoUser = data.user || {};
+    if (!ssoUser.email) return res.redirect('/login?error=sso_no_email');
+    const email = String(ssoUser.email).toLowerCase();
+    // Privilege is NEVER granted from the IdP response — allow-list only.
+    if (!SSO_SUPERADMINS.includes(email)) return res.redirect('/login?error=sso_not_authorized');
 
-    // Find or create admin in local DB
-    let { rows } = await db.query('SELECT * FROM admins WHERE LOWER(email)=LOWER($1)', [ssoUser.email]);
+    let { rows } = await db.query('SELECT * FROM admins WHERE LOWER(email)=LOWER($1)', [email]);
     if (!rows.length) {
       const bcrypt = require('bcryptjs');
-      const hash = await bcrypt.hash(require('crypto').randomBytes(32).toString('hex'), 12);
-      const result = await db.query(
-        'INSERT INTO admins (name, email, password_hash, role) VALUES ($1,$2,$3,$4) RETURNING *',
-        [ssoUser.name, ssoUser.email, hash, role || 'admin']
-      );
-      rows = result.rows;
+      const hash = await bcrypt.hash(crypto.randomBytes(32).toString('hex'), 12);
+      rows = (await db.query(
+        "INSERT INTO admins (name, email, password_hash, role) VALUES ($1,$2,$3,'admin') RETURNING *",
+        [ssoUser.name || email, email, hash])).rows;
     }
     const admin = rows[0];
-    const token = jwt.sign(
-      { id: admin.id, role: admin.role, name: admin.name, faculty_id: admin.faculty_id, can_edit: !!admin.can_edit },
-      process.env.JWT_SECRET,
-      { expiresIn: '7d' }
-    );
-    return res.send(`<!DOCTYPE html><html><head><script>
-      localStorage.setItem('exam_ops_token','${token}');
-      window.location.href='/';
-    </script></head><body>Signing in...</body></html>`);
+    const payload = { id: admin.id, role: admin.role, name: admin.name, faculty_id: admin.faculty_id, can_edit: !!admin.can_edit };
+    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '7d' });
+    // base64 blob → no injection surface; nonce'd script → runs under strict CSP.
+    const blob = Buffer.from(JSON.stringify({ token, role: admin.role })).toString('base64');
+    const nonce = crypto.randomBytes(16).toString('base64');
+    res.set('Content-Security-Policy', `default-src 'self'; script-src 'nonce-${nonce}'`);
+    res.set('Content-Type', 'text/html');
+    return res.send('<!DOCTYPE html><html><head><meta charset="utf-8"><title>Signing in…</title>'
+      + '<script nonce="' + nonce + '">(function(){try{var d=JSON.parse(atob(' + JSON.stringify(blob) + '));'
+      + "localStorage.setItem('exam_ops_token',d.token);localStorage.setItem('exam_ops_role',d.role);}catch(e){}"
+      + "location.replace('/');})();</script></head><body>Signing in…</body></html>");
   } catch (err) {
-    console.error('SSO callback error:', err);
+    console.error('SSO callback error:', err.message);
     return res.redirect('/login?error=sso_error');
   }
 });
