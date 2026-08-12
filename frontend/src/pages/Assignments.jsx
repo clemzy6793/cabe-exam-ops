@@ -1,28 +1,20 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import api from '../api';
 import toast from 'react-hot-toast';
-
-const DAYS = [
-  { date: '2026-07-06', label: 'Mon 6th' },
-  { date: '2026-07-07', label: 'Tue 7th' },
-  { date: '2026-07-08', label: 'Wed 8th' },
-  { date: '2026-07-09', label: 'Thu 9th' },
-  { date: '2026-07-10', label: 'Fri 10th' },
-];
+import { useSession } from '../contexts/SessionContext';
 
 const TIMES = ['8:15-9:15','10:00-11:00','11:45-12:45','1:30-2:30','3:15-4:15','5:00-6:00'];
 
-function getDefaultDate() {
-  const today = new Date().toISOString().slice(0, 10);
-  const match = DAYS.find(d => d.date === today);
-  if (match) return match.date;
-  const future = DAYS.find(d => d.date > today);
-  if (future) return future.date;
-  return DAYS[DAYS.length - 1].date;
+function formatDayLabel(dateStr) {
+  const d = new Date(dateStr + 'T12:00:00');
+  return d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
 }
 
 export default function Assignments() {
-  const [date, setDate] = useState(getDefaultDate);
+  const { currentSession } = useSession();
+  const sessionId = currentSession?.id;
+  const [days, setDays] = useState([]);
+  const [date, setDate] = useState('');
   const [faculties, setFaculties] = useState([]);
   const [facultyId, setFacultyId] = useState('all');
   const [exams, setExams] = useState([]);
@@ -35,19 +27,34 @@ export default function Assignments() {
   const [mergeMode, setMergeMode] = useState(null);
   const [mergeSelected, setMergeSelected] = useState([]);
 
-  const load = () => {
-    const params = { date };
+  useEffect(() => {
+    if (!sessionId) return;
+    api.get('/exam-checkins/dates', { params: { session_id: sessionId } }).then(r => {
+      const loaded = r.data.map(d => ({ date: d.date, label: formatDayLabel(d.date) }));
+      setDays(loaded);
+      if (loaded.length > 0) {
+        const today = new Date().toISOString().slice(0, 10);
+        const match = loaded.find(d => d.date === today);
+        const future = loaded.find(d => d.date > today);
+        setDate(match ? match.date : future ? future.date : loaded[loaded.length - 1].date);
+      }
+    });
+  }, [sessionId]);
+
+  const load = useCallback(() => {
+    if (!date || !sessionId) return;
+    const params = { date, session_id: sessionId };
     if (facultyId !== 'all') params.faculty_id = facultyId;
     api.get('/timetable/exams', { params }).then(r => setExams(r.data));
-    api.get('/assignments/unassigned', { params: { date } }).then(r => setUnassigned(r.data));
-  };
+    api.get('/assignments/unassigned', { params: { date, session_id: sessionId } }).then(r => setUnassigned(r.data));
+  }, [date, facultyId, sessionId]);
 
   useEffect(() => {
     api.get('/timetable/faculties').then(r => setFaculties(r.data));
     api.get('/staff').then(r => setStaff(r.data));
   }, []);
 
-  useEffect(() => { load(); }, [date, facultyId]);
+  useEffect(() => { load(); }, [load]);
 
   const assign = async (exam_id, staff_id) => {
     try {
@@ -166,7 +173,10 @@ export default function Assignments() {
 
       {/* Day selector */}
       <div className="flex gap-2 overflow-x-auto">
-        {DAYS.map(d => (
+        {days.length === 0 && (
+          <p className="text-sm text-gray-400 py-2">No exam dates found for this session. Upload a timetable first.</p>
+        )}
+        {days.map(d => (
           <button key={d.date} onClick={() => setDate(d.date)}
             className={`px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap ${
               date === d.date ? 'bg-brand text-white' : 'bg-white border text-gray-600 hover:bg-gray-50'
@@ -319,6 +329,7 @@ export default function Assignments() {
       {bulkModal && (
         <BulkAssignModal
           date={date}
+          sessionId={sessionId}
           faculties={faculties}
           staff={staff.filter(s => s.staff_type === 'it_staff')}
           onClose={() => setBulkModal(false)}
@@ -631,7 +642,7 @@ function AutoAssignModal({ date, dates, faculties, staff, onClose, onDone }) {
   );
 }
 
-function BulkAssignModal({ date, faculties, staff, onClose, onDone }) {
+function BulkAssignModal({ date, sessionId, faculties, staff, onClose, onDone }) {
   const [selectedStaff, setSelectedStaff] = useState([]);
   const [selectedExams, setSelectedExams] = useState([]);
   const [step, setStep] = useState(1);
@@ -642,9 +653,10 @@ function BulkAssignModal({ date, faculties, staff, onClose, onDone }) {
 
   useEffect(() => {
     const params = { date };
+    if (sessionId) params.session_id = sessionId;
     if (bulkFacultyId !== 'all') params.faculty_id = bulkFacultyId;
     api.get('/timetable/exams', { params }).then(r => setExams(r.data));
-  }, [date, bulkFacultyId]);
+  }, [date, sessionId, bulkFacultyId]);
 
   const toggleStaff = (id) => setSelectedStaff(prev =>
     prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
