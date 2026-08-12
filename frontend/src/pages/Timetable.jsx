@@ -1,16 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import api from '../api';
 import toast from 'react-hot-toast';
+import { useSession } from '../contexts/SessionContext';
 
-const DAYS = [
-  { date: '2026-07-06', label: 'Monday 6th' },
-  { date: '2026-07-07', label: 'Tuesday 7th' },
-  { date: '2026-07-08', label: 'Wednesday 8th' },
-  { date: '2026-07-09', label: 'Thursday 9th' },
-  { date: '2026-07-10', label: 'Friday 10th' },
-];
-
-const SESSIONS = [
+const FALLBACK_SESSIONS = [
   { num: 1, time: '8:15 - 9:15 AM' },
   { num: 2, time: '10:00 - 11:00 AM' },
   { num: 3, time: '11:45 - 12:45 PM' },
@@ -19,17 +12,51 @@ const SESSIONS = [
   { num: 6, time: '5:00 - 6:00 PM' },
 ];
 
+function formatTime(t) {
+  if (!t) return '';
+  const [h, m] = t.split(':').map(Number);
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  const h12 = h % 12 || 12;
+  return m ? `${h12}:${String(m).padStart(2, '0')} ${ampm}` : `${h12} ${ampm}`;
+}
+
+function formatDateTab(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  const day = d.toLocaleDateString('en-US', { weekday: 'short' });
+  const num = d.getDate();
+  const month = d.toLocaleDateString('en-US', { month: 'short' });
+  return `${day}, ${num} ${month}`;
+}
+
 export default function Timetable() {
+  const { currentSession } = useSession();
+  const [allExams, setAllExams] = useState([]);
   const [exams, setExams] = useState([]);
   const [faculties, setFaculties] = useState([]);
-  const [date, setDate] = useState('2026-07-06');
+  const [date, setDate] = useState('');
   const [facultyId, setFacultyId] = useState('');
   const [search, setSearch] = useState('');
   const [editExam, setEditExam] = useState(null);
   const [showAdd, setShowAdd] = useState(false);
 
+  const uniqueDates = useMemo(() => {
+    const dates = [...new Set(allExams.map(e => e.exam_date?.slice(0, 10)).filter(Boolean))].sort();
+    return dates.map(d => ({ date: d, label: formatDateTab(d) }));
+  }, [allExams]);
+
+  useEffect(() => {
+    if (!currentSession?.id) return;
+    api.get('/timetable/exams', { params: { session_id: currentSession.id } })
+      .then(r => {
+        setAllExams(r.data);
+        const dates = [...new Set(r.data.map(e => e.exam_date?.slice(0, 10)).filter(Boolean))].sort();
+        if (dates.length && !date) setDate(dates[0]);
+      });
+  }, [currentSession?.id]);
+
   const load = () => {
-    const params = {};
+    if (!currentSession?.id) return;
+    const params = { session_id: currentSession.id };
     if (search) {
       params.search = search;
     } else {
@@ -39,7 +66,7 @@ export default function Timetable() {
     api.get('/timetable/exams', { params }).then(r => setExams(r.data));
   };
 
-  useEffect(() => { load(); }, [date, facultyId, search]);
+  useEffect(() => { load(); }, [date, facultyId, search, currentSession?.id]);
   useEffect(() => { api.get('/timetable/faculties').then(r => setFaculties(r.data)); }, []);
 
   const grouped = {};
@@ -47,6 +74,15 @@ export default function Timetable() {
     const key = e.session_number;
     if (!grouped[key]) grouped[key] = [];
     grouped[key].push(e);
+  });
+
+  const sessionNums = Object.keys(grouped).map(Number).sort((a, b) => a - b);
+  const sessions = sessionNums.map(num => {
+    const sample = grouped[num]?.[0];
+    const time = sample?.start_time && sample?.end_time
+      ? `${formatTime(sample.start_time)} - ${formatTime(sample.end_time)}`
+      : FALLBACK_SESSIONS.find(s => s.num === num)?.time || '';
+    return { num, time };
   });
 
   const saveExam = async (formData) => {
@@ -87,7 +123,7 @@ export default function Timetable() {
       {/* Filters */}
       <div className="card flex flex-wrap gap-3 items-center">
         <div className="flex gap-1 overflow-x-auto">
-          {DAYS.map(d => (
+          {uniqueDates.map(d => (
             <button key={d.date} onClick={() => setDate(d.date)}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap ${date === d.date ? 'bg-brand text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
               {d.label}
@@ -117,7 +153,7 @@ export default function Timetable() {
       {search && <p className="text-xs text-gray-500">Showing results for "<strong>{search}</strong>" across all days and faculties — {exams.length} found</p>}
 
       {/* Timetable grid by session */}
-      {SESSIONS.map(s => {
+      {sessions.map(s => {
         const sessionExams = grouped[s.num];
         if (!sessionExams?.length) return null;
         return (
@@ -143,6 +179,7 @@ export default function Timetable() {
                       {e.exam_type === 'CBE' && <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold bg-amber-500 text-white">CBE</span>}
                       {e.exam_type === 'ONLINE' && <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold bg-green-500 text-white">ONLINE</span>}
                       {e.exam_type === 'BYOD' && <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold bg-sky-500 text-white">BYOD</span>}
+                      {e.exam_type === 'CBE-BYOD' && <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold bg-violet-600 text-white">CBE-BYOD</span>}
                       {search && <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-500 font-medium">
                         {e.day_name?.charAt(0).toUpperCase() + e.day_name?.slice(1)} — {new Date(e.exam_date?.slice(0,10) + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
                       </span>}
@@ -200,7 +237,7 @@ function ExamModal({ exam, faculties, onSave, onClose }) {
     course_name: exam?.course_name || '',
     examiner: exam?.examiner || '',
     year_group: exam?.year_group || '',
-    exam_date: exam?.exam_date?.slice(0, 10) || '2026-07-06',
+    exam_date: exam?.exam_date?.slice(0, 10) || new Date().toISOString().slice(0, 10),
     day_name: exam?.day_name || 'monday',
     session_number: exam?.session_number || 1,
     start_time: exam?.start_time || '08:15',
@@ -283,6 +320,7 @@ function ExamModal({ exam, faculties, onSave, onClose }) {
                 <option value="CBE">CBE</option>
                 <option value="ONLINE">Online</option>
                 <option value="BYOD">BYOD</option>
+                <option value="CBE-BYOD">CBE-BYOD</option>
               </select>
             </div>
           </div>
