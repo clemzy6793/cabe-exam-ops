@@ -35,10 +35,19 @@ export function SessionProvider({ children }) {
       setSessions(visibleSessions);
       setActiveSession(aRes.data);
 
-      if (!selectedSessionId && aRes.data) {
-        setSelectedSessionId(aRes.data.id);
-        localStorage.setItem('exam_ops_session_id', aRes.data.id);
-      } else if (selectedSessionId && !isAdmin) {
+      const storedSession = allSessions.find(s => s.id === selectedSessionId);
+      const storedIsClosed = storedSession?.status === 'closed' || storedSession?.status === 'archived';
+
+      if (!selectedSessionId || storedIsClosed) {
+        // Auto-select the active session when nothing is stored or stored session is closed
+        if (aRes.data) {
+          setSelectedSessionId(aRes.data.id);
+          localStorage.setItem('exam_ops_session_id', aRes.data.id);
+        } else {
+          setSelectedSessionId(null);
+          localStorage.removeItem('exam_ops_session_id');
+        }
+      } else if (!isAdmin) {
         const still = visibleSessions.find(s => s.id === selectedSessionId);
         if (!still && aRes.data) {
           setSelectedSessionId(aRes.data.id);
