@@ -265,7 +265,10 @@ export default function Assignments() {
                           {e.course_code}
                           {e.exam_type && e.exam_type !== 'written' && (
                             <span className={`ml-1.5 text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
-                              e.exam_type === 'CBE' ? 'bg-orange-100 text-orange-700' : 'bg-sky-100 text-sky-700'
+                              e.exam_type === 'CBE' ? 'bg-orange-100 text-orange-700' :
+                              e.exam_type === 'CBE-BYOD' ? 'bg-violet-600 text-white' :
+                              e.exam_type === 'ONLINE' ? 'bg-green-100 text-green-700' :
+                              'bg-sky-100 text-sky-700'
                             }`}>{e.exam_type}</span>
                           )}
                           <span className="font-normal text-gray-500 ml-1">{e.course_name}</span>
@@ -317,7 +320,7 @@ export default function Assignments() {
       {autoAssignModal && (
         <AutoAssignModal
           date={date}
-          dates={DAYS}
+          dates={days}
           faculties={faculties}
           staff={staff.filter(s => s.staff_type === 'it_staff')}
           onClose={() => setAutoAssignModal(false)}
@@ -341,6 +344,7 @@ export default function Assignments() {
       {replaceModal && (
         <ReplaceModal
           staff={staff}
+          days={days}
           onClose={() => setReplaceModal(false)}
           onDone={() => { setReplaceModal(false); load(); }}
         />
@@ -781,7 +785,10 @@ function BulkAssignModal({ date, sessionId, faculties, staff, onClose, onDone })
                               {e.course_code}
                               {e.exam_type && e.exam_type !== 'written' && (
                                 <span className={`ml-1.5 text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
-                                  e.exam_type === 'CBE' ? 'bg-orange-100 text-orange-700' : 'bg-sky-100 text-sky-700'
+                                  e.exam_type === 'CBE' ? 'bg-orange-100 text-orange-700' :
+                                  e.exam_type === 'CBE-BYOD' ? 'bg-violet-600 text-white' :
+                                  e.exam_type === 'ONLINE' ? 'bg-green-100 text-green-700' :
+                                  'bg-sky-100 text-sky-700'
                                 }`}>{e.exam_type}</span>
                               )}
                               <span className="font-normal text-gray-500 ml-1">{e.course_name}</span>
@@ -919,9 +926,14 @@ function AssignModal({ exam, staff, date, onAssign, onClose }) {
 }
 
 const REPLACE_TIMES = ['8:15-9:15','10:00-11:00','11:45-12:45','1:30-2:30','3:15-4:15','5:00-6:00'];
-const REPLACE_DAYS = { monday: 'Mon 6th', tuesday: 'Tue 7th', wednesday: 'Wed 8th', thursday: 'Thu 9th', friday: 'Fri 10th' };
 
-function ReplaceModal({ staff, onClose, onDone }) {
+function formatAssignDate(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr + 'T12:00:00');
+  return d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+}
+
+function ReplaceModal({ staff, days, onClose, onDone }) {
   const [step, setStep] = useState(1);
   const [search, setSearch] = useState('');
   const [oldStaff, setOldStaff] = useState(null);
@@ -935,8 +947,8 @@ function ReplaceModal({ staff, onClose, onDone }) {
   const loadAssignments = async (staffId) => {
     try {
       const allAssignments = [];
-      const dates = ['2026-07-06','2026-07-07','2026-07-08','2026-07-09','2026-07-10'];
-      for (const d of dates) {
+      const sessionDates = days.length ? days.map(d => d.date) : [];
+      for (const d of sessionDates) {
         const { data } = await api.get(`/assignments/by-date/${d}`);
         allAssignments.push(...data.filter(a => a.staff_id === staffId));
       }
@@ -1050,7 +1062,7 @@ function ReplaceModal({ staff, onClose, onDone }) {
                         <input type="checkbox" checked={selected.includes(a.id)} onChange={() => toggleSelect(a.id)}
                           className="rounded text-brand" />
                         <span className="font-bold">{a.course_code}</span>
-                        <span className="text-gray-500">{REPLACE_DAYS[a.day_name] || a.exam_date}</span>
+                        <span className="text-gray-500">{formatAssignDate(a.exam_date)}</span>
                         <span className="text-gray-400">S{a.session_number} ({REPLACE_TIMES[a.session_number - 1]})</span>
                         <span className="text-gray-400">{a.venue}</span>
                       </label>
@@ -1112,7 +1124,7 @@ function ReplaceModal({ staff, onClose, onDone }) {
                 {assignments.filter(a => selected.includes(a.id)).map(a => (
                   <div key={a.id} className="flex items-center gap-2 text-xs">
                     <span className="font-bold">{a.course_code}</span>
-                    <span className="text-gray-400">{REPLACE_DAYS[a.day_name] || a.exam_date} S{a.session_number}</span>
+                    <span className="text-gray-400">{formatAssignDate(a.exam_date)} S{a.session_number}</span>
                     <span className="text-gray-400">{a.venue}</span>
                   </div>
                 ))}
