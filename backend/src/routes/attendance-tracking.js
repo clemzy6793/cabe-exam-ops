@@ -72,18 +72,20 @@ router.get('/summary', authAny, async (req, res) => {
 
 // Mark attendance (single)
 router.post('/', authAny, async (req, res) => {
-  const { session_id, staff_id, staff_type, faculty_id, attendance_date, present, notes } = req.body;
+  const { session_id, staff_id, staff_type, faculty_id, attendance_date, present, notes, session_number } = req.body;
   if (!session_id || !staff_id || !attendance_date)
     return res.status(400).json({ error: 'session_id, staff_id, and attendance_date are required' });
 
+  const sn = session_number ?? 0;
+
   try {
     const { rows } = await db.query(
-      `INSERT INTO attendance (session_id, staff_id, staff_type, faculty_id, attendance_date, present, notes)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)
-       ON CONFLICT (session_id, staff_id, attendance_date)
+      `INSERT INTO attendance (session_id, staff_id, staff_type, faculty_id, attendance_date, present, notes, session_number)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+       ON CONFLICT ON CONSTRAINT attendance_unique_session
        DO UPDATE SET present = $6, notes = $7
        RETURNING *`,
-      [session_id, staff_id, staff_type || 'invigilator', faculty_id || null, attendance_date, present !== false, notes || null]
+      [session_id, staff_id, staff_type || 'invigilator', faculty_id || null, attendance_date, present !== false, notes || null, sn]
     );
     res.json(rows[0]);
   } catch (err) {
@@ -101,12 +103,13 @@ router.post('/bulk', authAny, async (req, res) => {
   try {
     let upserted = 0;
     for (const r of records) {
+      const sn = r.session_number ?? 0;
       await db.query(
-        `INSERT INTO attendance (session_id, staff_id, staff_type, faculty_id, attendance_date, present, notes)
-         VALUES ($1, $2, $3, $4, $5, $6, $7)
-         ON CONFLICT (session_id, staff_id, attendance_date)
+        `INSERT INTO attendance (session_id, staff_id, staff_type, faculty_id, attendance_date, present, notes, session_number)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+         ON CONFLICT ON CONSTRAINT attendance_unique_session
          DO UPDATE SET present = $6, notes = $7`,
-        [session_id, r.staff_id, r.staff_type || 'invigilator', r.faculty_id || null, attendance_date, r.present !== false, r.notes || null]
+        [session_id, r.staff_id, r.staff_type || 'invigilator', r.faculty_id || null, attendance_date, r.present !== false, r.notes || null, sn]
       );
       upserted++;
     }

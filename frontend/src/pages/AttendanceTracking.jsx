@@ -151,9 +151,13 @@ function StaffCheckIn({ sessionId, isReviewer, isAdmin, canVerify, userFacultyId
     return () => clearTimeout(timer);
   }, [doSearch]);
 
-  const checkedInIds = new Set(todayRecords.filter(r => r.present).map(r => r.staff_id));
+  const checkedInMap = {};
+  todayRecords.filter(r => r.present).forEach(r => {
+    if (!checkedInMap[r.staff_id]) checkedInMap[r.staff_id] = [];
+    checkedInMap[r.staff_id].push(r);
+  });
 
-  const checkIn = async (staff, role, facultyId) => {
+  const checkIn = async (staff, role, facultyId, sessionNumber = 0) => {
     try {
       await api.post('/attendance-tracking', {
         session_id: sessionId,
@@ -161,9 +165,11 @@ function StaffCheckIn({ sessionId, isReviewer, isAdmin, canVerify, userFacultyId
         staff_type: role.toLowerCase().replace(/ /g, '_'),
         faculty_id: facultyId || staff.faculty_id,
         attendance_date: selectedDate,
+        session_number: sessionNumber,
         present: true,
       });
-      toast.success(`${staff.name} checked in as ${role}`);
+      const label = sessionNumber > 0 ? `${staff.name} checked in — Session ${sessionNumber}` : `${staff.name} checked in as ${role}`;
+      toast.success(label);
       loadTodayRecords();
     } catch (err) {
       toast.error(err.response?.data?.error || 'Failed');
@@ -261,14 +267,10 @@ function StaffCheckIn({ sessionId, isReviewer, isAdmin, canVerify, userFacultyId
 
           {searchResults.length > 0 && (
             <div className="space-y-2 max-h-[50vh] overflow-y-auto">
-              {searchResults.map(s => {
-                const isCheckedIn = checkedInIds.has(s.id);
-                const record = todayRecords.find(r => r.staff_id === s.id && r.present);
-                return (
-                  <StaffRow key={s.id} staff={s} isCheckedIn={isCheckedIn} record={record}
-                    onCheckIn={checkIn} onRemove={removeCheckIn} faculties={faculties} />
-                );
-              })}
+              {searchResults.map(s => (
+                <StaffRow key={s.id} staff={s} records={checkedInMap[s.id] || []}
+                  onCheckIn={checkIn} onRemove={removeCheckIn} faculties={faculties} />
+              ))}
             </div>
           )}
 
@@ -322,6 +324,7 @@ function StaffCheckIn({ sessionId, isReviewer, isAdmin, canVerify, userFacultyId
                   <th className="text-left py-2.5 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Name</th>
                   <th className="text-left py-2.5 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Code</th>
                   <th className="text-left py-2.5 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Role</th>
+                  <th className="text-center py-2.5 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Session</th>
                   <th className="text-center py-2.5 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
                   <th className="text-center py-2.5 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider"></th>
                 </tr>
@@ -338,6 +341,11 @@ function StaffCheckIn({ sessionId, isReviewer, isAdmin, canVerify, userFacultyId
                         <span className={`text-[10px] px-2.5 py-1 rounded-full font-bold ${style.badge}`}>
                           {r.staff_type?.replace(/_/g, ' ')}
                         </span>
+                      </td>
+                      <td className="py-3 px-3 text-center">
+                        {r.session_number > 0
+                          ? <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-bold">S{r.session_number}</span>
+                          : <span className="text-[10px] text-gray-300">—</span>}
                       </td>
                       <td className="py-3 px-3 text-center">
                         {r.verified ? (
@@ -371,36 +379,54 @@ function StaffCheckIn({ sessionId, isReviewer, isAdmin, canVerify, userFacultyId
   );
 }
 
-// ─── Staff search result row with role + faculty selector ─────────────────
-function StaffRow({ staff, isCheckedIn, record, onCheckIn, onRemove, faculties }) {
-  const [step, setStep] = useState(null); // null | 'faculty' | 'role'
+// ─── Staff search result row with role + faculty + session selector ──────────
+const OFFICE_ROLES = ['Office Staff SM', 'Office Staff SS'];
+const INVIGILATION_SESSIONS = [1, 2, 3];
+
+function StaffRow({ staff, records, onCheckIn, onRemove, faculties }) {
+  const [step, setStep] = useState(null); // null | 'faculty' | 'role' | 'session'
   const [selectedFacultyId, setSelectedFacultyId] = useState(staff.faculty_id || '');
   const [selectedRole, setSelectedRole] = useState('');
+
+  const hasAnyRecord = records.length > 0;
+  const checkedSessions = records.map(r => r.session_number);
+  const availableSessions = INVIGILATION_SESSIONS.filter(n => !checkedSessions.includes(n));
+  const isNonOffice = records.length > 0 && records[0].session_number > 0;
 
   const handleFacultyNext = () => {
     if (!selectedFacultyId) return toast.error('Select a faculty');
     setStep('role');
   };
 
-  const handleCheckIn = (role) => {
-    onCheckIn(staff, role, selectedFacultyId ? parseInt(selectedFacultyId) : null);
-    setStep(null);
+  const handleRoleSelect = (role) => {
+    if (OFFICE_ROLES.includes(role)) {
+      onCheckIn(staff, role, selectedFacultyId ? parseInt(selectedFacultyId) : null, 0);
+      setStep(null);
+    } else {
+      setSelectedRole(role);
+      setStep('session');
+    }
   };
 
-  const cancel = () => { setStep(null); setSelectedFacultyId(staff.faculty_id || ''); };
+  const handleSessionSelect = (sn) => {
+    onCheckIn(staff, selectedRole, selectedFacultyId ? parseInt(selectedFacultyId) : null, sn);
+    setStep(null);
+    setSelectedRole('');
+  };
 
+  const cancel = () => { setStep(null); setSelectedFacultyId(staff.faculty_id || ''); setSelectedRole(''); };
   const selectedFaculty = faculties.find(f => f.id === parseInt(selectedFacultyId));
 
   return (
     <div className={`p-3 rounded-xl border-2 transition-all ${
-      isCheckedIn ? 'border-green-300 bg-green-50 shadow-sm shadow-green-100' : 'border-gray-100 hover:border-emerald-200 hover:shadow-sm'
+      hasAnyRecord ? 'border-green-300 bg-green-50 shadow-sm shadow-green-100' : 'border-gray-100 hover:border-emerald-200 hover:shadow-sm'
     }`}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3 min-w-0">
           <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-black flex-shrink-0 transition-all ${
-            isCheckedIn ? 'bg-gradient-to-br from-green-400 to-emerald-500 text-white shadow-md shadow-green-200' : 'bg-gray-100 text-gray-500'
+            hasAnyRecord ? 'bg-gradient-to-br from-green-400 to-emerald-500 text-white shadow-md shadow-green-200' : 'bg-gray-100 text-gray-500'
           }`}>
-            {isCheckedIn ? (
+            {hasAnyRecord ? (
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
               </svg>
@@ -411,22 +437,28 @@ function StaffRow({ staff, isCheckedIn, record, onCheckIn, onRemove, faculties }
             <p className="text-xs text-gray-400">
               <span className="font-mono">{staff.staff_code || 'No code'}</span>
               {staff.faculty_code && <span className="ml-2 px-1.5 py-0.5 bg-gray-100 rounded text-[10px] font-medium">{staff.faculty_code}</span>}
-              {staff.staff_type && <span className="ml-1 text-gray-300">· {staff.staff_type.replace(/_/g, ' ')}</span>}
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2 flex-shrink-0 ml-2">
-          {isCheckedIn ? (
-            <div className="flex items-center gap-2">
-              {record?.faculty_code && (
-                <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-blue-100 text-blue-700">{record.faculty_code}</span>
+        <div className="flex items-center gap-2 flex-shrink-0 ml-2 flex-wrap justify-end">
+          {hasAnyRecord ? (
+            <>
+              {records.map(r => (
+                <div key={r.id} className="flex items-center gap-1">
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${getRoleStyle(r.staff_type).badge}`}>
+                    {r.session_number > 0 ? `S${r.session_number} · ` : ''}{r.staff_type?.replace(/_/g, ' ')}
+                  </span>
+                  <button onClick={() => onRemove(r)}
+                    className="text-[10px] text-red-400 hover:text-white hover:bg-red-500 px-1.5 py-0.5 rounded-lg font-bold transition-all">✕</button>
+                </div>
+              ))}
+              {isNonOffice && availableSessions.length > 0 && !step && (
+                <button onClick={() => setStep('faculty')}
+                  className="text-[10px] px-2.5 py-1 rounded-xl bg-emerald-500 text-white font-bold hover:bg-emerald-600 transition-all active:scale-95">
+                  +S{availableSessions[0]}
+                </button>
               )}
-              <span className={`text-[10px] px-2.5 py-1 rounded-full font-bold ${getRoleStyle(record?.staff_type).badge}`}>
-                {record?.staff_type?.replace(/_/g, ' ') || 'Checked in'}
-              </span>
-              <button onClick={() => onRemove(record)}
-                className="text-[10px] text-red-400 hover:text-white hover:bg-red-500 px-2 py-1 rounded-lg font-bold transition-all ml-1">Undo</button>
-            </div>
+            </>
           ) : !step ? (
             <button onClick={() => setStep('faculty')}
               className="text-xs px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold hover:shadow-lg hover:shadow-emerald-200 transition-all active:scale-95">
@@ -466,12 +498,32 @@ function StaffRow({ staff, isCheckedIn, record, onCheckIn, onRemove, faculties }
             {ROLES.map(role => {
               const rc = ROLE_CONFIG[role];
               return (
-                <button key={role} onClick={() => handleCheckIn(role)}
-                  className={`text-[10px] px-3 py-1.5 rounded-lg font-bold ${rc.badge} hover:${rc.bg} hover:text-white transition-all active:scale-95 border ${rc.border}`}>
+                <button key={role} onClick={() => handleRoleSelect(role)}
+                  className={`text-[10px] px-3 py-1.5 rounded-lg font-bold ${rc.badge} transition-all active:scale-95 border ${rc.border}`}>
                   {rc.icon} {role}
                 </button>
               );
             })}
+            <button onClick={cancel} className="text-[10px] px-2 py-1.5 text-gray-400 hover:text-gray-600 font-bold">✕</button>
+          </div>
+        </div>
+      )}
+
+      {step === 'session' && (
+        <div className="mt-2 pt-2 border-t border-gray-100">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wide">Role:</span>
+            <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${getRoleStyle(selectedRole).badge}`}>{selectedRole}</span>
+            <button onClick={() => setStep('role')} className="text-[10px] text-emerald-500 hover:text-emerald-700 font-bold">Change</button>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wide">Session:</span>
+            {(hasAnyRecord ? availableSessions : INVIGILATION_SESSIONS).map(sn => (
+              <button key={sn} onClick={() => handleSessionSelect(sn)}
+                className="text-[10px] px-3 py-1.5 rounded-lg font-bold bg-blue-100 text-blue-700 border border-blue-200 hover:bg-blue-500 hover:text-white transition-all active:scale-95">
+                Session {sn} <span className="opacity-60">{TIMES[sn]}</span>
+              </button>
+            ))}
             <button onClick={cancel} className="text-[10px] px-2 py-1.5 text-gray-400 hover:text-gray-600 font-bold">✕</button>
           </div>
         </div>
@@ -486,7 +538,10 @@ function AddStaffForm({ defaultName, faculties, sessionId, selectedDate, onDone,
   const [phone, setPhone] = useState('');
   const [facultyId, setFacultyId] = useState('');
   const [role, setRole] = useState('Invigilator SM');
+  const [sessionNumber, setSessionNumber] = useState(1);
   const [saving, setSaving] = useState(false);
+
+  const isOfficeRole = OFFICE_ROLES.includes(role);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -507,6 +562,7 @@ function AddStaffForm({ defaultName, faculties, sessionId, selectedDate, onDone,
         staff_type: role.toLowerCase().replace(/ /g, '_'),
         faculty_id: newStaff.faculty_id,
         attendance_date: selectedDate,
+        session_number: isOfficeRole ? 0 : sessionNumber,
         present: true,
       });
       toast.success(`${newStaff.name} (${newStaff.staff_code}) added & checked in as ${role}`);
@@ -557,6 +613,21 @@ function AddStaffForm({ defaultName, faculties, sessionId, selectedDate, onDone,
             ))}
           </div>
         </div>
+        {!isOfficeRole && (
+          <div>
+            <label className="text-xs font-bold text-gray-600 uppercase tracking-wide">Session *</label>
+            <div className="flex gap-1.5 mt-1.5">
+              {INVIGILATION_SESSIONS.map(sn => (
+                <button key={sn} type="button" onClick={() => setSessionNumber(sn)}
+                  className={`text-[10px] px-3 py-1.5 rounded-lg font-bold transition-all ${
+                    sessionNumber === sn ? 'bg-blue-500 text-white shadow-md' : 'bg-blue-100 text-blue-700 border border-blue-200'
+                  }`}>
+                  Session {sn}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
       <div className="flex justify-end gap-2 mt-5">
         <button type="button" onClick={onCancel}
