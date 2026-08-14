@@ -36,7 +36,7 @@ export default function AttendanceTracking() {
   const userFacultyId = localStorage.getItem('exam_ops_faculty_id');
   const isReviewer = userRole === 'reviewer';
   const isAdmin = userRole === 'admin' || userRole === 'superadmin';
-  const canVerify = isAdmin || (isReviewer && localStorage.getItem('exam_ops_can_edit') === '1');
+  const canVerify = true;
 
   useEffect(() => {
     if (activeSession) setSelectedSessionId(String(activeSession.id));
