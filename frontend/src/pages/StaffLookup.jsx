@@ -11,6 +11,10 @@ const SESSION_TIMES = {
   6: '5:00 - 6:00 PM',
 };
 
+const LOOKUP_CHECKIN_ROLES = ['Invigilator SM', 'Invigilator SS', 'Office Staff SM', 'Office Staff SS'];
+const OFFICE_CHECKIN_ROLES = ['Office Staff SM', 'Office Staff SS'];
+const CHECKIN_SESSIONS = [1, 2, 3];
+
 export default function StaffLookup() {
   const [query, setQuery] = useState('');
   const [suggestions, setSuggestions] = useState([]);
@@ -26,6 +30,16 @@ export default function StaffLookup() {
   const [infoLoading, setInfoLoading] = useState(true);
   const fileRef = useRef(null);
   const debounce = useRef(null);
+
+  // Check-in state
+  const [checkInOpen, setCheckInOpen] = useState(false);
+  const [checkInRole, setCheckInRole] = useState('Invigilator SM');
+  const [checkInSession, setCheckInSession] = useState(1);
+  const [checkingIn, setCheckingIn] = useState(false);
+  const [checkInDone, setCheckInDone] = useState(null); // { role, session } or null
+
+  const isLoggedIn = !!localStorage.getItem('exam_ops_token');
+  const checkerFacultyId = localStorage.getItem('exam_ops_faculty_id');
 
   useEffect(() => {
     api.get('/lookup/info').then(r => setInfo(r.data)).catch(() => {}).finally(() => setInfoLoading(false));
@@ -46,6 +60,8 @@ export default function StaffLookup() {
     setLoading(true);
     setError('');
     setSuggestions([]);
+    setCheckInDone(null);
+    setCheckInOpen(false);
     try {
       const { data } = await api.get(`/lookup/staff/${id}`);
       setSelected(data);
@@ -109,6 +125,36 @@ export default function StaffLookup() {
       }));
     } catch (err) {
       toast.error(err.response?.data?.error || 'Delete failed');
+    }
+  };
+
+  const doCheckIn = async () => {
+    if (!isLoggedIn) {
+      window.location.href = '/login';
+      return;
+    }
+    const activeSessionId = info?.sessions?.[0]?.id;
+    if (!activeSessionId) return toast.error('No active session');
+    const isOffice = OFFICE_CHECKIN_ROLES.includes(checkInRole);
+    const sn = isOffice ? 0 : checkInSession;
+    setCheckingIn(true);
+    try {
+      await api.post('/attendance-tracking', {
+        session_id: activeSessionId,
+        staff_id: selected.staff.id,
+        staff_type: checkInRole.toLowerCase().replace(/ /g, '_'),
+        faculty_id: selected.staff.faculty_id || null,
+        attendance_date: new Date().toISOString().slice(0, 10),
+        session_number: sn,
+        present: true,
+      });
+      setCheckInDone({ role: checkInRole, session: sn });
+      setCheckInOpen(false);
+      toast.success(`${selected.staff.name} checked in as ${checkInRole}${sn > 0 ? ` — Session ${sn}` : ''}`);
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Check-in failed');
+    } finally {
+      setCheckingIn(false);
     }
   };
 
@@ -248,13 +294,84 @@ export default function StaffLookup() {
                     <p className="text-xs text-gray-300">{selected.staff.role}</p>
                   </div>
                 </div>
-                {selected.assignments.length > 0 && (
-                  <button onClick={() => printSchedule(selected, grouped)} className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white/80 border text-sm font-medium text-gray-700 hover:bg-white">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
-                    Print
-                  </button>
-                )}
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  {selected.assignments.length > 0 && (
+                    <button onClick={() => printSchedule(selected, grouped)} className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white/80 border text-sm font-medium text-gray-700 hover:bg-white">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
+                      Print
+                    </button>
+                  )}
+                  {isLoggedIn && info?.sessions?.[0] && (
+                    <button onClick={() => { setCheckInOpen(o => !o); setCheckInDone(null); }}
+                      className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-bold transition-all ${
+                        checkInOpen
+                          ? 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                          : 'bg-emerald-500 text-white hover:bg-emerald-600 shadow-sm'
+                      }`}>
+                      {checkInOpen ? '✕ Cancel' : '✓ Check In'}
+                    </button>
+                  )}
+                </div>
               </div>
+
+              {/* Check-in done confirmation */}
+              {checkInDone && !checkInOpen && (
+                <div className="mt-3 pt-3 border-t border-emerald-100 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-emerald-500 text-sm font-black">✓</span>
+                    <span className="text-sm font-bold text-emerald-700">
+                      {checkInDone.role}{checkInDone.session > 0 ? ` — Session ${checkInDone.session}` : ''}
+                    </span>
+                  </div>
+                  <button onClick={() => { setCheckInDone(null); setCheckInOpen(true); }}
+                    className="text-[10px] text-emerald-500 hover:text-emerald-700 font-bold underline">
+                    +Add session
+                  </button>
+                </div>
+              )}
+
+              {/* Inline check-in panel */}
+              {checkInOpen && (
+                <div className="mt-3 pt-3 border-t border-emerald-100 space-y-3">
+                  <div>
+                    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-1.5">Role</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {LOOKUP_CHECKIN_ROLES.map(r => (
+                        <button key={r} onClick={() => setCheckInRole(r)}
+                          className={`text-[10px] px-2.5 py-1.5 rounded-lg font-bold transition-all border ${
+                            checkInRole === r
+                              ? 'bg-emerald-500 text-white border-emerald-500 shadow-sm'
+                              : 'bg-white text-gray-600 border-gray-200 hover:border-emerald-300'
+                          }`}>
+                          {r}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  {!OFFICE_CHECKIN_ROLES.includes(checkInRole) && (
+                    <div>
+                      <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-1.5">Session</p>
+                      <div className="flex gap-2">
+                        {CHECKIN_SESSIONS.map(sn => (
+                          <button key={sn} onClick={() => setCheckInSession(sn)}
+                            className={`flex-1 py-2 rounded-xl border-2 font-bold transition-all active:scale-95 ${
+                              checkInSession === sn
+                                ? 'bg-blue-500 text-white border-blue-500 shadow-md shadow-blue-200'
+                                : 'border-blue-200 text-blue-700 hover:border-blue-400 bg-white'
+                            }`}>
+                            <div className="text-xs">Session {sn}</div>
+                            <div className="text-[9px] opacity-75">{SESSION_TIMES[sn]}</div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  <button onClick={doCheckIn} disabled={checkingIn}
+                    className="w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold text-sm hover:shadow-lg hover:shadow-emerald-200 disabled:opacity-50 transition-all active:scale-95">
+                    {checkingIn ? 'Checking in...' : `Check In as ${checkInRole}${!OFFICE_CHECKIN_ROLES.includes(checkInRole) ? ` — Session ${checkInSession}` : ''}`}
+                  </button>
+                </div>
+              )}
             </div>
 
             {selected.assignments.length === 0 ? (
