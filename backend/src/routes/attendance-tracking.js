@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const db = require('../db');
-const { authAdmin, authAny } = require('../middleware/auth');
+const { authAdmin, authEditor, authAny } = require('../middleware/auth');
 
 // Get attendance for a session + date
 router.get('/', authAny, async (req, res) => {
@@ -118,7 +118,7 @@ router.post('/bulk', authAny, async (req, res) => {
 });
 
 // Verify attendance records
-router.put('/verify', authAdmin, async (req, res) => {
+router.put('/verify', authEditor, async (req, res) => {
   const { ids } = req.body;
   if (!ids?.length) return res.status(400).json({ error: 'ids required' });
   try {

@@ -36,6 +36,7 @@ export default function AttendanceTracking() {
   const userFacultyId = localStorage.getItem('exam_ops_faculty_id');
   const isReviewer = userRole === 'reviewer';
   const isAdmin = userRole === 'admin' || userRole === 'superadmin';
+  const canVerify = isAdmin || (isReviewer && localStorage.getItem('exam_ops_can_edit') === '1');
 
   useEffect(() => {
     if (activeSession) setSelectedSessionId(String(activeSession.id));
@@ -92,11 +93,11 @@ export default function AttendanceTracking() {
         <>
           {tab === 'checkin' && (
             <StaffCheckIn sessionId={selectedSessionId} isReviewer={isReviewer} isAdmin={isAdmin}
-              userFacultyId={userFacultyId} />
+              canVerify={canVerify} userFacultyId={userFacultyId} />
           )}
           {tab === 'exams' && (
             <ExamCheckIn sessionId={selectedSessionId} isReviewer={isReviewer} isAdmin={isAdmin}
-              userFacultyId={userFacultyId} />
+              canVerify={canVerify} userFacultyId={userFacultyId} />
           )}
           {tab === 'summary' && (
             <CheckInSummary sessionId={selectedSessionId} isAdmin={isAdmin}
@@ -109,7 +110,7 @@ export default function AttendanceTracking() {
 }
 
 // ─── Tab 1: Search-first check-in ───────────────────────────────
-function StaffCheckIn({ sessionId, isReviewer, isAdmin, userFacultyId }) {
+function StaffCheckIn({ sessionId, isReviewer, isAdmin, canVerify, userFacultyId }) {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().slice(0, 10));
   const [search, setSearch] = useState('');
   const [searchResults, setSearchResults] = useState([]);
@@ -306,7 +307,7 @@ function StaffCheckIn({ sessionId, isReviewer, isAdmin, userFacultyId }) {
             <h3 className="font-bold text-sm text-gray-800">
               📅 {new Date(selectedDate + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
             </h3>
-            {isAdmin && presentCount > verifiedCount && (
+            {canVerify && presentCount > verifiedCount && (
               <button onClick={verifyAll}
                 className="text-xs px-4 py-2 rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold hover:shadow-lg hover:shadow-green-200 transition-all">
                 Verify All ({presentCount - verifiedCount})
@@ -570,7 +571,7 @@ function AddStaffForm({ defaultName, faculties, sessionId, selectedDate, onDone,
 }
 
 // ─── Tab 2: Exam-based check-in (Assigned Invigilators & IT) ────
-function ExamCheckIn({ sessionId, isReviewer, isAdmin, userFacultyId }) {
+function ExamCheckIn({ sessionId, isReviewer, isAdmin, canVerify, userFacultyId }) {
   const [examDates, setExamDates] = useState([]);
   const [selectedDate, setSelectedDate] = useState('');
   const [faculties, setFaculties] = useState([]);
@@ -750,7 +751,7 @@ function ExamCheckIn({ sessionId, isReviewer, isAdmin, userFacultyId }) {
                             className="text-[10px] px-3 py-1.5 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-bold hover:shadow-md transition-all active:scale-95">
                             Check In All
                           </button>
-                          {isAdmin && (
+                          {canVerify && (
                             <button onClick={() => verifyExam(exam)}
                               className="text-[10px] px-3 py-1.5 rounded-lg bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold hover:shadow-md transition-all active:scale-95">
                               Verify All
