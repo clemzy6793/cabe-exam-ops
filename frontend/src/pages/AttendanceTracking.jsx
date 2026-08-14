@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import api from '../api';
 import toast from 'react-hot-toast';
 import { useSession } from '../contexts/SessionContext';
@@ -269,7 +269,8 @@ function StaffCheckIn({ sessionId, isReviewer, isAdmin, canVerify, userFacultyId
             <div className="space-y-2 max-h-[50vh] overflow-y-auto">
               {searchResults.map(s => (
                 <StaffRow key={s.id} staff={s} records={checkedInMap[s.id] || []}
-                  onCheckIn={checkIn} onRemove={removeCheckIn} faculties={faculties} />
+                  onCheckIn={checkIn} onRemove={removeCheckIn} faculties={faculties}
+                  checkerFacultyId={userFacultyId} />
               ))}
             </div>
           )}
@@ -383,24 +384,38 @@ function StaffCheckIn({ sessionId, isReviewer, isAdmin, canVerify, userFacultyId
 const OFFICE_ROLES = ['Office Staff SM', 'Office Staff SS'];
 const INVIGILATION_SESSIONS = [1, 2, 3];
 
-function StaffRow({ staff, records, onCheckIn, onRemove, faculties }) {
+const IT_ROLES = ['System Analyst', 'It Support'];
+
+function StaffRow({ staff, records, onCheckIn, onRemove, faculties, checkerFacultyId }) {
   const [step, setStep] = useState(null); // null | 'faculty' | 'role' | 'session'
   const [selectedFacultyId, setSelectedFacultyId] = useState(staff.faculty_id || '');
   const [selectedRole, setSelectedRole] = useState('');
+  const sessionRef = useRef(null);
+  useEffect(() => {
+    if (step === 'session' && sessionRef.current) {
+      sessionRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }, [step]);
 
   const hasAnyRecord = records.length > 0;
   const checkedSessions = records.map(r => r.session_number);
   const availableSessions = INVIGILATION_SESSIONS.filter(n => !checkedSessions.includes(n));
-  const isNonOffice = records.length > 0 && records[0].session_number > 0;
+  // True when none of the existing records are office-staff type (so +S button shows)
+  const isNonOffice = records.length > 0 && !records.some(r => r.staff_type?.includes('office_staff'));
 
   const handleFacultyNext = () => {
     if (!selectedFacultyId) return toast.error('Select a faculty');
     setStep('role');
   };
 
+  const getFacultyForRole = (role) =>
+    IT_ROLES.includes(role) && checkerFacultyId
+      ? parseInt(checkerFacultyId)
+      : (selectedFacultyId ? parseInt(selectedFacultyId) : null);
+
   const handleRoleSelect = (role) => {
     if (OFFICE_ROLES.includes(role)) {
-      onCheckIn(staff, role, selectedFacultyId ? parseInt(selectedFacultyId) : null, 0);
+      onCheckIn(staff, role, getFacultyForRole(role), 0);
       setStep(null);
     } else {
       setSelectedRole(role);
@@ -409,7 +424,7 @@ function StaffRow({ staff, records, onCheckIn, onRemove, faculties }) {
   };
 
   const handleSessionSelect = (sn) => {
-    onCheckIn(staff, selectedRole, selectedFacultyId ? parseInt(selectedFacultyId) : null, sn);
+    onCheckIn(staff, selectedRole, getFacultyForRole(selectedRole), sn);
     setStep(null);
     setSelectedRole('');
   };
@@ -510,21 +525,23 @@ function StaffRow({ staff, records, onCheckIn, onRemove, faculties }) {
       )}
 
       {step === 'session' && (
-        <div className="mt-2 pt-2 border-t border-gray-100">
+        <div ref={sessionRef} className="mt-2 pt-2 border-t border-gray-100">
           <div className="flex items-center gap-2 mb-2">
             <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wide">Role:</span>
             <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${getRoleStyle(selectedRole).badge}`}>{selectedRole}</span>
             <button onClick={() => setStep('role')} className="text-[10px] text-emerald-500 hover:text-emerald-700 font-bold">Change</button>
           </div>
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wide">Session:</span>
-            {(hasAnyRecord ? availableSessions : INVIGILATION_SESSIONS).map(sn => (
-              <button key={sn} onClick={() => handleSessionSelect(sn)}
-                className="text-[10px] px-3 py-1.5 rounded-lg font-bold bg-blue-100 text-blue-700 border border-blue-200 hover:bg-blue-500 hover:text-white transition-all active:scale-95">
-                Session {sn} <span className="opacity-60">{TIMES[sn]}</span>
-              </button>
-            ))}
-            <button onClick={cancel} className="text-[10px] px-2 py-1.5 text-gray-400 hover:text-gray-600 font-bold">✕</button>
+          <div className="flex items-center gap-2 flex-1">
+            <select
+              defaultValue=""
+              onChange={e => { if (e.target.value) handleSessionSelect(parseInt(e.target.value)); }}
+              className="flex-1 border-2 border-blue-200 rounded-xl px-3 py-2 text-sm font-medium focus:border-blue-400 focus:ring-2 focus:ring-blue-200 bg-white">
+              <option value="" disabled>— Select session —</option>
+              {(hasAnyRecord ? availableSessions : INVIGILATION_SESSIONS).map(sn => (
+                <option key={sn} value={sn}>Session {sn} — {TIMES[sn]}</option>
+              ))}
+            </select>
+            <button onClick={cancel} className="text-[10px] px-2 py-1.5 text-gray-400 hover:text-gray-600 font-bold flex-shrink-0">✕</button>
           </div>
         </div>
       )}
@@ -616,16 +633,12 @@ function AddStaffForm({ defaultName, faculties, sessionId, selectedDate, onDone,
         {!isOfficeRole && (
           <div>
             <label className="text-xs font-bold text-gray-600 uppercase tracking-wide">Session *</label>
-            <div className="flex gap-1.5 mt-1.5">
+            <select value={sessionNumber} onChange={e => setSessionNumber(parseInt(e.target.value))}
+              className="w-full border-2 border-blue-200 rounded-xl px-3 py-2.5 text-sm mt-1 focus:border-blue-400 focus:ring-2 focus:ring-blue-200">
               {INVIGILATION_SESSIONS.map(sn => (
-                <button key={sn} type="button" onClick={() => setSessionNumber(sn)}
-                  className={`text-[10px] px-3 py-1.5 rounded-lg font-bold transition-all ${
-                    sessionNumber === sn ? 'bg-blue-500 text-white shadow-md' : 'bg-blue-100 text-blue-700 border border-blue-200'
-                  }`}>
-                  Session {sn}
-                </button>
+                <option key={sn} value={sn}>Session {sn} — {TIMES[sn]}</option>
               ))}
-            </div>
+            </select>
           </div>
         )}
       </div>
