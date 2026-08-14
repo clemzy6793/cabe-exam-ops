@@ -1,5 +1,6 @@
 const router = require('express').Router();
 const db = require('../db');
+const bcrypt = require('bcryptjs');
 const { authAdmin, authEditor, authAny } = require('../middleware/auth');
 
 router.get('/', authAny, async (req, res) => {
@@ -138,6 +139,24 @@ router.put('/:id', authEditor, async (req, res) => {
     );
     if (!rows.length) return res.status(404).json({ error: 'Not found' });
     res.json(rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Admin sets/resets a staff member's check-in password
+router.put('/:id/password', authAdmin, async (req, res) => {
+  const { password } = req.body;
+  if (!password || password.length < 4) return res.status(400).json({ error: 'Password must be at least 4 characters' });
+  try {
+    const hash = await bcrypt.hash(password, 10);
+    const { rows } = await db.query(
+      'UPDATE staff SET password_hash=$1 WHERE id=$2 RETURNING id, name, email',
+      [hash, req.params.id]
+    );
+    if (!rows.length) return res.status(404).json({ error: 'Not found' });
+    res.json({ message: 'Password set', staff: rows[0] });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Internal server error' });

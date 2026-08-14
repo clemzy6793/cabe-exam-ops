@@ -93,6 +93,7 @@ app.get('/healthz', (req, res) => res.json({ ok: true, t: Date.now() }));
 })();
 
 app.use('/api/auth', require('./routes/auth'));
+app.use('/api/staff-auth', require('./routes/staff-auth'));
 app.use('/api/timetable', require('./routes/timetable'));
 app.use('/api/staff', require('./routes/staff'));
 app.use('/api/assignments', require('./routes/assignments'));

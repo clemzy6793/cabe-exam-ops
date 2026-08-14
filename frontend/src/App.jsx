@@ -20,6 +20,7 @@ import AttendanceTracking from './pages/AttendanceTracking';
 import FacultyDashboard from './pages/FacultyDashboard';
 import PaymentCalculation from './pages/PaymentCalculation';
 import AuditLog from './pages/AuditLog';
+import StaffCheckin from './pages/StaffCheckin';
 
 function PrivateRoute({ children }) {
   const token = localStorage.getItem('exam_ops_token');
@@ -58,6 +59,7 @@ export default function App() {
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/lookup" element={<StaffLookup />} />
+      <Route path="/checkin" element={<StaffCheckin />} />
       <Route path="/public/timetable" element={<PublicTimetable />} />
       <Route path="/public/session-report" element={<SessionReport />} />
       <Route path="/" element={<PrivateRoute><Layout /></PrivateRoute>}>
