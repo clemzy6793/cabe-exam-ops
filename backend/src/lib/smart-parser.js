@@ -11,10 +11,57 @@ const SESSION_TIMES = {
   6: { start: '17:00', end: '18:00' },
 };
 
-const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
+const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 
 const COURSE_CODE_RE = /\b([A-Z]{2,5})\s*(\d{3,4}[A-Z]?)\b/;
 const COURSE_CODE_GLOBAL_RE = /\b([A-Z]{2,5})\s*(\d{3,4}[A-Z]?)\b/g;
+
+const MONTHS = {
+  january: 0, february: 1, march: 2, april: 3, may: 4, june: 5,
+  july: 6, august: 7, september: 8, october: 9, november: 10, december: 11,
+};
+
+function extractDateFromText(text, fallbackYear) {
+  // Handle "17/08/26" or "17/08/2026" format (DD/MM/YY or DD/MM/YYYY)
+  const slashM = text.match(/\b(\d{1,2})\/(\d{1,2})\/(\d{2,4})\b/);
+  if (slashM) {
+    const day = parseInt(slashM[1]);
+    const month = parseInt(slashM[2]) - 1;
+    let year = parseInt(slashM[3]);
+    if (year < 100) year += 2000;
+    if (day >= 1 && day <= 31 && month >= 0 && month <= 11) {
+      const d = new Date(year, month, day);
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      return `${d.getFullYear()}-${mm}-${dd}`;
+    }
+  }
+  // Handle "17th August" format
+  const m = text.match(/(\d{1,2})(?:st|nd|rd|th)[,.\s]+(?:of\s+)?([A-Za-z]+)/i);
+  if (!m) return null;
+  const day = parseInt(m[1]);
+  const monthName = m[2].toLowerCase();
+  const monthIdx = MONTHS[monthName];
+  if (monthIdx === undefined || day < 1 || day > 31) return null;
+  const year = fallbackYear || new Date().getFullYear();
+  const d = new Date(year, monthIdx, day);
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${d.getFullYear()}-${mm}-${dd}`;
+}
+
+function extractYearFromRows(rows, maxScan = 10) {
+  let maxYear = null;
+  for (let i = 0; i < Math.min(rows.length, maxScan); i++) {
+    const text = rows[i].map(c => String(c)).join(' ');
+    const matches = text.matchAll(/\b(20\d{2})\b/g);
+    for (const m of matches) {
+      const y = parseInt(m[1]);
+      if (!maxYear || y > maxYear) maxYear = y;
+    }
+  }
+  return maxYear;
+}
 
 function detectDay(text) {
   const t = text.toLowerCase();
@@ -63,10 +110,11 @@ function buildDateMap(startDate, endDate) {
   const end = new Date(endDate + 'T00:00:00');
   for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
     const dayIdx = d.getDay();
-    if (dayIdx >= 1 && dayIdx <= 5) {
+    if (dayIdx >= 1 && dayIdx <= 6) {
       const dayName = DAYS[dayIdx - 1];
       const dateStr = d.toISOString().slice(0, 10);
-      if (!map[dayName]) map[dayName] = dateStr;
+      if (!map[dayName]) map[dayName] = [];
+      map[dayName].push(dateStr);
     }
   }
   return map;
@@ -135,17 +183,38 @@ function parseUnstructuredExcel(wb, ws, warnings) {
   const exams = [];
   let currentDay = null;
   let currentSession = null;
+  let currentDate = null;
+  let currentStartTime = null;
+  let currentEndTime = null;
+
+  const fileYear = extractYearFromRows(rows);
 
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
     if (!row || row.length < 2) continue;
 
+    const rowText = row.map(c => String(c || '').trim()).join(' ');
     const cell0 = String(row[0] || '').trim();
+
     if (cell0) {
       const day = detectDay(cell0);
-      if (day) currentDay = day;
+      if (day) {
+        currentDay = day;
+        const dateFromHeader = extractDateFromText(cell0, fileYear) || extractDateFromText(rowText, fileYear);
+        if (dateFromHeader) currentDate = dateFromHeader;
+      }
       const sess = detectSession(cell0);
-      if (sess) currentSession = sess;
+      if (sess) {
+        currentSession = sess;
+        const timeMatch = rowText.match(/(\d{1,2})[:.]\s*(\d{2})\s*[-–]\s*(\d{1,2})[:.]\s*(\d{2})/);
+        if (timeMatch) {
+          currentStartTime = `${timeMatch[1].padStart(2, '0')}:${timeMatch[2]}`;
+          currentEndTime = `${timeMatch[3].padStart(2, '0')}:${timeMatch[4]}`;
+        } else {
+          currentStartTime = SESSION_TIMES[sess]?.start;
+          currentEndTime = SESSION_TIMES[sess]?.end;
+        }
+      }
     }
 
     for (let c = 0; c < row.length; c++) {
@@ -162,13 +231,20 @@ function parseUnstructuredExcel(wb, ws, warnings) {
       const courseName = afterCode.replace(/\[.*?\]|\(.*?\)/g, '').trim().slice(0, 120);
 
       let venue = '', students = 0, examiner = '', yearGroup = '';
-      for (let cc = c + 1; cc < Math.min(row.length, c + 7); cc++) {
+      const nextCell = String(row[c + 1] || '').trim();
+      if (nextCell && !/^\d+$/.test(nextCell) && !COURSE_CODE_RE.test(nextCell) && nextCell.length > 1 && nextCell.length < 60) {
+        examiner = nextCell;
+      }
+      const yearCell = String(row[c + 2] || '').trim();
+      if (yearCell && /\b[IVX]+\b|\b\d{1,2}(st|nd|rd|th)?\s*(year|yr)/i.test(yearCell)) {
+        yearGroup = yearCell;
+      }
+      for (let cc = c + 3; cc < Math.min(row.length, c + 8); cc++) {
         const v = String(row[cc] || '').trim();
         if (!v || v === 'None') continue;
         if (/^\d+$/.test(v) && parseInt(v) > 5) { students = parseInt(v); continue; }
         if (!venue && v.length > 1 && !/^\d+$/.test(v)) {
-          if (/^(Year|Yr)/i.test(v)) { yearGroup = v; continue; }
-          if (cc === c + 1 && courseName) continue;
+          if (/^(Year|Yr)/i.test(v)) { yearGroup = yearGroup || v; continue; }
           venue = v;
         }
       }
@@ -180,8 +256,9 @@ function parseUnstructuredExcel(wb, ws, warnings) {
         course_code: code.toUpperCase(), course_name: courseName,
         venue, student_count: students, exam_type: detectExamType(cellText),
         examiner, year_group: yearGroup,
-        start_time: SESSION_TIMES[currentSession].start,
-        end_time: SESSION_TIMES[currentSession].end,
+        exam_date: currentDate || null,
+        start_time: currentStartTime || SESSION_TIMES[currentSession]?.start,
+        end_time: currentEndTime || SESSION_TIMES[currentSession]?.end,
       });
       break;
     }
@@ -215,6 +292,9 @@ function extractFromHTMLTables(html) {
   const exams = [];
   const warnings = [];
 
+  const yearMatch = html.match(/\b(20\d{2})\b/);
+  const fileYear = yearMatch ? parseInt(yearMatch[1]) : null;
+
   const tableRe = /<table[^>]*>([\s\S]*?)<\/table>/gi;
   let tableMatch;
 
@@ -223,6 +303,7 @@ function extractFromHTMLTables(html) {
     const rowRe = /<tr[^>]*>([\s\S]*?)<\/tr>/gi;
     let rowMatch;
     let currentDay = null;
+    let currentDate = null;
     let rowNum = 0;
 
     while ((rowMatch = rowRe.exec(tableHtml)) !== null) {
@@ -238,7 +319,11 @@ function extractFromHTMLTables(html) {
       if (cells.length < 2) continue;
 
       const dayFound = detectDay(cells[0]);
-      if (dayFound) currentDay = dayFound;
+      if (dayFound) {
+        currentDay = dayFound;
+        const dateFromCell = extractDateFromText(cells[0], fileYear) || extractDateFromText(cells.join(' '), fileYear);
+        if (dateFromCell) currentDate = dateFromCell;
+      }
 
       for (let c = 0; c < cells.length; c++) {
         const cellText = cells[c];
@@ -275,6 +360,7 @@ function extractFromHTMLTables(html) {
             course_code: code.toUpperCase(), course_name: namePart,
             venue: '', student_count: students, exam_type: detectExamType(cellText),
             examiner: '', year_group: '',
+            exam_date: currentDate || null,
             start_time: SESSION_TIMES[sessionNum || 1].start,
             end_time: SESSION_TIMES[sessionNum || 1].end,
           });
@@ -292,23 +378,39 @@ function parseTextContent(text, source) {
   const exams = [];
   const warnings = [];
   const lines = text.split(/\n/);
+  const nonEmptyLines = lines.map(l => l.trim()).filter(Boolean);
 
   let currentDay = null;
   let currentSession = null;
+  let currentDate = null;
   let lineNum = 0;
+  let nonEmptyIdx = 0;
 
-  for (const line of lines) {
+  const yearMatch = text.match(/\b(20\d{2})\b/);
+  const fileYear = yearMatch ? parseInt(yearMatch[1]) : null;
+
+  for (let rawIdx = 0; rawIdx < lines.length; rawIdx++) {
+    const line = lines[rawIdx];
     lineNum++;
     const trimmed = line.trim();
     if (!trimmed) continue;
+    nonEmptyIdx++;
 
     const dayMatch = detectDay(trimmed);
     if (dayMatch) {
-      if (/^\s*(MONDAY|TUESDAY|WEDNESDAY|THURSDAY|FRIDAY)\b/i.test(trimmed) ||
-          /^(monday|tuesday|wednesday|thursday|friday)\s*[,\s]*\d/i.test(trimmed) ||
+      if (/^\s*(MONDAY|TUESDAY|WEDNESDAY|THURSDAY|FRIDAY|SATURDAY)\b/i.test(trimmed) ||
+          /^(monday|tuesday|wednesday|thursday|friday|saturday)\s*[,\s]*\d/i.test(trimmed) ||
           trimmed.split(/\s+/).length <= 6) {
         currentDay = dayMatch;
+        const dateFromLine = extractDateFromText(trimmed, fileYear);
+        if (dateFromLine) currentDate = dateFromLine;
       }
+    }
+
+    // Detect standalone date lines (e.g., "17/08/26" on its own line after the day name)
+    if (!dayMatch && /^\d{1,2}\/\d{1,2}\/\d{2,4}$/.test(trimmed)) {
+      const standaloneDate = extractDateFromText(trimmed, fileYear);
+      if (standaloneDate) currentDate = standaloneDate;
     }
 
     const sessMatch = detectSession(trimmed);
@@ -335,8 +437,38 @@ function parseTextContent(text, source) {
         .split(/\t|\s{3,}/)
         .filter(Boolean)[0]?.trim()?.slice(0, 120) || '';
 
+      // Strip punctuation-only names (e.g. course codes ending with ":")
+      courseName = courseName.replace(/^[:\-–—\s]+/, '').trim();
       if (/^(session|monday|tuesday|wednesday|thursday|friday|\d{1,2}[:.])/i.test(courseName)) {
         courseName = '';
+      }
+
+      // If no name found on same line, look at the next 1-2 non-empty lines
+      if (!courseName) {
+        const nextLines = [];
+        for (let ni = rawIdx + 1; ni < lines.length && nextLines.length < 3; ni++) {
+          const nl = lines[ni].trim();
+          if (!nl) continue;
+          nextLines.push(nl);
+        }
+        const nameParts = [];
+        for (const nl of nextLines) {
+          if (/\b[A-Z]{2,5}\s*\d{3,4}[A-Z]?\b/.test(nl)) break;  // stop at next course code
+          if (/^\(?\d+\)?$/.test(nl)) break;                        // stop at student count only line
+          if (/^(session|monday|tuesday|wednesday|thursday|friday|saturday|morning|afternoon|evening)/i.test(nl)) break;
+          if (/^(PUBH|LRM|ONLINE|CBE|BYOD|WRITTEN|Hall|Room)/i.test(nl)) break;
+          if (/^[-–—]\s*(TM|CBE|BYOD|WRITTEN)/i.test(nl)) break;  // skip exam-type suffixes
+          if (nl.length > 100) break;
+          if (nl.length <= 2) continue;  // skip single letters (table artefacts like "J", "H")
+          // Strip parenthesized student counts and trailing punctuation from name line
+          const cleaned = nl.replace(/\(\d+\)/g, '').replace(/[:\-–—]+\s*$/, '').replace(/\s+/g, ' ').trim();
+          if (cleaned && cleaned.length > 2) nameParts.push(cleaned);
+          if (/[.!?]$/.test(cleaned)) break;  // natural end of name
+        }
+        courseName = nameParts.join(' ').slice(0, 120).trim();
+        // Strip leading punctuation from combined name
+        courseName = courseName.replace(/^[:\-–—\s]+/, '').trim();
+        if (/^(session|monday|tuesday|wednesday|thursday|friday|\d{1,2}[:.])/i.test(courseName)) courseName = '';
       }
 
       const students = extractStudentCount(afterCode) || extractStudentCount(trimmed);
@@ -367,6 +499,7 @@ function parseTextContent(text, source) {
         course_code: code.toUpperCase(), course_name: courseName,
         venue, student_count: students, exam_type: examType,
         examiner: '', year_group: '',
+        exam_date: currentDate || null,
         start_time: SESSION_TIMES[currentSession].start,
         end_time: SESSION_TIMES[currentSession].end,
       });
@@ -416,10 +549,20 @@ async function parseFile(buffer, filename) {
 }
 
 function applyDateMap(exams, dateMap) {
+  const weekIdx = {};
+  let prevDayIdx = -1;
   for (const e of exams) {
-    if (dateMap[e.day_name]) {
-      e.exam_date = dateMap[e.day_name];
+    if (e.exam_date) continue;
+    const dates = dateMap[e.day_name];
+    if (!dates || !dates.length) continue;
+    const arr = Array.isArray(dates) ? dates : [dates];
+    const curDayIdx = DAYS.indexOf(e.day_name);
+    if (curDayIdx >= 0 && curDayIdx <= prevDayIdx && prevDayIdx >= 0) {
+      weekIdx[e.day_name] = (weekIdx[e.day_name] || 0) + 1;
     }
+    prevDayIdx = curDayIdx;
+    const idx = Math.min(weekIdx[e.day_name] || 0, arr.length - 1);
+    e.exam_date = arr[idx];
   }
   return exams;
 }

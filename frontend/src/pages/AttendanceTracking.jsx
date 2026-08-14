@@ -6,18 +6,19 @@ import { useSession } from '../contexts/SessionContext';
 const TIMES = { 1: '8:15-9:15', 2: '10:00-11:00', 3: '11:45-12:45', 4: '1:30-2:30', 5: '3:15-4:15', 6: '5:00-6:00' };
 
 const ROLE_CONFIG = {
-  'Invigilator':    { bg: 'bg-orange-500',  light: 'bg-orange-50',  border: 'border-orange-200', text: 'text-orange-700', badge: 'bg-orange-100 text-orange-700', icon: '🎓' },
-  'Office Staff':   { bg: 'bg-violet-500',  light: 'bg-violet-50',  border: 'border-violet-200', text: 'text-violet-700', badge: 'bg-violet-100 text-violet-700', icon: '🏢' },
-  'Accounts Staff': { bg: 'bg-cyan-500',    light: 'bg-cyan-50',    border: 'border-cyan-200',   text: 'text-cyan-700',   badge: 'bg-cyan-100 text-cyan-700',     icon: '💰' },
-  'System Analyst': { bg: 'bg-rose-500',    light: 'bg-rose-50',    border: 'border-rose-200',   text: 'text-rose-700',   badge: 'bg-rose-100 text-rose-700',     icon: '💻' },
-  'Registrar':      { bg: 'bg-teal-500',    light: 'bg-teal-50',    border: 'border-teal-200',   text: 'text-teal-700',   badge: 'bg-teal-100 text-teal-700',     icon: '📋' },
+  'Invigilator SM':  { bg: 'bg-orange-500',  light: 'bg-orange-50',  border: 'border-orange-200', text: 'text-orange-700', badge: 'bg-orange-100 text-orange-700', icon: '🎓', rate: 60 },
+  'Invigilator SS':  { bg: 'bg-amber-500',   light: 'bg-amber-50',   border: 'border-amber-200',  text: 'text-amber-700',  badge: 'bg-amber-100 text-amber-700',   icon: '🎓', rate: 30 },
+  'Office Staff SM': { bg: 'bg-violet-500',  light: 'bg-violet-50',  border: 'border-violet-200', text: 'text-violet-700', badge: 'bg-violet-100 text-violet-700', icon: '🏢' },
+  'Office Staff SS': { bg: 'bg-indigo-500',  light: 'bg-indigo-50',  border: 'border-indigo-200', text: 'text-indigo-700', badge: 'bg-indigo-100 text-indigo-700', icon: '🏢' },
+  'System Analyst':  { bg: 'bg-rose-500',    light: 'bg-rose-50',    border: 'border-rose-200',   text: 'text-rose-700',   badge: 'bg-rose-100 text-rose-700',     icon: '💻', rate: 60 },
+  'It Support':      { bg: 'bg-cyan-500',    light: 'bg-cyan-50',    border: 'border-cyan-200',   text: 'text-cyan-700',   badge: 'bg-cyan-100 text-cyan-700',     icon: '🔧', rate: 30 },
 };
 const ROLES = Object.keys(ROLE_CONFIG);
 
 function getRoleStyle(staffType) {
-  if (!staffType) return ROLE_CONFIG['Invigilator'];
+  if (!staffType) return ROLE_CONFIG['Invigilator SM'];
   const key = staffType.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-  return ROLE_CONFIG[key] || ROLE_CONFIG['Invigilator'];
+  return ROLE_CONFIG[key] || ROLE_CONFIG['Invigilator SM'];
 }
 
 const TAB_COLORS = {
@@ -27,7 +28,7 @@ const TAB_COLORS = {
 };
 
 export default function AttendanceTracking() {
-  const { sessions, currentSession } = useSession();
+  const { sessions, activeSession } = useSession();
   const [selectedSessionId, setSelectedSessionId] = useState('');
   const [tab, setTab] = useState('checkin');
 
@@ -37,9 +38,9 @@ export default function AttendanceTracking() {
   const isAdmin = userRole === 'admin' || userRole === 'superadmin';
 
   useEffect(() => {
-    if (currentSession) setSelectedSessionId(String(currentSession.id));
+    if (activeSession) setSelectedSessionId(String(activeSession.id));
     else if (sessions.length) setSelectedSessionId(String(sessions[0].id));
-  }, [currentSession, sessions]);
+  }, [activeSession, sessions]);
 
   const selectedSession = sessions.find(s => s.id === parseInt(selectedSessionId));
   const sessionLabel = selectedSession
@@ -151,13 +152,13 @@ function StaffCheckIn({ sessionId, isReviewer, isAdmin, userFacultyId }) {
 
   const checkedInIds = new Set(todayRecords.filter(r => r.present).map(r => r.staff_id));
 
-  const checkIn = async (staff, role) => {
+  const checkIn = async (staff, role, facultyId) => {
     try {
       await api.post('/attendance-tracking', {
         session_id: sessionId,
         staff_id: staff.id,
         staff_type: role.toLowerCase().replace(/ /g, '_'),
-        faculty_id: staff.faculty_id,
+        faculty_id: facultyId || staff.faculty_id,
         attendance_date: selectedDate,
         present: true,
       });
@@ -170,14 +171,7 @@ function StaffCheckIn({ sessionId, isReviewer, isAdmin, userFacultyId }) {
 
   const removeCheckIn = async (record) => {
     try {
-      await api.post('/attendance-tracking', {
-        session_id: sessionId,
-        staff_id: record.staff_id,
-        staff_type: record.staff_type,
-        faculty_id: record.faculty_id,
-        attendance_date: selectedDate,
-        present: false,
-      });
+      await api.delete(`/attendance-tracking/${record.id}`);
       toast.success('Check-in removed');
       loadTodayRecords();
     } catch (err) {
@@ -271,7 +265,7 @@ function StaffCheckIn({ sessionId, isReviewer, isAdmin, userFacultyId }) {
                 const record = todayRecords.find(r => r.staff_id === s.id && r.present);
                 return (
                   <StaffRow key={s.id} staff={s} isCheckedIn={isCheckedIn} record={record}
-                    onCheckIn={checkIn} onRemove={removeCheckIn} />
+                    onCheckIn={checkIn} onRemove={removeCheckIn} faculties={faculties} />
                 );
               })}
             </div>
@@ -376,67 +370,111 @@ function StaffCheckIn({ sessionId, isReviewer, isAdmin, userFacultyId }) {
   );
 }
 
-// ─── Staff search result row with role selector ─────────────────
-function StaffRow({ staff, isCheckedIn, record, onCheckIn, onRemove }) {
-  const [showRoles, setShowRoles] = useState(false);
+// ─── Staff search result row with role + faculty selector ─────────────────
+function StaffRow({ staff, isCheckedIn, record, onCheckIn, onRemove, faculties }) {
+  const [step, setStep] = useState(null); // null | 'faculty' | 'role'
+  const [selectedFacultyId, setSelectedFacultyId] = useState(staff.faculty_id || '');
+  const [selectedRole, setSelectedRole] = useState('');
+
+  const handleFacultyNext = () => {
+    if (!selectedFacultyId) return toast.error('Select a faculty');
+    setStep('role');
+  };
+
+  const handleCheckIn = (role) => {
+    onCheckIn(staff, role, selectedFacultyId ? parseInt(selectedFacultyId) : null);
+    setStep(null);
+  };
+
+  const cancel = () => { setStep(null); setSelectedFacultyId(staff.faculty_id || ''); };
+
+  const selectedFaculty = faculties.find(f => f.id === parseInt(selectedFacultyId));
 
   return (
-    <div className={`flex items-center justify-between p-3 rounded-xl border-2 transition-all ${
+    <div className={`p-3 rounded-xl border-2 transition-all ${
       isCheckedIn ? 'border-green-300 bg-green-50 shadow-sm shadow-green-100' : 'border-gray-100 hover:border-emerald-200 hover:shadow-sm'
     }`}>
-      <div className="flex items-center gap-3 min-w-0">
-        <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-black flex-shrink-0 transition-all ${
-          isCheckedIn ? 'bg-gradient-to-br from-green-400 to-emerald-500 text-white shadow-md shadow-green-200' : 'bg-gray-100 text-gray-500'
-        }`}>
-          {isCheckedIn ? (
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-            </svg>
-          ) : staff.name.charAt(0)}
-        </div>
-        <div className="min-w-0">
-          <p className="text-sm font-bold text-gray-900 truncate">{staff.name}</p>
-          <p className="text-xs text-gray-400">
-            <span className="font-mono">{staff.staff_code || 'No code'}</span>
-            {staff.faculty_code && <span className="ml-2 px-1.5 py-0.5 bg-gray-100 rounded text-[10px] font-medium">{staff.faculty_code}</span>}
-            {staff.staff_type && <span className="ml-1 text-gray-300">· {staff.staff_type.replace(/_/g, ' ')}</span>}
-          </p>
-        </div>
-      </div>
-      <div className="flex items-center gap-2 flex-shrink-0 ml-2">
-        {isCheckedIn ? (
-          <div className="flex items-center gap-2">
-            <span className={`text-[10px] px-2.5 py-1 rounded-full font-bold ${getRoleStyle(record?.staff_type).badge}`}>
-              {record?.staff_type?.replace(/_/g, ' ') || 'Checked in'}
-            </span>
-            <button onClick={() => onRemove(record)}
-              className="text-[10px] text-red-400 hover:text-white hover:bg-red-500 px-2 py-1 rounded-lg font-bold transition-all ml-1">Undo</button>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-black flex-shrink-0 transition-all ${
+            isCheckedIn ? 'bg-gradient-to-br from-green-400 to-emerald-500 text-white shadow-md shadow-green-200' : 'bg-gray-100 text-gray-500'
+          }`}>
+            {isCheckedIn ? (
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+              </svg>
+            ) : staff.name.charAt(0)}
           </div>
-        ) : (
-          <>
-            {!showRoles ? (
-              <button onClick={() => setShowRoles(true)}
-                className="text-xs px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold hover:shadow-lg hover:shadow-emerald-200 transition-all active:scale-95">
-                Check In →
-              </button>
-            ) : (
-              <div className="flex flex-wrap gap-1.5">
-                {ROLES.map(role => {
-                  const rc = ROLE_CONFIG[role];
-                  return (
-                    <button key={role} onClick={() => { onCheckIn(staff, role); setShowRoles(false); }}
-                      className={`text-[10px] px-3 py-1.5 rounded-lg font-bold ${rc.badge} hover:${rc.bg} hover:text-white transition-all active:scale-95 border ${rc.border}`}>
-                      {rc.icon} {role}
-                    </button>
-                  );
-                })}
-                <button onClick={() => setShowRoles(false)}
-                  className="text-[10px] px-2 py-1.5 text-gray-400 hover:text-gray-600 font-bold">✕</button>
-              </div>
-            )}
-          </>
-        )}
+          <div className="min-w-0">
+            <p className="text-sm font-bold text-gray-900 truncate">{staff.name}</p>
+            <p className="text-xs text-gray-400">
+              <span className="font-mono">{staff.staff_code || 'No code'}</span>
+              {staff.faculty_code && <span className="ml-2 px-1.5 py-0.5 bg-gray-100 rounded text-[10px] font-medium">{staff.faculty_code}</span>}
+              {staff.staff_type && <span className="ml-1 text-gray-300">· {staff.staff_type.replace(/_/g, ' ')}</span>}
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 flex-shrink-0 ml-2">
+          {isCheckedIn ? (
+            <div className="flex items-center gap-2">
+              {record?.faculty_code && (
+                <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-blue-100 text-blue-700">{record.faculty_code}</span>
+              )}
+              <span className={`text-[10px] px-2.5 py-1 rounded-full font-bold ${getRoleStyle(record?.staff_type).badge}`}>
+                {record?.staff_type?.replace(/_/g, ' ') || 'Checked in'}
+              </span>
+              <button onClick={() => onRemove(record)}
+                className="text-[10px] text-red-400 hover:text-white hover:bg-red-500 px-2 py-1 rounded-lg font-bold transition-all ml-1">Undo</button>
+            </div>
+          ) : !step ? (
+            <button onClick={() => setStep('faculty')}
+              className="text-xs px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold hover:shadow-lg hover:shadow-emerald-200 transition-all active:scale-95">
+              Check In →
+            </button>
+          ) : null}
+        </div>
       </div>
+
+      {step === 'faculty' && (
+        <div className="mt-2 pt-2 border-t border-gray-100 flex items-center gap-2 flex-wrap">
+          <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wide">Faculty:</span>
+          <select value={selectedFacultyId} onChange={e => setSelectedFacultyId(e.target.value)}
+            className="text-xs border-2 border-gray-200 rounded-lg px-2 py-1.5 focus:border-emerald-400 focus:ring-1 focus:ring-emerald-200 flex-1 min-w-[140px]">
+            <option value="">-- Select Faculty --</option>
+            {faculties.map(f => (
+              <option key={f.id} value={f.id}>{f.code} - {f.name}</option>
+            ))}
+          </select>
+          <button onClick={handleFacultyNext}
+            className="text-xs px-3 py-1.5 rounded-lg bg-emerald-500 text-white font-bold hover:bg-emerald-600 transition-all active:scale-95">
+            Next →
+          </button>
+          <button onClick={cancel} className="text-xs px-2 py-1.5 text-gray-400 hover:text-gray-600 font-bold">✕</button>
+        </div>
+      )}
+
+      {step === 'role' && (
+        <div className="mt-2 pt-2 border-t border-gray-100">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wide">Faculty:</span>
+            <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-blue-100 text-blue-700">{selectedFaculty?.code || 'None'}</span>
+            <button onClick={() => setStep('faculty')} className="text-[10px] text-emerald-500 hover:text-emerald-700 font-bold">Change</button>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wide">Role:</span>
+            {ROLES.map(role => {
+              const rc = ROLE_CONFIG[role];
+              return (
+                <button key={role} onClick={() => handleCheckIn(role)}
+                  className={`text-[10px] px-3 py-1.5 rounded-lg font-bold ${rc.badge} hover:${rc.bg} hover:text-white transition-all active:scale-95 border ${rc.border}`}>
+                  {rc.icon} {role}
+                </button>
+              );
+            })}
+            <button onClick={cancel} className="text-[10px] px-2 py-1.5 text-gray-400 hover:text-gray-600 font-bold">✕</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -446,7 +484,7 @@ function AddStaffForm({ defaultName, faculties, sessionId, selectedDate, onDone,
   const [name, setName] = useState(defaultName || '');
   const [phone, setPhone] = useState('');
   const [facultyId, setFacultyId] = useState('');
-  const [role, setRole] = useState('Invigilator');
+  const [role, setRole] = useState('Invigilator SM');
   const [saving, setSaving] = useState(false);
 
   const handleSubmit = async (e) => {
@@ -458,7 +496,7 @@ function AddStaffForm({ defaultName, faculties, sessionId, selectedDate, onDone,
         name: name.trim(),
         phone: phone.trim() || null,
         faculty_id: facultyId || null,
-        staff_type: role === 'Invigilator' ? 'lecturer' : 'it_staff',
+        staff_type: role.startsWith('Invigilator') ? 'lecturer' : 'it_staff',
         role: role.toLowerCase().replace(/ /g, '_'),
       });
       const newStaff = staffRes.data;
@@ -741,6 +779,7 @@ function ExamCheckIn({ sessionId, isReviewer, isAdmin, userFacultyId }) {
                               <span className={`text-[10px] px-2.5 py-1 rounded-full font-bold ${
                                 s.role === 'invigilator' ? 'bg-orange-100 text-orange-700 border border-orange-200' :
                                 s.role === 'it_support' ? 'bg-cyan-100 text-cyan-700 border border-cyan-200' :
+                                s.role === 'system_analyst' ? 'bg-rose-100 text-rose-700 border border-rose-200' :
                                 'bg-gray-100 text-gray-600'
                               }`}>{s.role.replace(/_/g, ' ')}</span>
                               {s.verified && (
@@ -753,6 +792,9 @@ function ExamCheckIn({ sessionId, isReviewer, isAdmin, userFacultyId }) {
                           <div className="px-4 py-6 text-center text-xs text-gray-400">No staff assigned to this exam</div>
                         )}
                       </div>
+                      <AddStaffToExam examId={exam.id} sessionId={sessionId}
+                        existingStaffIds={new Set(exam.staff.map(s => s.staff_id))}
+                        onAdded={loadExams} />
                     </div>
                   )}
                 </div>
@@ -773,6 +815,74 @@ function ExamCheckIn({ sessionId, isReviewer, isAdmin, userFacultyId }) {
   );
 }
 
+// ─── Add staff to exam (for System Analysts etc.) ─────────────────
+function AddStaffToExam({ examId, sessionId, existingStaffIds, onAdded }) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const [results, setResults] = useState([]);
+  const [searching, setSearching] = useState(false);
+
+  useEffect(() => {
+    if (!open || search.trim().length < 2) { setResults([]); return; }
+    const timer = setTimeout(() => {
+      setSearching(true);
+      api.get('/staff', { params: { search: search.trim() } }).then(r => {
+        setResults(r.data.filter(s => !existingStaffIds.has(s.id)));
+        setSearching(false);
+      }).catch(() => setSearching(false));
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [search, open, existingStaffIds]);
+
+  const addStaff = async (staff) => {
+    try {
+      await api.post('/exam-checkins', { session_id: sessionId, exam_id: examId, staff_id: staff.id, checked_in: true });
+      toast.success(`${staff.name} checked in`);
+      setSearch('');
+      setResults([]);
+      onAdded();
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed');
+    }
+  };
+
+  if (!open) return (
+    <div className="px-4 py-2 border-t border-gray-100">
+      <button onClick={() => setOpen(true)}
+        className="text-[10px] text-rose-600 hover:text-rose-800 font-bold transition-colors">
+        + Add IT Staff
+      </button>
+    </div>
+  );
+
+  return (
+    <div className="px-4 py-3 border-t border-gray-100 bg-rose-50/30">
+      <div className="flex items-center gap-2">
+        <input value={search} onChange={e => setSearch(e.target.value)} autoFocus
+          placeholder="Search staff name or code..."
+          className="flex-1 border-2 border-rose-200 rounded-lg px-3 py-1.5 text-xs focus:ring-2 focus:ring-rose-300 focus:border-rose-400" />
+        <button onClick={() => { setOpen(false); setSearch(''); setResults([]); }}
+          className="text-[10px] text-gray-400 hover:text-gray-600 font-bold px-2">Cancel</button>
+        {searching && <div className="w-4 h-4 border-2 border-rose-200 border-t-rose-500 rounded-full animate-spin" />}
+      </div>
+      {results.length > 0 && (
+        <div className="mt-2 space-y-1 max-h-32 overflow-y-auto">
+          {results.map(s => (
+            <button key={s.id} onClick={() => addStaff(s)}
+              className="w-full flex items-center justify-between px-3 py-1.5 rounded-lg hover:bg-rose-100 transition-colors text-left">
+              <div>
+                <span className="text-xs font-semibold text-gray-900">{s.name}</span>
+                <span className="text-[10px] text-gray-400 ml-2 font-mono">{s.staff_code}</span>
+              </div>
+              <span className="text-[10px] px-2 py-0.5 rounded bg-rose-500 text-white font-bold">Check In</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Tab 3: Summary ──────────────────────────────────────────────
 function CheckInSummary({ sessionId, isAdmin, userFacultyId, isReviewer }) {
   const [examSummary, setExamSummary] = useState([]);
@@ -789,7 +899,7 @@ function CheckInSummary({ sessionId, isAdmin, userFacultyId, isReviewer }) {
 
     Promise.all([
       api.get('/exam-checkins/summary', { params }),
-      api.get('/attendance-tracking/summary', { params: { session_id: sessionId } }),
+      api.get('/attendance-tracking/summary', { params }),
       api.get('/timetable/faculties'),
     ]).then(([eRes, aRes, fRes]) => {
       setExamSummary(eRes.data);
@@ -803,19 +913,17 @@ function CheckInSummary({ sessionId, isAdmin, userFacultyId, isReviewer }) {
     const params = { session_id: sessionId };
     if (facultyFilter) params.faculty_id = facultyFilter;
     api.get('/exam-checkins/summary', { params }).then(r => setExamSummary(r.data));
-    api.get('/attendance-tracking/summary', { params: { session_id: sessionId } }).then(r => setDailySummary(r.data));
+    api.get('/attendance-tracking/summary', { params }).then(r => setDailySummary(r.data));
   };
 
   useEffect(() => { if (!loading) reload(); }, [facultyFilter]);
 
   if (loading) return <Spinner />;
 
-  const filteredDaily = dailySummary.filter(r => {
-    if (facultyFilter && r.faculty_code !== faculties.find(f => f.id === parseInt(facultyFilter))?.code) return false;
-    return true;
-  });
-
   const examStaffIds = new Set(examSummary.map(e => e.staff_id));
+  const supportStaff = dailySummary.filter(r => !examStaffIds.has(r.staff_id));
+
+  const examGrandTotal = examSummary.reduce((sum, r) => sum + (r.sessions_checked_in * (getRoleStyle(r.staff_type).rate || 0)), 0);
 
   return (
     <>
@@ -827,7 +935,7 @@ function CheckInSummary({ sessionId, isAdmin, userFacultyId, isReviewer }) {
               className="block border-2 border-purple-200 rounded-xl px-3 py-2.5 text-sm mt-1 focus:border-purple-400 focus:ring-2 focus:ring-purple-200"
               disabled={isReviewer && !!userFacultyId}>
               {!isReviewer && <option value="">All Faculties</option>}
-              {faculties.map(f => <option key={f.id} value={f.id}>{f.code}</option>)}
+              {faculties.map(f => <option key={f.id} value={f.id}>{f.name} ({f.code})</option>)}
             </select>
           </div>
         </div>
@@ -837,8 +945,8 @@ function CheckInSummary({ sessionId, isAdmin, userFacultyId, isReviewer }) {
             <span className="text-xs text-gray-500">Exam staff</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="w-8 h-8 rounded-lg bg-pink-100 flex items-center justify-center text-pink-700 font-black text-sm">{filteredDaily.filter(r => !examStaffIds.has(r.staff_id)).length}</span>
-            <span className="text-xs text-gray-500">Support staff</span>
+            <span className="w-8 h-8 rounded-lg bg-pink-100 flex items-center justify-center text-pink-700 font-black text-sm">{supportStaff.length}</span>
+            <span className="text-xs text-gray-500">Office staff</span>
           </div>
         </div>
       </div>
@@ -849,7 +957,7 @@ function CheckInSummary({ sessionId, isAdmin, userFacultyId, isReviewer }) {
             <span className="w-6 h-6 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-500 text-white flex items-center justify-center text-[10px]">📝</span>
             Exam Staff Check-In Summary
           </h3>
-          <p className="text-[10px] text-gray-400 mb-3">Invigilators & IT — sessions checked in = exam sessions attended</p>
+          <p className="text-[10px] text-gray-400 mb-3">Invigilators, IT & System Analysts — sessions attended</p>
           <div className="overflow-x-auto">
             <table className="min-w-full text-sm">
               <thead>
@@ -858,13 +966,17 @@ function CheckInSummary({ sessionId, isAdmin, userFacultyId, isReviewer }) {
                   <th className="text-left py-2.5 px-3 text-xs font-bold text-blue-700 uppercase tracking-wider">Staff</th>
                   <th className="text-left py-2.5 px-3 text-xs font-bold text-blue-700 uppercase tracking-wider">Code</th>
                   <th className="text-left py-2.5 px-3 text-xs font-bold text-blue-700 uppercase tracking-wider">Type</th>
-                  <th className="text-center py-2.5 px-3 text-xs font-bold text-blue-700 uppercase tracking-wider">Checked In</th>
+                  <th className="text-center py-2.5 px-3 text-xs font-bold text-blue-700 uppercase tracking-wider">Sessions</th>
                   <th className="text-center py-2.5 px-3 text-xs font-bold text-blue-700 uppercase tracking-wider">Verified</th>
-                  <th className="text-center py-2.5 px-3 text-xs font-bold text-blue-700 uppercase tracking-wider">Assigned</th>
+                  <th className="text-right py-2.5 px-3 text-xs font-bold text-blue-700 uppercase tracking-wider">Rate</th>
+                  <th className="text-right py-2.5 px-3 text-xs font-bold text-blue-700 uppercase tracking-wider">Amount (GHS)</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {examSummary.map((r, i) => (
+                {examSummary.map((r, i) => {
+                  const rate = getRoleStyle(r.staff_type).rate || 0;
+                  const amount = r.sessions_checked_in * rate;
+                  return (
                   <tr key={r.staff_id} className="hover:bg-blue-50/30 transition-colors">
                     <td className="py-2.5 px-3 text-gray-400 text-xs font-mono">{i + 1}</td>
                     <td className="py-2.5 px-3 font-semibold text-gray-900">{r.staff_name}</td>
@@ -876,22 +988,30 @@ function CheckInSummary({ sessionId, isAdmin, userFacultyId, isReviewer }) {
                     </td>
                     <td className="py-2.5 px-3 text-center"><span className="font-black text-green-600 bg-green-50 px-2 py-0.5 rounded-lg">{r.sessions_checked_in}</span></td>
                     <td className="py-2.5 px-3 text-center"><span className="font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded-lg">{r.sessions_verified}</span></td>
-                    <td className="py-2.5 px-3 text-center text-gray-600 font-medium">{r.total_assigned}</td>
+                    <td className="py-2.5 px-3 text-right font-mono text-gray-600">{rate.toFixed(2)}</td>
+                    <td className="py-2.5 px-3 text-right font-black text-gray-900">{amount.toFixed(2)}</td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
+              <tfoot>
+                <tr className="bg-blue-50 border-t-2 border-blue-200">
+                  <td colSpan={7} className="py-2.5 px-3 text-right font-black text-sm text-blue-800">Total</td>
+                  <td className="py-2.5 px-3 text-right font-black text-sm text-blue-800">GHS {examGrandTotal.toFixed(2)}</td>
+                </tr>
+              </tfoot>
             </table>
           </div>
         </div>
       )}
 
-      {filteredDaily.filter(r => !examStaffIds.has(r.staff_id)).length > 0 && (
+      {supportStaff.length > 0 && (
         <div className="card">
           <h3 className="font-black text-sm text-gray-800 mb-1 flex items-center gap-2">
             <span className="w-6 h-6 rounded-lg bg-gradient-to-r from-violet-500 to-purple-500 text-white flex items-center justify-center text-[10px]">🏢</span>
-            Support Staff Check-In Summary
+            Office Staff Check-In Summary
           </h3>
-          <p className="text-[10px] text-gray-400 mb-3">Office staff, Accounts, Registrar, etc. — days present during exam period</p>
+          <p className="text-[10px] text-gray-400 mb-3">Office staff — days present during exam period</p>
           <div className="overflow-x-auto">
             <table className="min-w-full text-sm">
               <thead>
@@ -901,11 +1021,10 @@ function CheckInSummary({ sessionId, isAdmin, userFacultyId, isReviewer }) {
                   <th className="text-left py-2.5 px-3 text-xs font-bold text-purple-700 uppercase tracking-wider">Code</th>
                   <th className="text-left py-2.5 px-3 text-xs font-bold text-purple-700 uppercase tracking-wider">Role</th>
                   <th className="text-center py-2.5 px-3 text-xs font-bold text-purple-700 uppercase tracking-wider">Days Present</th>
-                  <th className="text-center py-2.5 px-3 text-xs font-bold text-purple-700 uppercase tracking-wider">Total Days</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {filteredDaily.filter(r => !examStaffIds.has(r.staff_id)).map((r, i) => (
+                {supportStaff.map((r, i) => (
                   <tr key={r.staff_id} className="hover:bg-purple-50/30 transition-colors">
                     <td className="py-2.5 px-3 text-gray-400 text-xs font-mono">{i + 1}</td>
                     <td className="py-2.5 px-3 font-semibold text-gray-900">{r.staff_name}</td>
@@ -916,16 +1035,21 @@ function CheckInSummary({ sessionId, isAdmin, userFacultyId, isReviewer }) {
                       </span>
                     </td>
                     <td className="py-2.5 px-3 text-center"><span className="font-black text-green-600 bg-green-50 px-2 py-0.5 rounded-lg">{r.days_present}</span></td>
-                    <td className="py-2.5 px-3 text-center text-gray-600 font-medium">{r.total_days}</td>
                   </tr>
                 ))}
               </tbody>
+              <tfoot>
+                <tr className="bg-purple-50 border-t-2 border-purple-200">
+                  <td colSpan={4} className="py-2.5 px-3 text-right font-black text-sm text-purple-800">Total Days</td>
+                  <td className="py-2.5 px-3 text-center font-black text-sm text-purple-800">{supportStaff.reduce((sum, r) => sum + parseInt(r.days_present), 0)}</td>
+                </tr>
+              </tfoot>
             </table>
           </div>
         </div>
       )}
 
-      {examSummary.length === 0 && filteredDaily.length === 0 && (
+      {examSummary.length === 0 && supportStaff.length === 0 && (
         <div className="card text-center py-14 bg-gradient-to-b from-purple-50/50 to-white border-2 border-dashed border-purple-200">
           <div className="text-5xl mb-3">📊</div>
           <p className="text-gray-600 font-semibold">No check-in records yet</p>

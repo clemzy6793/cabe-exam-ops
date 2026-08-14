@@ -407,7 +407,7 @@ router.get('/by-date/:date', async (req, res) => {
 });
 
 router.get('/unassigned', async (req, res) => {
-  const { date } = req.query;
+  const { date, session_id } = req.query;
   let sql = `
     SELECT e.*, f.name AS faculty_name,
       (SELECT COUNT(*)::int FROM exam_assignments ea WHERE ea.exam_id = e.id) AS staff_count
@@ -415,6 +415,10 @@ router.get('/unassigned', async (req, res) => {
     JOIN faculties f ON f.id = e.faculty_id
     WHERE NOT EXISTS (SELECT 1 FROM exam_assignments ea WHERE ea.exam_id = e.id)`;
   const params = [];
+  if (session_id) {
+    params.push(session_id);
+    sql += ` AND e.session_id = $${params.length}`;
+  }
   if (date) {
     params.push(date);
     sql += ` AND e.exam_date = $${params.length}`;
@@ -450,31 +454,32 @@ router.get('/it-report', async (req, res) => {
     // IT staff with exam assignments
     const { rows } = await db.query(`
       SELECT s.id, s.name, s.staff_code, s.phone, s.category, s.role,
-        e.day_name, e.exam_date, e.session_number, e.course_code, e.venue, f.code AS faculty_code
+        e.day_name, TO_CHAR(e.exam_date, 'YYYY-MM-DD') AS exam_date, e.session_number, e.course_code, e.venue, f.code AS faculty_code
       FROM staff s
       LEFT JOIN exam_assignments ea ON ea.staff_id = s.id
       LEFT JOIN exams e ON e.id = ea.exam_id ${sessionFilter}
       LEFT JOIN faculties f ON f.id = e.faculty_id
-      WHERE s.staff_type = 'it_staff'
+      WHERE (s.staff_type = 'it_staff' OR s.role IN ('systems_analyst', 'it_support'))
       ORDER BY s.name, e.exam_date, e.session_number
     `, sessionParams);
 
-    // Get ALL unique sessions per day (for systems analysts who cover everything)
+    // Get ALL unique sessions per date (for systems analysts who cover everything)
     const { rows: allDaySessions } = await db.query(`
-      SELECT day_name, session_number FROM exams
+      SELECT TO_CHAR(exam_date, 'YYYY-MM-DD') AS exam_date, session_number FROM exams
       ${session_id ? 'WHERE session_id = $1' : ''}
-      GROUP BY day_name, session_number ORDER BY day_name, session_number
+      GROUP BY TO_CHAR(exam_date, 'YYYY-MM-DD'), session_number
+      ORDER BY TO_CHAR(exam_date, 'YYYY-MM-DD'), session_number
     `, sessionParams);
     const allSessionsByDay = {};
     allDaySessions.forEach(r => {
-      const day = r.day_name.toLowerCase();
+      const day = r.exam_date;
       if (!allSessionsByDay[day]) allSessionsByDay[day] = new Set();
       allSessionsByDay[day].add(r.session_number);
     });
 
     // Get unique exam dates for dynamic day columns
     const { rows: examDates } = await db.query(`
-      SELECT DISTINCT day_name, exam_date FROM exams
+      SELECT DISTINCT day_name, TO_CHAR(exam_date, 'YYYY-MM-DD') AS exam_date FROM exams
       ${session_id ? 'WHERE session_id = $1' : ''}
       ORDER BY exam_date
     `, sessionParams);
@@ -485,7 +490,7 @@ router.get('/it-report', async (req, res) => {
         const isSysAnalyst = r.role === 'systems_analyst';
         staffMap[r.id] = {
           id: r.id, name: r.name, staff_code: r.staff_code, phone: r.phone,
-          category: isSysAnalyst ? 'senior_member' : r.category,
+          category: isSysAnalyst ? 'senior_member_administrative' : r.category,
           role: r.role, days: {}, faculty_roles: []
         };
         if (isSysAnalyst) {
@@ -501,8 +506,8 @@ router.get('/it-report', async (req, res) => {
           });
         }
       }
-      if (r.day_name && r.role !== 'systems_analyst') {
-        const day = r.day_name.toLowerCase();
+      if (r.exam_date && r.role !== 'systems_analyst') {
+        const day = r.exam_date;
         if (!staffMap[r.id].days[day]) staffMap[r.id].days[day] = [];
         staffMap[r.id].days[day].push({
           session: r.session_number, course_code: r.course_code,
@@ -521,16 +526,16 @@ router.get('/it-report', async (req, res) => {
     `);
 
     const { rows: facSessions } = await db.query(`
-      SELECT f.id AS faculty_id, e.day_name, e.session_number
+      SELECT f.id AS faculty_id, TO_CHAR(e.exam_date, 'YYYY-MM-DD') AS exam_date, e.session_number
       FROM exams e JOIN faculties f ON f.id = e.faculty_id
       ${session_id ? 'WHERE e.session_id = $1' : ''}
-      GROUP BY f.id, e.day_name, e.session_number
-      ORDER BY e.day_name, e.session_number
+      GROUP BY f.id, TO_CHAR(e.exam_date, 'YYYY-MM-DD'), e.session_number
+      ORDER BY TO_CHAR(e.exam_date, 'YYYY-MM-DD'), e.session_number
     `, sessionParams);
 
     const facDaySessions = {};
     facSessions.forEach(r => {
-      const k = `${r.faculty_id}_${r.day_name}`;
+      const k = `${r.faculty_id}_${r.exam_date}`;
       if (!facDaySessions[k]) facDaySessions[k] = [];
       facDaySessions[k].push(r.session_number);
     });
@@ -542,7 +547,7 @@ router.get('/it-report', async (req, res) => {
       staffMap[fr.staff_id].faculty_roles.push({ role: fr.role, faculty_code: fr.faculty_code });
 
       Object.keys(allSessionsByDay).forEach(day => {
-        const sessions = facDaySessions[`${fr.faculty_id}_${day}`] || [];
+        const sessions = facDaySessions[`${fr.faculty_id}_${day}`] || [];  // day is now a date string
         if (!staffMap[fr.staff_id].days[day]) staffMap[fr.staff_id].days[day] = [];
         sessions.forEach(sn => {
           const already = staffMap[fr.staff_id].days[day].some(a => a.session === sn && a.faculty_code === fr.faculty_code);
@@ -556,31 +561,113 @@ router.get('/it-report', async (req, res) => {
       });
     });
 
-    // Load manual session adjustments
-    const { rows: manualRows } = await db.query('SELECT staff_id, day_name, sessions, note FROM staff_manual_sessions');
-    const manualMap = {};
-    manualRows.forEach(r => {
-      if (!manualMap[r.staff_id]) manualMap[r.staff_id] = {};
-      manualMap[r.staff_id][r.day_name] = { sessions: r.sessions, note: r.note };
+    // Include IT/SA staff checked in via daily attendance
+    const { rows: attRows } = await db.query(`
+      SELECT a.staff_id, a.attendance_date::text AS att_date, a.staff_type,
+        s.id, s.name, s.staff_code, s.phone, s.category, s.role,
+        e_day.day_name
+      FROM attendance a
+      JOIN staff s ON s.id = a.staff_id
+      LEFT JOIN LATERAL (
+        SELECT DISTINCT day_name FROM exams
+        WHERE exam_date = a.attendance_date ${session_id ? 'AND session_id = $1' : ''}
+        LIMIT 1
+      ) e_day ON true
+      WHERE a.present = true
+        AND a.staff_type IN ('system_analyst', 'it_support')
+        ${session_id ? 'AND a.session_id = $1' : ''}
+    `, sessionParams);
+
+    attRows.forEach(r => {
+      const day = r.att_date;  // Always use date string as key
+      const isSysAnalyst = r.staff_type === 'system_analyst' || r.role === 'systems_analyst';
+      if (!staffMap[r.staff_id]) {
+        staffMap[r.staff_id] = {
+          id: r.staff_id, name: r.name, staff_code: r.staff_code, phone: r.phone,
+          category: isSysAnalyst ? 'senior_member_administrative' : r.category,
+          role: isSysAnalyst ? 'systems_analyst' : (r.role || 'it_support'),
+          days: {}, faculty_roles: [],
+        };
+      }
+      if (!staffMap[r.staff_id].days[day]) staffMap[r.staff_id].days[day] = [];
+      const sessions = allSessionsByDay[day] || new Set([1]);
+      sessions.forEach(sn => {
+        const already = staffMap[r.staff_id].days[day].some(a => a.session === sn);
+        if (!already) {
+          staffMap[r.staff_id].days[day].push({
+            session: sn,
+            course_code: isSysAnalyst ? 'OVERSIGHT' : 'ATTENDANCE',
+            venue: 'ALL', faculty_code: 'ALL'
+          });
+        }
+      });
     });
+
+    // Load manual session adjustments - map day_name → first matching date in this session
+    const { rows: manualRows } = await db.query('SELECT staff_id, day_name, sessions, note, created_at FROM staff_manual_sessions');
+    const rawManualMap = {};
+    manualRows.forEach(r => {
+      if (!rawManualMap[r.staff_id]) rawManualMap[r.staff_id] = {};
+      rawManualMap[r.staff_id][r.day_name.toLowerCase()] = { sessions: r.sessions, note: r.note, created_at: r.created_at };
+    });
+
+    // Build day_name → first date mapping for this session's exam dates
+    const dayNameToFirstDate = {};
+    examDates.forEach(ed => {
+      const dayKey = ed.day_name.toLowerCase();
+      if (!dayNameToFirstDate[dayKey]) dayNameToFirstDate[dayKey] = ed.exam_date;
+    });
+
+    const sessionStartDate = sessionMeta?.start_date ? new Date(sessionMeta.start_date) : null;
 
     Object.values(staffMap).forEach(s => {
-      s.manual_sessions = manualMap[s.id] || {};
+      const staffRaw = rawManualMap[s.id] || {};
+      const dateSessions = {};
+      Object.entries(staffRaw).forEach(([dayName, data]) => {
+        if (/^\d{4}-\d{2}-\d{2}$/.test(dayName)) {
+          // Date string (new format) — apply directly
+          dateSessions[dayName] = data;
+        } else {
+          // Day name (old format) — only apply if created at/after this session's start date
+          if (!sessionStartDate || !data.created_at || new Date(data.created_at) >= sessionStartDate) {
+            const date = dayNameToFirstDate[dayName.toLowerCase()];
+            if (date) dateSessions[date] = data;
+          }
+        }
+      });
+      s.manual_sessions = dateSessions;
     });
 
-    // Build dynamic day columns from actual exam dates
+    // Build dynamic day columns from actual exam dates (one column per unique date)
     const dayColumns = [];
     const seenDays = new Set();
     examDates.forEach(r => {
-      const key = r.day_name.toLowerCase();
+      const key = r.exam_date;  // Use actual date string as key — fixes multi-week collapse
       if (!seenDays.has(key)) {
         seenDays.add(key);
-        const d = new Date(r.exam_date + 'T12:00:00');
+        const d = new Date(key + 'T12:00:00');  // key is 'YYYY-MM-DD' — always valid
+        const dayName = r.day_name.toLowerCase();
         dayColumns.push({
           key,
-          label: key.charAt(0).toUpperCase() + key.slice(1, 3),
+          label: dayName.charAt(0).toUpperCase() + dayName.slice(1, 3),
           date: d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }),
-          fullDate: r.exam_date,
+          fullDate: key,
+        });
+      }
+    });
+
+    // Add day columns for attendance dates not covered by exam dates
+    attRows.forEach(r => {
+      const seenKey = r.att_date;
+      if (!seenDays.has(seenKey)) {
+        seenDays.add(seenKey);
+        const d = new Date(seenKey + 'T12:00:00');
+        const dayLabel = d.toLocaleDateString('en-GB', { weekday: 'short' });
+        dayColumns.push({
+          key: seenKey,
+          label: dayLabel.charAt(0).toUpperCase() + dayLabel.slice(1),
+          date: d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }),
+          fullDate: seenKey,
         });
       }
     });

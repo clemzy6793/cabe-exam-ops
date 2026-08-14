@@ -1,35 +1,7 @@
-import { useState, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import api from '../api';
 import { useSession } from '../contexts/SessionContext';
 
-const FACULTY_MAP = {
-  'Architecture': 'FOBE',
-  'Centre for Settlement Studies': 'FOBE',
-  'Construction Technology and Management': 'FOBE',
-  'Development Office': 'FOBE',
-  "Dean's Office - Faculty of Built Environment": 'FOBE',
-  'Land Economy': 'FOBE',
-  'Planning': 'FOBE',
-  'Communication Design': 'Art',
-  "Dean's Office - Faculty of Art": 'Art',
-  'Indigenous Art and Technology': 'Art',
-  'Industrial Art': 'Art',
-  'Painting and Sculpture': 'Art',
-  'Publishing Studies': 'Art',
-  "Dean's Office - Faculty of Educational Studies": 'Education',
-  'Educational Innovations in Science and Technology': 'Education',
-  'Teacher Education': 'Education',
-};
-
-const FACULTY_LABELS = {
-  all: 'All Staff',
-  FOBE: 'Built Environment',
-  Art: 'Faculty of Art',
-  Education: 'Educational Studies',
-  Other: 'Other / Central',
-};
-
-function getFaculty(dept) { return FACULTY_MAP[dept] || 'Other'; }
 function getDayVal(r, key) { return r.breakdown[key] || 0; }
 function isSeniorMember(staffType) { return staffType.toLowerCase().includes('senior member'); }
 function getRate(r) { return isSeniorMember(r.staffType) ? 60 : 30; }
@@ -39,13 +11,13 @@ function getNet(r, days) { return getGross(r, days) * 0.9; }
 
 // ── Invigilators Table ────────────────────────────────────────────────────────
 function InvigilatorsTable({ rows, faculty, days }) {
-  const filtered = rows.filter(r => faculty === 'all' || getFaculty(r.department) === faculty);
+  const filtered = rows.filter(r => faculty === 'all' || r.faculty_code === faculty);
   const grandGross = filtered.reduce((s, r) => s + getGross(r, days), 0);
   const grandNet   = filtered.reduce((s, r) => s + getNet(r, days), 0);
 
   const printReport = () => {
     const win = window.open('', '_blank');
-    const facultyLabel = FACULTY_LABELS[faculty] || 'All';
+    const facultyLabel = faculty === 'all' ? 'All Staff' : (filtered[0]?.faculty_name || faculty);
     const header = `<tr>
       <th>#</th><th>Staff ID</th><th>Full Name</th><th>Department</th><th>Designation</th><th>Staff Type</th>
       ${days.map(d => `<th>${d.label}</th>`).join('')}
@@ -87,7 +59,7 @@ function InvigilatorsTable({ rows, faculty, days }) {
   };
 
   const exportExcel = () => {
-    const facultyLabel = FACULTY_LABELS[faculty] || 'All';
+    const facultyLabel = faculty === 'all' ? 'All' : (filtered[0]?.faculty_name || faculty);
     let xml = '<?xml version="1.0"?>\n<?mso-application progid="Excel.Sheet"?>\n';
     xml += '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">\n';
     xml += '<Styles><Style ss:ID="h"><Font ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#1a3a5c" ss:Pattern="Solid"/></Style>';
@@ -212,16 +184,18 @@ function InvigilatorsTable({ rows, faculty, days }) {
   );
 }
 
-// ── Office Staff Table (count only, no payment) ───────────────────────────────
+// ── Office Staff Table (attendance count only — no payment yet) ───────────────
 function OfficeStaffTable({ rows, faculty, days }) {
-  const filtered = rows.filter(r => faculty === 'all' || getFaculty(r.department) === faculty);
+  const filtered = rows.filter(r => faculty === 'all' || r.faculty_code === faculty);
+  const totalCols = 6 + days.length + 1;
 
   const printReport = () => {
     const win = window.open('', '_blank');
-    const facultyLabel = FACULTY_LABELS[faculty] || 'All';
+    const facultyLabel = faculty === 'all' ? 'All Staff' : (filtered[0]?.faculty_name || faculty);
     const header = `<tr>
       <th>#</th><th>Staff ID</th><th>Full Name</th><th>Department</th><th>Designation</th><th>Staff Type</th>
-      ${days.map(d=>`<th>${d.label}</th>`).join('')}<th>Total</th>
+      ${days.map(d=>`<th>${d.label}</th>`).join('')}
+      <th>Days Total</th>
     </tr>`;
     const bodyRows = filtered.map((r,i) => `<tr>
       <td>${i+1}</td><td style="font-family:monospace">${r.staffId}</td>
@@ -240,24 +214,24 @@ function OfficeStaffTable({ rows, faculty, days }) {
       td{padding:6px;border:1px solid #ddd;} @media print{button{display:none;}}</style>
     </head><body>
       <h2 style="margin:0;color:#1a3a5c;">CABE Exam Operations — Office / Support Staff</h2>
-      <p style="color:#666;margin:4px 0;">${facultyLabel} | Mid-Semester 2025/2026 | 6th–10th July 2026</p>
-      <p style="font-size:11px;color:#888;">Biometric verification count per day</p>
+      <p style="color:#666;margin:4px 0;">${facultyLabel}</p>
+      <p style="font-size:11px;color:#888;">Attendance count per day (1 = present)</p>
       <hr style="margin:12px 0;border-color:#c8a951;">
       <table><thead>${header}</thead><tbody>${bodyRows}${totalRow}</tbody></table>
-      <p style="margin-top:15px;font-size:11px;color:#999;">Staff: ${filtered.length} | Total Verifications: ${filtered.reduce((s,r)=>s+getTotal(r, days),0)}</p>
+      <p style="margin-top:15px;font-size:11px;color:#999;">Staff: ${filtered.length} | Total Days: ${filtered.reduce((s,r)=>s+getTotal(r,days),0)}</p>
       <button onclick="window.print()" style="margin-top:15px;padding:10px 20px;background:#1a3a5c;color:#fff;border:none;border-radius:6px;cursor:pointer;">Print</button>
     </body></html>`);
     win.document.close();
   };
 
   const exportExcel = () => {
-    const facultyLabel = FACULTY_LABELS[faculty] || 'All';
+    const facultyLabel = faculty === 'all' ? 'All' : (filtered[0]?.faculty_name || faculty);
     let xml = '<?xml version="1.0"?>\n<?mso-application progid="Excel.Sheet"?>\n';
     xml += '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">\n';
     xml += '<Styles><Style ss:ID="h"><Font ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#1a3a5c" ss:Pattern="Solid"/></Style>';
     xml += '<Style ss:ID="tot"><Font ss:Bold="1"/><Interior ss:Color="#FFF2CC" ss:Pattern="Solid"/></Style></Styles>\n';
     xml += `<Worksheet ss:Name="Office Staff">\n<Table>\n`;
-    const cols = ['#','Staff ID','Full Name','Department','Designation','Staff Type',...days.map(d=>d.label),'Total'];
+    const cols = ['#','Staff ID','Full Name','Department','Designation','Staff Type',...days.map(d=>d.label),'Days Total'];
     xml += '<Row>'+cols.map(c=>`<Cell ss:StyleID="h"><Data ss:Type="String">${c}</Data></Cell>`).join('')+'</Row>\n';
     filtered.forEach((r,i) => {
       xml += '<Row>';
@@ -290,7 +264,7 @@ function OfficeStaffTable({ rows, faculty, days }) {
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div className="flex items-center gap-2">
           <span className="inline-block px-3 py-1 rounded-full text-sm font-semibold bg-amber-100 text-amber-800">Office / Support Staff</span>
-          <span className="text-sm text-gray-500">{filtered.length} staff · biometric verification count only</span>
+          <span className="text-sm text-gray-500">{filtered.length} staff · attendance count per day</span>
         </div>
         <div className="flex gap-2">
           <button onClick={exportExcel} className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5">
@@ -315,11 +289,11 @@ function OfficeStaffTable({ rows, faculty, days }) {
                 <th className="px-3 py-2.5 text-left text-xs">Designation</th>
                 <th className="px-3 py-2.5 text-left text-xs">Staff Type</th>
                 {days.map(d => <th key={d.key} className="px-3 py-2.5 text-center text-xs whitespace-nowrap">{d.label}</th>)}
-                <th className="px-3 py-2.5 text-center text-xs font-bold">Total</th>
+                <th className="px-3 py-2.5 text-center text-xs font-bold">Days Total</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {filtered.length === 0 && <tr><td colSpan={8} className="px-4 py-6 text-center text-gray-400 text-sm">No staff in this faculty</td></tr>}
+              {filtered.length === 0 && <tr><td colSpan={totalCols} className="px-4 py-6 text-center text-gray-400 text-sm">No staff in this faculty</td></tr>}
               {filtered.map((r, i) => (
                 <tr key={r.staffId+i} className={i%2===0?'bg-white':'bg-gray-50'}>
                   <td className="px-3 py-2 text-gray-400 text-xs">{i+1}</td>
@@ -328,7 +302,9 @@ function OfficeStaffTable({ rows, faculty, days }) {
                   <td className="px-3 py-2 text-gray-600 text-xs">{r.department}</td>
                   <td className="px-3 py-2 text-gray-600 text-xs whitespace-nowrap">{r.designation}</td>
                   <td className="px-3 py-2">
-                    <span className="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700 whitespace-nowrap">{r.staffType}</span>
+                    <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${isSeniorMember(r.staffType)?'bg-amber-100 text-amber-700':'bg-blue-100 text-blue-700'}`}>
+                      {r.staffType}
+                    </span>
                   </td>
                   {days.map(d => (
                     <td key={d.key} className="px-3 py-2 text-center text-sm">
@@ -355,20 +331,49 @@ function OfficeStaffTable({ rows, faculty, days }) {
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function InvigilationAllowances() {
-  const { currentSession } = useSession();
+  const { sessions, currentSession } = useSession();
+  const [mode, setMode]               = useState('system');
+  const [selectedSessionId, setSelectedSessionId] = useState('');
   const [invigilators, setInvigilators] = useState(null);
   const [officeStaff, setOfficeStaff]   = useState(null);
   const [days, setDays]                 = useState([]);
+  const [officeDays, setOfficeDays]     = useState([]);
+  const [sessionMeta, setSessionMeta]   = useState(null);
   const [loading, setLoading]           = useState(false);
   const [error, setError]               = useState('');
   const [faculty, setFaculty]           = useState('all');
+  const [faculties, setFaculties]       = useState([]);
   const fileRef = useRef();
 
-  const handleSubmit = async (e) => {
+  useEffect(() => {
+    if (currentSession) setSelectedSessionId(String(currentSession.id));
+  }, [currentSession]);
+
+  const loadSystemData = async () => {
+    if (!selectedSessionId) return;
+    setLoading(true); setError(''); setInvigilators(null); setOfficeStaff(null); setFaculties([]);
+    try {
+      const { data } = await api.get('/exam-checkins/invigilation-report', {
+        params: { session_id: selectedSessionId },
+      });
+      setInvigilators(data.invigilators);
+      setOfficeStaff(data.officeStaff);
+      setDays(data.days || []);
+      setOfficeDays(data.officeDays || []);
+      setSessionMeta(data.session || null);
+      setFaculties(data.faculties || []);
+    } catch (err) {
+      setError(err.response?.data?.error || err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFileSubmit = async (e) => {
     e.preventDefault();
     const file = fileRef.current?.files[0];
     if (!file) { setError('Please select an Excel file'); return; }
-    setError(''); setLoading(true); setInvigilators(null); setOfficeStaff(null); setDays([]);
+    setError(''); setLoading(true); setInvigilators(null); setOfficeStaff(null); setDays([]); setFaculties([]);
     const form = new FormData();
     form.append('file', file);
     try {
@@ -382,6 +387,11 @@ export default function InvigilationAllowances() {
         const d = new Date(k);
         return { key: k, label: d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric' }) };
       }));
+      setOfficeDays(dayKeys.map(k => {
+        const d = new Date(k);
+        return { key: k, label: d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric' }) };
+      }));
+      setSessionMeta(null);
     } catch (err) {
       setError(err.response?.data?.error || err.message);
     } finally {
@@ -389,46 +399,104 @@ export default function InvigilationAllowances() {
     }
   };
 
+  const switchMode = (m) => {
+    setMode(m);
+    setInvigilators(null); setOfficeStaff(null); setDays([]); setOfficeDays([]); setError(''); setSessionMeta(null); setFaculties([]);
+  };
+
+  const sessionTitle = sessionMeta
+    ? `${sessionMeta.exam_type === 'mid_semester' ? 'Mid-Semester' : 'End of Semester'} Examinations — ${sessionMeta.academic_year}`
+    : currentSession ? `${currentSession.name} — ${currentSession.academic_year}` : '';
+
   return (
     <div className="space-y-5">
       <div>
         <h1 className="text-2xl font-black text-gray-900">Invigilation Allowances</h1>
-        <p className="text-sm text-gray-500 mt-1">
-          {currentSession ? `${currentSession.name} — ${currentSession.academic_year}` : 'All Sessions'}
-        </p>
+        <p className="text-sm text-gray-500 mt-1">{sessionTitle || 'Select a session'}</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-gray-200 p-5 space-y-4">
-        <h2 className="font-semibold text-gray-800">Upload Attendance File</h2>
-        <p className="text-xs text-gray-500">
-          Required columns: <code className="bg-gray-100 px-1 rounded">STAFFID, FULL_NAME, DEPARTMENT, DESIGNATION, STAFF_TYPE, MINUTES_PER_DAY</code>
-        </p>
-        <input ref={fileRef} type="file" accept=".xlsx,.xls"
-          className="block text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-brand-dark file:text-white hover:file:opacity-90"
-        />
-        {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-4 py-2">{error}</p>}
-        <button type="submit" disabled={loading}
-          className="px-6 py-2.5 bg-brand-dark text-white rounded-lg text-sm font-semibold disabled:opacity-60">
-          {loading ? 'Calculating…' : 'Calculate Allowances'}
+      {/* Mode toggle */}
+      <div className="flex gap-2">
+        <button onClick={() => switchMode('system')}
+          className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
+            mode === 'system' ? 'bg-brand-dark text-white' : 'bg-white border text-gray-600 hover:bg-gray-50'
+          }`}>
+          From System
         </button>
-      </form>
+        <button onClick={() => switchMode('file')}
+          className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
+            mode === 'file' ? 'bg-brand-dark text-white' : 'bg-white border text-gray-600 hover:bg-gray-50'
+          }`}>
+          From File Upload
+        </button>
+      </div>
+
+      {mode === 'system' && (
+        <div className="bg-white rounded-xl border border-gray-200 p-5">
+          <div className="flex flex-wrap items-end gap-3">
+            <div className="flex-1 min-w-[220px]">
+              <label className="text-xs font-medium text-gray-600">Examination Session</label>
+              <select value={selectedSessionId} onChange={e => setSelectedSessionId(e.target.value)}
+                className="w-full border rounded-lg px-3 py-2 text-sm mt-1 font-medium">
+                <option value="">Select session...</option>
+                {sessions.map(s => (
+                  <option key={s.id} value={s.id}>
+                    {s.academic_year} — {s.semester === 'second' ? '2nd' : '1st'} Sem — {s.exam_type === 'mid_semester' ? 'Mid-Semester' : 'End of Semester'}
+                    {s.status === 'active' ? ' (Current)' : s.status === 'closed' ? ' (Ended)' : ''}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <button onClick={loadSystemData} disabled={loading || !selectedSessionId}
+              className="px-6 py-2.5 bg-brand-dark text-white rounded-lg text-sm font-semibold disabled:opacity-60">
+              {loading ? 'Loading...' : 'Generate Report'}
+            </button>
+          </div>
+          {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-4 py-2 mt-3">{error}</p>}
+        </div>
+      )}
+
+      {mode === 'file' && (
+        <form onSubmit={handleFileSubmit} className="bg-white rounded-xl border border-gray-200 p-5 space-y-4">
+          <h2 className="font-semibold text-gray-800">Upload Attendance File</h2>
+          <p className="text-xs text-gray-500">
+            Required columns: <code className="bg-gray-100 px-1 rounded">STAFFID, FULL_NAME, DEPARTMENT, DESIGNATION, STAFF_TYPE, MINUTES_PER_DAY</code>
+          </p>
+          <input ref={fileRef} type="file" accept=".xlsx,.xls"
+            className="block text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-brand-dark file:text-white hover:file:opacity-90"
+          />
+          {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-4 py-2">{error}</p>}
+          <button type="submit" disabled={loading}
+            className="px-6 py-2.5 bg-brand-dark text-white rounded-lg text-sm font-semibold disabled:opacity-60">
+            {loading ? 'Calculating…' : 'Calculate Allowances'}
+          </button>
+        </form>
+      )}
 
       {invigilators !== null && (
         <div className="space-y-6">
           {/* Faculty tabs */}
           <div className="flex gap-1.5 flex-wrap">
-            {['all','FOBE','Art','Education','Other'].map(f => (
-              <button key={f} onClick={() => setFaculty(f)}
+            <button key="all" onClick={() => setFaculty('all')}
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                faculty === 'all' ? 'bg-brand-dark text-white' : 'bg-white border border-gray-300 text-gray-600 hover:bg-gray-50'
+              }`}>
+              All Faculties
+            </button>
+            {faculties.map(f => (
+              <button key={f.code} onClick={() => setFaculty(f.code)}
                 className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                  faculty === f ? 'bg-brand-dark text-white' : 'bg-white border border-gray-300 text-gray-600 hover:bg-gray-50'
+                  faculty === f.code ? 'bg-brand-dark text-white' : 'bg-white border border-gray-300 text-gray-600 hover:bg-gray-50'
                 }`}>
-                {FACULTY_LABELS[f]}
+                {f.code || f.name}
               </button>
             ))}
           </div>
 
           <InvigilatorsTable rows={invigilators} faculty={faculty} days={days} />
-          <OfficeStaffTable  rows={officeStaff}  faculty={faculty} days={days} />
+          {officeStaff?.length > 0 && (
+            <OfficeStaffTable rows={officeStaff} faculty={faculty} days={officeDays.length > 0 ? officeDays : days} />
+          )}
         </div>
       )}
     </div>

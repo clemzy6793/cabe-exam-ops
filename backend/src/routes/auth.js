@@ -69,7 +69,7 @@ router.get('/accounts', authAdmin, async (req, res) => {
 router.post('/accounts', authAdmin, async (req, res) => {
   const { name, email, password, role } = req.body;
   if (!name || !email || !password) return res.status(400).json({ error: 'Name, email, and password are required' });
-  if (!['admin', 'reviewer', 'exam_officer', 'examiner'].includes(role)) return res.status(400).json({ error: 'Invalid role' });
+  if (!['admin', 'reviewer', 'exam_officer', 'examiner', 'checkin'].includes(role)) return res.status(400).json({ error: 'Invalid role' });
   try {
     const hash = await bcrypt.hash(password, 10);
     const faculty_id = req.body.faculty_id || null;
@@ -89,6 +89,7 @@ router.post('/accounts/from-staff', authAdmin, async (req, res) => {
   if (!staff_ids?.length || !password) return res.status(400).json({ error: 'Staff and password required' });
   if (password.length < 8) return res.status(400).json({ error: 'Minimum 8 characters' });
 
+  const assignRole = ['reviewer', 'checkin'].includes(req.body.role) ? req.body.role : 'reviewer';
   const hash = await bcrypt.hash(password, 10);
   let created = 0, skipped = 0;
   for (const sid of staff_ids) {
@@ -99,10 +100,44 @@ router.post('/accounts/from-staff', authAdmin, async (req, res) => {
     if (existing.length) { skipped++; continue; }
     await db.query(
       'INSERT INTO admins (name, email, password_hash, role) VALUES ($1,$2,$3,$4)',
-      [staff.name, loginEmail, hash, 'reviewer']);
+      [staff.name, loginEmail, hash, assignRole]);
     created++;
   }
   res.json({ created, skipped });
+});
+
+router.put('/accounts/:id', authAdmin, async (req, res) => {
+  const { role, password, name, email } = req.body;
+  if (role && !['admin', 'reviewer', 'exam_officer', 'examiner', 'checkin'].includes(role))
+    return res.status(400).json({ error: 'Invalid role' });
+  try {
+    const { rows: [acct] } = await db.query('SELECT role FROM admins WHERE id=$1', [req.params.id]);
+    if (!acct) return res.status(404).json({ error: 'Not found' });
+    if ((acct.role === 'admin' || acct.role === 'superadmin') && role && role !== acct.role)
+      return res.status(403).json({ error: 'Cannot change admin role' });
+
+    if (password) {
+      if (password.length < 6) return res.status(400).json({ error: 'Minimum 6 characters' });
+      const hash = await bcrypt.hash(password, 10);
+      await db.query('UPDATE admins SET password_hash=$1 WHERE id=$2', [hash, req.params.id]);
+    }
+    if (role || name || email) {
+      const fields = [];
+      const vals = [];
+      if (role)  { fields.push(`role=$${vals.length+1}`);  vals.push(role); }
+      if (name)  { fields.push(`name=$${vals.length+1}`);  vals.push(name.trim()); }
+      if (email) { fields.push(`email=$${vals.length+1}`); vals.push(email.trim().toLowerCase()); }
+      vals.push(req.params.id);
+      await db.query(`UPDATE admins SET ${fields.join(',')} WHERE id=$${vals.length}`, vals);
+    }
+    const { rows: [updated] } = await db.query(
+      'SELECT id,name,email,role,can_edit FROM admins WHERE id=$1', [req.params.id]);
+    res.json(updated);
+  } catch (err) {
+    if (err.code === '23505') return res.status(409).json({ error: 'Email already in use' });
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 router.put('/accounts/:id/toggle-edit', authAdmin, async (req, res) => {

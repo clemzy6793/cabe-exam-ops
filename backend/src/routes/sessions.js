@@ -165,6 +165,22 @@ router.put('/:id/status', authAdmin, async (req, res) => {
     // Only one active session at a time
     if (status === 'active') {
       await db.query("UPDATE examination_sessions SET status = 'closed' WHERE status = 'active'");
+      // Sync exam_periods: deactivate all, then activate the one matching this session's date range
+      await db.query('UPDATE exam_periods SET is_active=false WHERE is_active=true');
+      await db.query(
+        `UPDATE exam_periods SET is_active=true
+         WHERE start_date <= $1 AND end_date >= $2`,
+        [session.end_date, session.start_date]
+      );
+    }
+
+    // When closing/archiving a session, also deactivate its exam_period
+    if (status === 'closed' || status === 'archived') {
+      await db.query(
+        `UPDATE exam_periods SET is_active=false
+         WHERE start_date <= $1 AND end_date >= $2 AND is_active=true`,
+        [session.end_date, session.start_date]
+      );
     }
 
     const { rows } = await db.query(

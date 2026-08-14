@@ -127,9 +127,9 @@ export default function StaffManagement() {
                     </span>
                     {s.category && (
                       <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${
-                        s.category === 'senior_member' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'
+                        s.category?.startsWith('senior_member') ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'
                       }`}>
-                        {s.category === 'senior_member' ? 'Sr. Member' : 'Sr. Staff'}
+                        {s.category?.startsWith('senior_member') ? 'Sr. Member' : 'Sr. Staff'}
                       </span>
                     )}
                   </div>
@@ -290,7 +290,8 @@ function StaffModal({ staff, faculties, onSave, onClose }) {
                 <select value={form.category} onChange={e => set('category', e.target.value)}
                   className="w-full border rounded-lg px-3 py-2 text-sm mt-1">
                   <option value="">Select grade...</option>
-                  <option value="senior_member">Senior Member (GHS 60/hr)</option>
+                  <option value="senior_member_academic">Senior Member Academic (GHS 60/hr)</option>
+                  <option value="senior_member_administrative">Senior Member Administrative (GHS 60/hr)</option>
                   <option value="senior_staff">Senior Staff (GHS 30/hr)</option>
                 </select>
               </div>

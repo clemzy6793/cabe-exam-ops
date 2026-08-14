@@ -22,7 +22,8 @@ router.get('/calculate', authAdmin, async (req, res) => {
     });
 
     const getRate = (staffType, grade, examType) => {
-      return rateMap[`${staffType}:${grade || 'default'}:${examType || 'mid_semester'}`]
+      const g = grade?.startsWith('senior_member') ? 'senior_member' : (grade || 'default');
+      return rateMap[`${staffType}:${g}:${examType || 'mid_semester'}`]
         || rateMap[`${staffType}:default:${examType || 'mid_semester'}`]
         || rateMap[`${staffType}:default:mid_semester`]
         || null;

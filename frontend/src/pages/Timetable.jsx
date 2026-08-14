@@ -38,6 +38,7 @@ export default function Timetable() {
   const [search, setSearch] = useState('');
   const [editExam, setEditExam] = useState(null);
   const [showAdd, setShowAdd] = useState(false);
+  const [cbeByod, setCbeByod] = useState(false);
 
   const uniqueDates = useMemo(() => {
     const dates = [...new Set(allExams.map(e => e.exam_date?.slice(0, 10)).filter(Boolean))].sort();
@@ -85,6 +86,21 @@ export default function Timetable() {
     return { num, time };
   });
 
+  // CBE-BYOD view: all matching exams grouped by date, then session
+  const cbeByodByDate = useMemo(() => {
+    if (!cbeByod) return [];
+    const filtered = allExams.filter(e => e.exam_type === 'CBE-BYOD');
+    const byDate = {};
+    filtered.forEach(e => {
+      const d = e.exam_date?.slice(0, 10);
+      if (!byDate[d]) byDate[d] = { date: d, label: formatDateTab(d), dayName: e.day_name, sessions: {} };
+      const s = e.session_number;
+      if (!byDate[d].sessions[s]) byDate[d].sessions[s] = [];
+      byDate[d].sessions[s].push(e);
+    });
+    return Object.values(byDate).sort((a, b) => a.date.localeCompare(b.date));
+  }, [cbeByod, allExams]);
+
   const saveExam = async (formData) => {
     try {
       if (editExam?.id) {
@@ -117,8 +133,83 @@ export default function Timetable() {
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <h1 className="text-2xl font-black text-gray-900">Exam Timetable</h1>
-        <button onClick={() => { setShowAdd(true); setEditExam({}); }} className="btn-brand text-sm">+ Add Exam</button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setCbeByod(v => !v)}
+            className={`px-4 py-2 rounded-lg text-sm font-bold transition-colors border ${
+              cbeByod ? 'bg-violet-600 text-white border-violet-600' : 'bg-white text-violet-600 border-violet-300 hover:bg-violet-50'
+            }`}>
+            CBE-BYOD Schedule
+          </button>
+          {!cbeByod && <button onClick={() => { setShowAdd(true); setEditExam({}); }} className="btn-brand text-sm">+ Add Exam</button>}
+        </div>
       </div>
+
+      {/* CBE-BYOD full-period view */}
+      {cbeByod && (
+        <div className="space-y-4">
+          <div className="flex items-center gap-3">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-violet-100 text-violet-700 text-sm font-bold">
+              <span className="w-2 h-2 rounded-full bg-violet-600 inline-block"></span>
+              CBE-BYOD Exams — Full Period
+            </span>
+            <span className="text-sm text-gray-500">{allExams.filter(e=>e.exam_type==='CBE-BYOD').length} exams across {cbeByodByDate.length} days</span>
+          </div>
+          {cbeByodByDate.length === 0 && (
+            <div className="card text-center py-10 text-gray-400">No CBE-BYOD exams in this session.</div>
+          )}
+          {cbeByodByDate.map(dayGroup => (
+            <div key={dayGroup.date} className="card p-0 overflow-hidden">
+              <div className="bg-violet-600 text-white px-4 py-2.5 flex items-center justify-between">
+                <div className="font-bold text-sm">{dayGroup.label}</div>
+                <span className="text-xs text-violet-200">
+                  {Object.values(dayGroup.sessions).flat().length} exam{Object.values(dayGroup.sessions).flat().length !== 1 ? 's' : ''}
+                </span>
+              </div>
+              {Object.keys(dayGroup.sessions).map(Number).sort((a,b)=>a-b).map(sNum => {
+                const sExams = dayGroup.sessions[sNum];
+                const time = FALLBACK_SESSIONS.find(s => s.num === sNum)?.time || '';
+                return (
+                  <div key={sNum} className="border-t first:border-t-0">
+                    <div className="bg-violet-50 px-4 py-1.5 flex items-center gap-3 border-b border-violet-100">
+                      <span className="text-xs font-bold text-violet-700">Session {sNum}</span>
+                      <span className="text-xs text-violet-400">{time}</span>
+                      <span className="text-xs text-gray-400 ml-auto">{sExams.length} exam{sExams.length !== 1 ? 's' : ''}</span>
+                    </div>
+                    <div className="divide-y">
+                      {sExams.map(e => (
+                        <div key={e.id} className="px-4 py-3 flex items-start gap-4 hover:bg-gray-50">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-bold text-sm text-gray-900">{e.course_code}</span>
+                              <span className={`text-[10px] px-1.5 py-0.5 rounded font-semibold ${
+                                e.faculty_code === 'FOBE' ? 'bg-blue-100 text-blue-700' :
+                                e.faculty_code === 'Art' ? 'bg-purple-100 text-purple-700' :
+                                'bg-emerald-100 text-emerald-700'
+                              }`}>{e.faculty_code}</span>
+                              <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold bg-violet-600 text-white">CBE-BYOD</span>
+                            </div>
+                            <p className="text-xs text-gray-500 mt-0.5">{e.course_name}</p>
+                            <div className="flex flex-wrap gap-x-4 mt-1 text-xs text-gray-400">
+                              {e.venue && <span>Venue: {e.venue}</span>}
+                              {e.student_count > 0 && <span>{e.student_count} students</span>}
+                              {e.examiner && <span>Examiner: {e.examiner}</span>}
+                            </div>
+                          </div>
+                          <button onClick={() => setEditExam(e)} className="text-xs text-brand hover:underline flex-shrink-0">Edit</button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Normal timetable filters + grid */}
+      {!cbeByod && <>
 
       {/* Filters */}
       <div className="card flex flex-wrap gap-3 items-center">
@@ -217,6 +308,8 @@ export default function Timetable() {
           <p className="text-gray-400">No exams found for the selected filters.</p>
         </div>
       )}
+
+      </>}
 
       {/* Edit/Add Modal */}
       {(editExam || showAdd) && (

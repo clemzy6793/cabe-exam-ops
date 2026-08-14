@@ -118,21 +118,24 @@ export default function TimetableUpload() {
     setParsed(updated);
   };
 
-  const filteredExams = parsed?.exams?.filter(e => dayFilter === 'all' || e.day_name === dayFilter) || [];
+  const filteredExams = parsed?.exams?.filter(e => dayFilter === 'all' || (e.exam_date || e.day_name) === dayFilter) || [];
 
-  const examsByDaySession = {};
+  const examsByDateSession = {};
   filteredExams.forEach(e => {
-    const k = `${e.day_name}_${e.session_number}`;
-    if (!examsByDaySession[k]) examsByDaySession[k] = { day: e.day_name, session: e.session_number, exams: [] };
-    examsByDaySession[k].exams.push(e);
+    const dateKey = e.exam_date || e.day_name;
+    const k = `${dateKey}_${e.session_number}`;
+    if (!examsByDateSession[k]) examsByDateSession[k] = { date: e.exam_date, day: e.day_name, session: e.session_number, exams: [] };
+    examsByDateSession[k].exams.push(e);
   });
 
-  const dayOrder = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
-  const groups = Object.values(examsByDaySession).sort((a, b) => {
+  const dayOrder = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+  const groups = Object.values(examsByDateSession).sort((a, b) => {
+    if (a.date && b.date) return a.date.localeCompare(b.date) || a.session - b.session;
     const di = dayOrder.indexOf(a.day) - dayOrder.indexOf(b.day);
     return di || a.session - b.session;
   });
 
+  const uniqueDates = [...new Set(parsed?.exams?.map(e => e.exam_date || e.day_name) || [])].sort();
   const uniqueDays = [...new Set(parsed?.exams?.map(e => e.day_name) || [])].sort((a, b) => dayOrder.indexOf(a) - dayOrder.indexOf(b));
 
   const selectedFac = faculties.find(f => f.id === Number(facultyId));
@@ -143,27 +146,30 @@ export default function TimetableUpload() {
   const printTimetable = () => {
     if (!parsed?.exams?.length) return;
     const fac = faculties.find(f => f.id === Number(facultyId));
-    const examsByDay = {};
+    const examsByDate = {};
     parsed.exams.forEach(e => {
-      if (!examsByDay[e.day_name]) examsByDay[e.day_name] = {};
-      if (!examsByDay[e.day_name][e.session_number]) examsByDay[e.day_name][e.session_number] = [];
-      examsByDay[e.day_name][e.session_number].push(e);
+      const dateKey = e.exam_date || e.day_name;
+      if (!examsByDate[dateKey]) examsByDate[dateKey] = {};
+      if (!examsByDate[dateKey][e.session_number]) examsByDate[dateKey][e.session_number] = [];
+      examsByDate[dateKey][e.session_number].push(e);
     });
 
     let rows = '';
-    uniqueDays.forEach(day => {
-      const sessions = examsByDay[day];
-      if (!sessions) return;
-      const dayLabel = day.charAt(0).toUpperCase() + day.slice(1);
-      const dateStr = parsed.exams.find(e => e.day_name === day)?.exam_date;
-      const displayDate = dateStr ? new Date(dateStr + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'long' }) : '';
-      rows += `<tr><td colspan="5" style="background:#1a3a5c;color:#fff;padding:10px;font-weight:bold;font-size:14px;">${dayLabel}${displayDate ? ', ' + displayDate : ''}</td></tr>`;
+    const sortedDates = Object.keys(examsByDate).sort();
+    sortedDates.forEach(dateKey => {
+      const sessions = examsByDate[dateKey];
+      const isDate = /^\d{4}-/.test(dateKey);
+      const displayDate = isDate
+        ? new Date(dateKey + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+        : dateKey.charAt(0).toUpperCase() + dateKey.slice(1);
+      rows += `<tr><td colspan="5" style="background:#1a3a5c;color:#fff;padding:10px;font-weight:bold;font-size:14px;">${displayDate}</td></tr>`;
       [1,2,3,4,5,6].forEach(sn => {
         const exams = sessions[sn];
         if (!exams) return;
+        const timeLabel = exams[0]?.start_time && exams[0]?.end_time ? `${exams[0].start_time} - ${exams[0].end_time}` : (TIMES[sn] || '');
         exams.forEach((e, i) => {
           rows += `<tr>
-            ${i === 0 ? `<td rowspan="${exams.length}" style="padding:8px;border:1px solid #ddd;font-weight:bold;vertical-align:top;">Session ${sn}<br><span style="font-weight:normal;font-size:11px;color:#666;">${TIMES[sn]}</span></td>` : ''}
+            ${i === 0 ? `<td rowspan="${exams.length}" style="padding:8px;border:1px solid #ddd;font-weight:bold;vertical-align:top;">Session ${sn}<br><span style="font-weight:normal;font-size:11px;color:#666;">${timeLabel}</span></td>` : ''}
             <td style="padding:8px;border:1px solid #ddd;font-weight:bold;">${e.course_code}${e.exam_type !== 'written' ? ` <span style="color:${e.exam_type === 'CBE' ? '#d97706' : '#0284c7'};font-size:11px;">[${e.exam_type}]</span>` : ''}</td>
             <td style="padding:8px;border:1px solid #ddd;">${e.course_name}</td>
             <td style="padding:8px;border:1px solid #ddd;">${e.venue}</td>
@@ -319,8 +325,8 @@ export default function TimetableUpload() {
               <p className="text-xs text-gray-500">Venue clashes</p>
             </div>
             <div className="card text-center">
-              <p className="text-2xl font-black text-purple-600">{uniqueDays.length}</p>
-              <p className="text-xs text-gray-500">Days</p>
+              <p className="text-2xl font-black text-purple-600">{uniqueDates.length}</p>
+              <p className="text-xs text-gray-500">Exam days</p>
             </div>
             <div className="card text-center">
               {parsed.format && (
@@ -353,18 +359,21 @@ export default function TimetableUpload() {
             </div>
           )}
 
-          {/* Day filter */}
-          <div className="flex gap-2 overflow-x-auto">
+          {/* Date filter */}
+          <div className="flex gap-2 overflow-x-auto pb-1">
             <button onClick={() => setDayFilter('all')}
               className={`px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap ${dayFilter === 'all' ? 'bg-brand text-white' : 'bg-white border text-gray-600'}`}>
               All ({parsed.exams.length})
             </button>
-            {uniqueDays.map(day => {
-              const count = parsed.exams.filter(e => e.day_name === day).length;
-              const label = day.charAt(0).toUpperCase() + day.slice(1);
+            {uniqueDates.map(d => {
+              const count = parsed.exams.filter(e => (e.exam_date || e.day_name) === d).length;
+              const isDate = /^\d{4}-/.test(d);
+              const label = isDate
+                ? new Date(d + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })
+                : d.charAt(0).toUpperCase() + d.slice(1);
               return (
-                <button key={day} onClick={() => setDayFilter(day)}
-                  className={`px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap ${dayFilter === day ? 'bg-brand text-white' : 'bg-white border text-gray-600'}`}>
+                <button key={d} onClick={() => setDayFilter(d)}
+                  className={`px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap ${dayFilter === d ? 'bg-brand text-white' : 'bg-white border text-gray-600'}`}>
                   {label} ({count})
                 </button>
               );
@@ -374,10 +383,16 @@ export default function TimetableUpload() {
           {/* Exam list */}
           {groups.map(g => {
             const dayLabel = g.day.charAt(0).toUpperCase() + g.day.slice(1);
+            const dateLabel = g.date
+              ? new Date(g.date + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+              : dayLabel;
+            const timeLabel = g.exams[0]?.start_time && g.exams[0]?.end_time
+              ? `${g.exams[0].start_time} - ${g.exams[0].end_time}`
+              : (TIMES[g.session] || '');
             return (
-              <div key={`${g.day}_${g.session}`} className="card p-0 overflow-hidden">
+              <div key={`${g.date || g.day}_${g.session}`} className="card p-0 overflow-hidden">
                 <div className="bg-brand/5 px-4 py-2 border-b flex justify-between items-center">
-                  <span className="font-bold text-brand text-sm">{dayLabel} — Session {g.session} <span className="text-gray-400 font-normal text-xs">{TIMES[g.session]}</span></span>
+                  <span className="font-bold text-brand text-sm">{dateLabel} — Session {g.session} <span className="text-gray-400 font-normal text-xs">{timeLabel}</span></span>
                   <span className="text-xs text-gray-400">{g.exams.length} exams</span>
                 </div>
                 <div className="divide-y">

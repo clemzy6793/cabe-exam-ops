@@ -10,12 +10,12 @@ const RATE_SENIOR_STAFF = 30;
 
 const categoryLabel = (s) => {
   if (s.role === 'systems_analyst') return 'Sys. Analyst';
-  return s.category === 'senior_member' ? 'Sr. Member' : 'Sr. Staff';
+  return s.category?.startsWith('senior_member') ? 'Sr. Member' : 'Sr. Staff';
 };
 
 const categoryStyle = (s) => {
   if (s.role === 'systems_analyst') return 'bg-indigo-100 text-indigo-700';
-  return s.category === 'senior_member' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700';
+  return s.category?.startsWith('senior_member') ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700';
 };
 
 export default function ITReport() {
@@ -49,8 +49,9 @@ export default function ITReport() {
   const getManualDayCount = (staff, day) => staff.manual_sessions?.[day]?.sessions || 0;
   const getDayCount = (staff, day) => getSystemDayCount(staff, day) + getManualDayCount(staff, day);
   const getTotal = (staff) => days.reduce((s, d) => s + getDayCount(staff, d.key), 0);
-  const getRate = (staff) => staff.category === 'senior_member' ? RATE_SENIOR_MEMBER : RATE_SENIOR_STAFF;
-  const getDayAmount = (staff, day) => getDayCount(staff, day) * 2 * getRate(staff);
+  const hoursPerSession = sessionMeta?.exam_type === 'mid_semester' ? 2 : 3;
+  const getRate = (staff) => (staff.category?.startsWith('senior_member') || staff.role === 'systems_analyst') ? RATE_SENIOR_MEMBER : RATE_SENIOR_STAFF;
+  const getDayAmount = (staff, day) => getDayCount(staff, day) * hoursPerSession * getRate(staff);
   const getWeeklyGross = (staff) => days.reduce((sum, d) => sum + getDayAmount(staff, d.key), 0);
   const getWeeklyNet = (staff) => {
     const gross = getWeeklyGross(staff);
@@ -70,7 +71,7 @@ export default function ITReport() {
 
   const getRoleRank = (s) => {
     if (s.role === 'systems_analyst') return 0;
-    if (s.category === 'senior_member') return 1;
+    if (s.category?.startsWith('senior_member')) return 1;
     return 2;
   };
   const sorted = [...data].sort((a, b) => {
@@ -140,8 +141,8 @@ export default function ITReport() {
       const gross = getWeeklyGross(s);
       const deduction = gross * 0.10;
       const net = gross - deduction;
-      const catLabel = s.role === 'systems_analyst' ? 'Systems Analyst' : (s.category === 'senior_member' ? 'Senior Member' : 'Senior Staff');
-      const catStyle = (s.role === 'systems_analyst' || s.category === 'senior_member') ? 'smBadge' : 'ssBadge';
+      const catLabel = s.role === 'systems_analyst' ? 'Systems Analyst' : (s.category?.startsWith('senior_member') ? 'Senior Member' : 'Senior Staff');
+      const catStyle = (s.role === 'systems_analyst' || s.category?.startsWith('senior_member')) ? 'smBadge' : 'ssBadge';
 
       xml += '<Row>';
       xml += `<Cell ss:StyleID="center"><Data ss:Type="Number">${i + 1}</Data></Cell>`;
@@ -176,8 +177,8 @@ export default function ITReport() {
 
     xml += '<Row></Row>\n';
     xml += '<Row><Cell></Cell><Cell ss:StyleID="bold"><Data ss:Type="String">Rate Legend:</Data></Cell></Row>\n';
-    xml += '<Row><Cell></Cell><Cell><Data ss:Type="String">Senior Member: GHS 60/hr × 2 hrs per session</Data></Cell></Row>\n';
-    xml += '<Row><Cell></Cell><Cell><Data ss:Type="String">Senior Staff: GHS 30/hr × 2 hrs per session</Data></Cell></Row>\n';
+    xml += `<Row><Cell></Cell><Cell><Data ss:Type="String">Senior Member: GHS 60/hr × ${hoursPerSession} hrs per session = GHS ${60 * hoursPerSession}/session</Data></Cell></Row>\n`;
+    xml += `<Row><Cell></Cell><Cell><Data ss:Type="String">Senior Staff: GHS 30/hr × ${hoursPerSession} hrs per session = GHS ${30 * hoursPerSession}/session</Data></Cell></Row>\n`;
     xml += '<Row><Cell></Cell><Cell><Data ss:Type="String">Deduction: 10% of gross</Data></Cell></Row>\n';
 
     xml += '</Table>\n</Worksheet>\n</Workbook>';
@@ -207,7 +208,7 @@ export default function ITReport() {
       const gross = getWeeklyGross(s);
       const ded = gross * 0.10;
       const net = gross - ded;
-      const catLbl = s.role === 'systems_analyst' ? 'Sys. Analyst' : (s.category === 'senior_member' ? 'Sr. Member' : 'Sr. Staff');
+      const catLbl = s.role === 'systems_analyst' ? 'Sys. Analyst' : (s.category?.startsWith('senior_member') ? 'Sr. Member' : 'Sr. Staff');
       const roleBadges = (s.faculty_roles || []).map(fr =>
         `<span style="display:inline-block;font-size:9px;padding:1px 5px;border-radius:9px;font-weight:bold;margin-left:4px;${
           fr.role === 'printing' ? 'background:#ede9fe;color:#6d28d9;' : 'background:#cffafe;color:#0e7490;'
@@ -231,7 +232,7 @@ export default function ITReport() {
     </head><body>
       <h1 style="margin:0;color:#1a3a5c;">CABE Exam Operations</h1>
       <p style="color:#666;margin:4px 0;">IT Staff Payment Report — ${sessionTitle} | ${dateRange}</p>
-      <p style="font-size:11px;color:#888;">Senior Member: GHS 60/hr | Senior Staff: GHS 30/hr | Each session = 2 hrs | 10% deduction applied</p>
+      <p style="font-size:11px;color:#888;">Senior Member: GHS 60/hr | Senior Staff: GHS 30/hr | Each session = ${hoursPerSession} hrs | 10% deduction applied</p>
       <hr style="margin:15px 0;border-color:#c8a951;">
       <table>${header}${rows}${totalRow}</table>
       <p style="margin-top:15px;font-size:12px;color:#999;">Total IT Staff: ${sorted.length} | Grand Total Net: GHS ${grandTotalNet.toFixed(2)} | Generated from CABE Exam Ops System</p>
@@ -530,8 +531,8 @@ export default function ITReport() {
                         <div className="flex gap-1 mt-0.5 flex-wrap">
                           {s.category && (
                             <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold ${
-                              s.category === 'senior_member' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'
-                            }`}>{s.category === 'senior_member' ? 'Sr. Member' : 'Sr. Staff'}</span>
+                              s.category?.startsWith('senior_member') ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'
+                            }`}>{s.category?.startsWith('senior_member') ? 'Sr. Member' : 'Sr. Staff'}</span>
                           )}
                           {s.faculty_roles?.length > 0 && s.faculty_roles.map((fr, i) => (
                             <span key={i} className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold ${

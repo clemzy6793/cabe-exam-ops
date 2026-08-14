@@ -35,24 +35,34 @@ router.get('/', authAny, async (req, res) => {
 
 // Get attendance summary for a session (all dates)
 router.get('/summary', authAny, async (req, res) => {
-  const { session_id } = req.query;
+  const { session_id, faculty_id } = req.query;
   if (!session_id) return res.status(400).json({ error: 'session_id is required' });
 
+  let sql = `
+    SELECT a.staff_id, s.name AS staff_name, s.staff_code, s.department, a.staff_type,
+      f.code AS faculty_code,
+      COUNT(*) FILTER (WHERE a.present) AS days_present,
+      COUNT(*) AS total_days,
+      json_agg(json_build_object(
+        'date', a.attendance_date, 'present', a.present, 'verified', a.verified, 'notes', a.notes
+      ) ORDER BY a.attendance_date) AS daily_records
+    FROM attendance a
+    JOIN staff s ON s.id = a.staff_id
+    LEFT JOIN faculties f ON f.id = a.faculty_id
+    WHERE a.session_id = $1`;
+  const params = [session_id];
+
+  if (faculty_id) {
+    params.push(faculty_id);
+    sql += ` AND a.faculty_id = $${params.length}`;
+  }
+
+  sql += ` GROUP BY a.staff_id, s.name, s.staff_code, s.department, a.staff_type, f.code
+    HAVING COUNT(*) FILTER (WHERE a.present) > 0
+    ORDER BY s.name`;
+
   try {
-    const { rows } = await db.query(`
-      SELECT a.staff_id, s.name AS staff_name, s.staff_code, s.department, a.staff_type,
-        f.code AS faculty_code,
-        COUNT(*) FILTER (WHERE a.present) AS days_present,
-        COUNT(*) AS total_days,
-        json_agg(json_build_object(
-          'date', a.attendance_date, 'present', a.present, 'verified', a.verified, 'notes', a.notes
-        ) ORDER BY a.attendance_date) AS daily_records
-      FROM attendance a
-      JOIN staff s ON s.id = a.staff_id
-      LEFT JOIN faculties f ON f.id = a.faculty_id
-      WHERE a.session_id = $1
-      GROUP BY a.staff_id, s.name, s.staff_code, s.department, a.staff_type, f.code
-      ORDER BY s.name`, [session_id]);
+    const { rows } = await db.query(sql, params);
     res.json(rows);
   } catch (err) {
     console.error(err);
@@ -124,7 +134,7 @@ router.put('/verify', authAdmin, async (req, res) => {
 });
 
 // Delete attendance record
-router.delete('/:id', authAdmin, async (req, res) => {
+router.delete('/:id', authAny, async (req, res) => {
   try {
     await db.query('DELETE FROM attendance WHERE id = $1', [req.params.id]);
     res.json({ message: 'Deleted' });

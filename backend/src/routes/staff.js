@@ -13,8 +13,17 @@ router.get('/', authAny, async (req, res) => {
   const params = [];
 
   if (search) {
-    params.push(`%${search}%`);
-    sql += ` AND (s.name ILIKE $${params.length} OR s.staff_code ILIKE $${params.length} OR s.email ILIKE $${params.length})`;
+    const words = search.trim().split(/\s+/).filter(Boolean);
+    if (words.length === 1) {
+      params.push(`%${words[0]}%`);
+      sql += ` AND (s.name ILIKE $${params.length} OR s.staff_code ILIKE $${params.length} OR s.email ILIKE $${params.length})`;
+    } else {
+      const conditions = words.map(w => {
+        params.push(`%${w}%`);
+        return `s.name ILIKE $${params.length}`;
+      });
+      sql += ` AND (${conditions.join(' AND ')})`;
+    }
   }
   if (faculty_id) {
     params.push(faculty_id);

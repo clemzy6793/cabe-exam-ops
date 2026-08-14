@@ -154,8 +154,13 @@ router.post('/confirm', authAny, async (req, res) => {
       }
     }
 
+    const skipped = [];
     let inserted = 0;
     for (const e of exams) {
+      if (!e.exam_date) {
+        skipped.push(e.course_code);
+        continue;
+      }
       await db.query(
         `INSERT INTO exams (period_id, faculty_id, course_code, course_name, exam_date, day_name,
           session_number, start_time, end_time, venue, student_count, exam_type, session_id, examiner, year_group)
@@ -167,7 +172,7 @@ router.post('/confirm', authAny, async (req, res) => {
       inserted++;
     }
 
-    res.json({ inserted, faculty_id });
+    res.json({ inserted, faculty_id, skipped: skipped.length ? skipped : undefined });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

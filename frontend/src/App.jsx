@@ -36,6 +36,11 @@ function EditorRoute({ children }) {
   return ['admin', 'superadmin', 'reviewer'].includes(role) ? children : <Navigate to="/" />;
 }
 
+function CheckinRoute({ children }) {
+  const role = localStorage.getItem('exam_ops_role');
+  return ['admin', 'superadmin', 'reviewer', 'checkin'].includes(role) ? children : <Navigate to="/" />;
+}
+
 function ReportRoute({ children }) {
   const role = localStorage.getItem('exam_ops_role');
   return ['admin', 'superadmin', 'reviewer', 'exam_officer'].includes(role) ? children : <Navigate to="/" />;
@@ -44,6 +49,7 @@ function ReportRoute({ children }) {
 function RoleHome() {
   const role = localStorage.getItem('exam_ops_role');
   if (role === 'examiner') return <ExaminerDashboard />;
+  if (role === 'checkin') return <Navigate to="/attendance-tracking" />;
   return <Dashboard />;
 }
 
@@ -67,7 +73,7 @@ export default function App() {
         <Route path="allowances" element={<AdminRoute><InvigilationAllowances /></AdminRoute>} />
         <Route path="sessions" element={<AdminRoute><SessionManagement /></AdminRoute>} />
         <Route path="payment-rates" element={<AdminRoute><PaymentRates /></AdminRoute>} />
-        <Route path="attendance-tracking" element={<EditorRoute><AttendanceTracking /></EditorRoute>} />
+        <Route path="attendance-tracking" element={<CheckinRoute><AttendanceTracking /></CheckinRoute>} />
         <Route path="faculty/:id" element={<FacultyDashboard />} />
         <Route path="payment-calc" element={<AdminRoute><PaymentCalculation /></AdminRoute>} />
         <Route path="audit" element={<AdminRoute><AuditLog /></AdminRoute>} />

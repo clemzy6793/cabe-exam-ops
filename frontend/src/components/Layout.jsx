@@ -15,14 +15,14 @@ const NAV_GROUPS = [
   {
     label: 'Exams',
     icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z',
-    roles: ['admin', 'superadmin', 'reviewer', 'exam_officer', 'examiner'],
+    roles: ['admin', 'superadmin', 'reviewer', 'exam_officer', 'examiner', 'checkin'],
     items: [
-      { to: '/timetable', label: 'Timetable', roles: ['admin', 'superadmin', 'reviewer', 'exam_officer', 'examiner'] },
+      { to: '/timetable', label: 'Timetable', roles: ['admin', 'superadmin', 'reviewer', 'exam_officer', 'examiner', 'checkin'] },
       { to: '/upload-timetable', label: 'Upload Timetable', roles: ['admin', 'superadmin', 'exam_officer'] },
       { to: '/staff', label: 'Staff', roles: ['admin', 'superadmin', 'reviewer'] },
       { to: '/assignments', label: 'Assignments', roles: ['admin', 'superadmin', 'reviewer'] },
       { to: '/venues', label: 'Venues', roles: ['admin', 'superadmin'] },
-      { to: '/attendance-tracking', label: 'Staff Check-In', roles: ['admin', 'superadmin', 'reviewer'] },
+      { to: '/attendance-tracking', label: 'Staff Check-In', roles: ['admin', 'superadmin', 'reviewer', 'checkin'] },
     ],
   },
   {
@@ -313,6 +313,10 @@ function AccountsModal({ onClose }) {
   const [itStaff, setItStaff] = useState([]);
   const [selectedStaff, setSelectedStaff] = useState([]);
   const [staffPw, setStaffPw] = useState('');
+  const [staffRole, setStaffRole] = useState('checkin');
+  const [selectedAccount, setSelectedAccount] = useState(null);
+  const [editForm, setEditForm] = useState({ name: '', email: '', role: '', password: '' });
+  const [editLoading, setEditLoading] = useState(false);
 
   const load = () => {
     api.get('/auth/accounts').then(r => setAccounts(r.data)).catch(() => {});
@@ -336,7 +340,7 @@ function AccountsModal({ onClose }) {
     if (!staffPw || staffPw.length < 6) return toast.error('Set a password (min 6 chars)');
     setLoading(true);
     try {
-      const { data } = await api.post('/auth/accounts/from-staff', { staff_ids: selectedStaff, password: staffPw });
+      const { data } = await api.post('/auth/accounts/from-staff', { staff_ids: selectedStaff, password: staffPw, role: staffRole });
       toast.success(`${data.created} reviewer account(s) created`);
       setSelectedStaff([]);
       setStaffPw('');
@@ -367,6 +371,31 @@ function AccountsModal({ onClose }) {
     }
   };
 
+  const selectAccount = (a) => {
+    if (selectedAccount?.id === a.id) { setSelectedAccount(null); return; }
+    setSelectedAccount(a);
+    setEditForm({ name: a.name, email: a.email, role: a.role, password: '' });
+  };
+
+  const saveAccount = async (e) => {
+    e.preventDefault();
+    if (!editForm.name.trim()) return toast.error('Name is required');
+    if (editForm.password && editForm.password.length < 6) return toast.error('Minimum 6 characters');
+    setEditLoading(true);
+    try {
+      const payload = { name: editForm.name, role: editForm.role, email: editForm.email };
+      if (editForm.password) payload.password = editForm.password;
+      await api.put(`/auth/accounts/${selectedAccount.id}`, payload);
+      toast.success('Account updated');
+      setSelectedAccount(null);
+      load();
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed');
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
   const toggleEdit = async (id) => {
     try {
       const { data } = await api.put(`/auth/accounts/${id}/toggle-edit`);
@@ -390,7 +419,7 @@ function AccountsModal({ onClose }) {
 
   return (
     <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={onClose}>
-      <div className="bg-white rounded-xl w-full max-w-md max-h-[85vh] overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
+      <div className="bg-white rounded-xl w-full max-w-lg max-h-[90vh] overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
         <div className="p-4 border-b">
           <h2 className="text-lg font-black">Manage Accounts</h2>
           <div className="flex gap-1 mt-3">
@@ -411,30 +440,86 @@ function AccountsModal({ onClose }) {
           {tab === 'accounts' && (
             <div className="divide-y">
               {accounts.map(a => (
-                <div key={a.id} className="px-4 py-3 flex items-center justify-between">
-                  <div>
-                    <div className="font-medium text-sm">{a.name}</div>
-                    <div className="text-xs text-gray-400">{a.email}</div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {a.role === 'reviewer' && (
-                      <button onClick={() => toggleEdit(a.id)}
-                        className={`text-[10px] px-2 py-0.5 rounded-full font-semibold cursor-pointer transition-colors ${
-                          a.can_edit ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400'
-                        }`}
-                        title={a.can_edit ? 'Editing enabled — click to disable' : 'Editing disabled — click to enable'}>
-                        {a.can_edit ? 'Can Edit' : 'View Only'}
-                      </button>
-                    )}
-                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${
-                      a.role === 'admin' || a.role === 'superadmin' ? 'bg-brand/10 text-brand' :
-                      a.role === 'exam_officer' ? 'bg-purple-100 text-purple-700' :
-                      a.role === 'examiner' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
-                    }`}>{a.role === 'exam_officer' ? `officer${a.faculty_code ? ` (${a.faculty_code})` : ''}` : a.role}</span>
-                    {(a.role === 'reviewer' || a.role === 'exam_officer' || a.role === 'examiner') && (
-                      <button onClick={() => deleteAccount(a.id)} className="text-xs text-red-400 hover:text-red-600">Del</button>
-                    )}
-                  </div>
+                <div key={a.id}>
+                  <button
+                    type="button"
+                    onClick={() => selectAccount(a)}
+                    className={`w-full px-4 py-3 flex items-center justify-between text-left transition-colors ${
+                      selectedAccount?.id === a.id ? 'bg-blue-50' : 'hover:bg-gray-50'
+                    }`}
+                  >
+                    <div>
+                      <div className="font-medium text-sm">{a.name}</div>
+                      <div className="text-xs text-gray-400">{a.email}</div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {a.role === 'reviewer' && (
+                        <span onClick={e => { e.stopPropagation(); toggleEdit(a.id); }}
+                          className={`text-[10px] px-2 py-0.5 rounded-full font-semibold cursor-pointer transition-colors ${
+                            a.can_edit ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400'
+                          }`}
+                          title={a.can_edit ? 'Editing enabled — click to disable' : 'Editing disabled — click to enable'}>
+                          {a.can_edit ? 'Can Edit' : 'View Only'}
+                        </span>
+                      )}
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${
+                        a.role === 'admin' || a.role === 'superadmin' ? 'bg-brand/10 text-brand' :
+                        a.role === 'exam_officer' ? 'bg-purple-100 text-purple-700' :
+                        a.role === 'examiner' ? 'bg-emerald-100 text-emerald-700' :
+                        a.role === 'checkin' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
+                      }`}>{
+                        a.role === 'exam_officer' ? `officer${a.faculty_code ? ` (${a.faculty_code})` : ''}` :
+                        a.role === 'checkin' ? 'check-in only' : a.role
+                      }</span>
+                      <svg className={`w-4 h-4 text-gray-300 transition-transform ${selectedAccount?.id === a.id ? 'rotate-180 text-blue-400' : ''}`}
+                        fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                    </div>
+                  </button>
+
+                  {selectedAccount?.id === a.id && (
+                    <form onSubmit={saveAccount} className="px-4 pb-4 pt-2 bg-blue-50 border-t border-blue-100 space-y-3">
+                      <p className="text-xs font-semibold text-blue-700">Edit: {a.email}</p>
+                      <div>
+                        <label className="text-xs font-medium text-gray-600">Name</label>
+                        <input value={editForm.name} onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))}
+                          className="w-full border rounded-lg px-3 py-2 text-sm mt-1 bg-white" required />
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-gray-600">Login Email</label>
+                        <input type="email" value={editForm.email} onChange={e => setEditForm(f => ({ ...f, email: e.target.value }))}
+                          className="w-full border rounded-lg px-3 py-2 text-sm mt-1 bg-white" required />
+                      </div>
+                      {a.role !== 'admin' && a.role !== 'superadmin' && (
+                        <div>
+                          <label className="text-xs font-medium text-gray-600">Role</label>
+                          <select value={editForm.role} onChange={e => setEditForm(f => ({ ...f, role: e.target.value }))}
+                            className="w-full border rounded-lg px-3 py-2 text-sm mt-1 bg-white">
+                            <option value="checkin">Check-In Only</option>
+                            <option value="reviewer">Reviewer</option>
+                            <option value="examiner">Examiner</option>
+                            <option value="exam_officer">Exam Officer</option>
+                          </select>
+                        </div>
+                      )}
+                      <div>
+                        <label className="text-xs font-medium text-gray-600">New Password <span className="text-gray-400 font-normal">(leave blank to keep current)</span></label>
+                        <input type="text" placeholder="Min 6 characters" value={editForm.password}
+                          onChange={e => setEditForm(f => ({ ...f, password: e.target.value }))}
+                          className="w-full border rounded-lg px-3 py-2 text-sm mt-1 bg-white" />
+                      </div>
+                      <div className="flex gap-2">
+                        <button type="submit" disabled={editLoading} className="btn-brand flex-1 py-2 text-sm">
+                          {editLoading ? 'Saving...' : 'Save Changes'}
+                        </button>
+                        {(a.role === 'reviewer' || a.role === 'checkin' || a.role === 'exam_officer' || a.role === 'examiner') && (
+                          <button type="button" onClick={() => { if (confirm('Delete this account?')) deleteAccount(a.id); setSelectedAccount(null); }}
+                            className="px-3 py-2 text-sm text-red-500 hover:text-red-700 border border-red-200 rounded-lg hover:bg-red-50">
+                            Delete
+                          </button>
+                        )}
+                      </div>
+                    </form>
+                  )}
                 </div>
               ))}
               {accounts.length === 0 && <p className="text-center text-gray-400 py-8 text-sm">No accounts</p>}
@@ -443,18 +528,50 @@ function AccountsModal({ onClose }) {
 
           {tab === 'from_staff' && (
             <div className="p-4 space-y-3">
-              <p className="text-xs text-gray-500">Select IT staff to give reviewer access. They'll log in with their email (or phone@staff.cabe) and the password you set below.</p>
+              <p className="text-xs text-gray-500">Select IT staff and assign them a role. They log in with their email (or phone@staff.cabe) and the password below.</p>
+
+              {/* Role selection */}
               <div>
-                <label className="text-xs font-medium text-gray-600">Shared password for selected staff</label>
-                <input type="text" placeholder="e.g. Review2026" value={staffPw} onChange={e => setStaffPw(e.target.value)}
-                  className="w-full border rounded-lg px-3 py-2 text-sm mt-1" />
-                {staffPw && staffPw.length < 6 && <p className="text-[10px] text-red-400 mt-0.5">{staffPw.length}/6 characters</p>}
+                <label className="text-xs font-medium text-gray-600">Access Level *</label>
+                <div className="flex gap-2 mt-1">
+                  <button type="button" onClick={() => setStaffRole('checkin')}
+                    className={`flex-1 py-2 px-3 rounded-lg text-xs font-semibold border-2 transition-colors ${
+                      staffRole === 'checkin'
+                        ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
+                        : 'border-gray-200 text-gray-500 hover:border-gray-300'
+                    }`}>
+                    ✓ Check-In Only
+                    <span className="block text-[10px] font-normal mt-0.5 opacity-75">Staff check-in page only</span>
+                  </button>
+                  <button type="button" onClick={() => setStaffRole('reviewer')}
+                    className={`flex-1 py-2 px-3 rounded-lg text-xs font-semibold border-2 transition-colors ${
+                      staffRole === 'reviewer'
+                        ? 'border-amber-500 bg-amber-50 text-amber-700'
+                        : 'border-gray-200 text-gray-500 hover:border-gray-300'
+                    }`}>
+                    Reviewer
+                    <span className="block text-[10px] font-normal mt-0.5 opacity-75">Timetable, staff, reports</span>
+                  </button>
+                </div>
               </div>
+
+              {/* Password */}
+              <div>
+                <label className="text-xs font-medium text-gray-600">Password for selected staff *</label>
+                <input type="text" placeholder="e.g. CheckIn2026" value={staffPw} onChange={e => setStaffPw(e.target.value)}
+                  className="w-full border rounded-lg px-3 py-2 text-sm mt-1" />
+                {staffPw && staffPw.length < 6 && <p className="text-[10px] text-red-400 mt-0.5">{staffPw.length}/6 minimum</p>}
+              </div>
+
+              {/* Staff list */}
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-gray-600">{selectedStaff.length} selected of {availableStaff.length} available</span>
-                <button onClick={() => setSelectedStaff(availableStaff.map(s => s.id))} className="text-xs text-cyan-600 hover:underline">Select All</button>
+                <div className="flex gap-2">
+                  <button onClick={() => setSelectedStaff(availableStaff.map(s => s.id))} className="text-xs text-cyan-600 hover:underline">All</button>
+                  <button onClick={() => setSelectedStaff([])} className="text-xs text-gray-400 hover:underline">None</button>
+                </div>
               </div>
-              <div className="space-y-1 max-h-[40vh] overflow-y-auto">
+              <div className="space-y-1 overflow-y-auto" style={{maxHeight: '220px'}}>
                 {availableStaff.map(s => (
                   <button key={s.id} onClick={() => toggleStaff(s.id)}
                     className={`w-full text-left p-2.5 rounded-lg border-2 transition-colors ${
@@ -470,19 +587,12 @@ function AccountsModal({ onClose }) {
                   <p className="text-center text-gray-400 py-4 text-sm">All IT staff already have accounts</p>
                 )}
               </div>
+
               {availableStaff.length > 0 && (
-                <div>
-                  {selectedStaff.length > 0 && !staffPw && (
-                    <p className="text-xs text-amber-600 font-semibold mb-1">Set a password above first</p>
-                  )}
-                  {selectedStaff.length > 0 && staffPw && staffPw.length < 6 && (
-                    <p className="text-xs text-amber-600 font-semibold mb-1">Password must be at least 6 characters</p>
-                  )}
-                  <button onClick={addFromStaff} disabled={!selectedStaff.length || !staffPw || staffPw.length < 6 || loading}
-                    className="btn-brand w-full py-2 text-sm disabled:opacity-40">
-                    {loading ? 'Creating...' : `Create ${selectedStaff.length} Reviewer Account(s)`}
-                  </button>
-                </div>
+                <button onClick={addFromStaff} disabled={!selectedStaff.length || !staffPw || staffPw.length < 6 || loading}
+                  className="btn-brand w-full py-2 text-sm disabled:opacity-40">
+                  {loading ? 'Creating...' : `Create ${selectedStaff.length || 0} Account(s) — ${staffRole === 'checkin' ? 'Check-In Only' : 'Reviewer'}`}
+                </button>
               )}
             </div>
           )}
@@ -509,6 +619,7 @@ function AccountsModal({ onClose }) {
                 <label className="text-xs font-medium text-gray-600">Role</label>
                 <select value={form.role} onChange={e => setForm(f => ({ ...f, role: e.target.value }))}
                   className="w-full border rounded-lg px-3 py-2 text-sm mt-1">
+                  <option value="checkin">Check-In Only (IT Staff)</option>
                   <option value="reviewer">Reviewer (IT Staff)</option>
                   <option value="examiner">Examiner</option>
                   <option value="exam_officer">Exam Officer</option>
