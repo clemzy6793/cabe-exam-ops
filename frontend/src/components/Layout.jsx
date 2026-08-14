@@ -133,6 +133,7 @@ export default function Layout() {
   const nav = useNavigate();
   const role = localStorage.getItem('exam_ops_role') || 'admin';
   const isAdmin = role === 'admin' || role === 'superadmin';
+  const canManageAccounts = isAdmin || (role === 'reviewer' && localStorage.getItem('exam_ops_can_edit') === '1');
   const { sessions, currentSession, selectSession } = useSession();
 
   const logout = () => {
@@ -161,7 +162,7 @@ export default function Layout() {
         <div className="p-4 border-t border-white/10 space-y-2">
           <a href="/lookup" target="_blank" className="block text-xs text-blue-300 hover:text-white">Staff Lookup Portal</a>
           <a href="/public/timetable" target="_blank" className="block text-xs text-blue-300 hover:text-white">Public Timetable</a>
-          {isAdmin && <button onClick={() => setShowAccounts(true)} className="w-full text-left text-xs text-blue-300 hover:text-white">Manage Accounts</button>}
+          {canManageAccounts && <button onClick={() => setShowAccounts(true)} className="w-full text-left text-xs text-blue-300 hover:text-white">Manage Accounts</button>}
           <button onClick={() => setShowPwModal(true)} className="w-full text-left text-xs text-blue-300 hover:text-white">Account Settings</button>
           <button onClick={logout} className="w-full text-left text-sm text-red-300 hover:text-red-200 mt-1">Logout</button>
         </div>
@@ -203,7 +204,7 @@ export default function Layout() {
       </div>
 
       {showPwModal && <ChangePasswordModal onClose={() => setShowPwModal(false)} />}
-      {showAccounts && <AccountsModal onClose={() => setShowAccounts(false)} />}
+      {showAccounts && <AccountsModal isAdmin={isAdmin} onClose={() => setShowAccounts(false)} />}
     </div>
   );
 }
@@ -304,7 +305,7 @@ function ChangePasswordModal({ onClose }) {
   );
 }
 
-function AccountsModal({ onClose }) {
+function AccountsModal({ onClose, isAdmin }) {
   const [accounts, setAccounts] = useState([]);
   const [tab, setTab] = useState('accounts');
   const [faculties, setFaculties] = useState([]);
@@ -425,9 +426,9 @@ function AccountsModal({ onClose }) {
           <div className="flex gap-1 mt-3">
             {[
               { key: 'accounts', label: 'Accounts' },
-              { key: 'from_staff', label: 'From IT Staff' },
-              { key: 'new', label: 'New Account' },
-            ].map(t => (
+              { key: 'from_staff', label: 'From IT Staff', adminOnly: true },
+              { key: 'new', label: 'New Account', adminOnly: true },
+            ].filter(t => !t.adminOnly || isAdmin).map(t => (
               <button key={t.key} onClick={() => setTab(t.key)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
                   tab === t.key ? 'bg-brand text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -453,7 +454,7 @@ function AccountsModal({ onClose }) {
                       <div className="text-xs text-gray-400">{a.email}</div>
                     </div>
                     <div className="flex items-center gap-2">
-                      {a.role === 'reviewer' && (
+                      {isAdmin && a.role === 'reviewer' && (
                         <span onClick={e => { e.stopPropagation(); toggleEdit(a.id); }}
                           className={`text-[10px] px-2 py-0.5 rounded-full font-semibold cursor-pointer transition-colors ${
                             a.can_edit ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400'
@@ -489,7 +490,7 @@ function AccountsModal({ onClose }) {
                         <input type="email" value={editForm.email} onChange={e => setEditForm(f => ({ ...f, email: e.target.value }))}
                           className="w-full border rounded-lg px-3 py-2 text-sm mt-1 bg-white" required />
                       </div>
-                      {a.role !== 'admin' && a.role !== 'superadmin' && (
+                      {isAdmin && a.role !== 'admin' && a.role !== 'superadmin' && (
                         <div>
                           <label className="text-xs font-medium text-gray-600">Role</label>
                           <select value={editForm.role} onChange={e => setEditForm(f => ({ ...f, role: e.target.value }))}
@@ -511,7 +512,7 @@ function AccountsModal({ onClose }) {
                         <button type="submit" disabled={editLoading} className="btn-brand flex-1 py-2 text-sm">
                           {editLoading ? 'Saving...' : 'Save Changes'}
                         </button>
-                        {(a.role === 'reviewer' || a.role === 'checkin' || a.role === 'exam_officer' || a.role === 'examiner') && (
+                        {isAdmin && (a.role === 'reviewer' || a.role === 'checkin' || a.role === 'exam_officer' || a.role === 'examiner') && (
                           <button type="button" onClick={() => { if (confirm('Delete this account?')) deleteAccount(a.id); setSelectedAccount(null); }}
                             className="px-3 py-2 text-sm text-red-500 hover:text-red-700 border border-red-200 rounded-lg hover:bg-red-50">
                             Delete

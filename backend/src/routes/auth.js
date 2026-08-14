@@ -3,7 +3,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const rateLimit = require('express-rate-limit');
 const db = require('../db');
-const { authAdmin } = require('../middleware/auth');
+const { authAdmin, authEditor } = require('../middleware/auth');
 
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -55,10 +55,12 @@ router.put('/change-password', async (req, res) => {
   }
 });
 
-router.get('/accounts', authAdmin, async (req, res) => {
+router.get('/accounts', authEditor, async (req, res) => {
   try {
+    const isAdmin = req.admin.role === 'admin' || req.admin.role === 'superadmin';
+    const roleFilter = isAdmin ? '' : `WHERE a.role = 'checkin'`;
     const { rows } = await db.query(`SELECT a.id, a.name, a.email, a.role, a.faculty_id, a.can_edit, f.code AS faculty_code, a.created_at
-      FROM admins a LEFT JOIN faculties f ON a.faculty_id=f.id ORDER BY a.role, a.name`);
+      FROM admins a LEFT JOIN faculties f ON a.faculty_id=f.id ${roleFilter} ORDER BY a.role, a.name`);
     res.json(rows);
   } catch (err) {
     console.error(err);
@@ -106,13 +108,16 @@ router.post('/accounts/from-staff', authAdmin, async (req, res) => {
   res.json({ created, skipped });
 });
 
-router.put('/accounts/:id', authAdmin, async (req, res) => {
+router.put('/accounts/:id', authEditor, async (req, res) => {
+  const isAdmin = req.admin.role === 'admin' || req.admin.role === 'superadmin';
   const { role, password, name, email } = req.body;
   if (role && !['admin', 'reviewer', 'exam_officer', 'examiner', 'checkin'].includes(role))
     return res.status(400).json({ error: 'Invalid role' });
   try {
     const { rows: [acct] } = await db.query('SELECT role FROM admins WHERE id=$1', [req.params.id]);
     if (!acct) return res.status(404).json({ error: 'Not found' });
+    if (!isAdmin && acct.role !== 'checkin')
+      return res.status(403).json({ error: 'You can only edit check-in accounts' });
     if ((acct.role === 'admin' || acct.role === 'superadmin') && role && role !== acct.role)
       return res.status(403).json({ error: 'Cannot change admin role' });
 
@@ -121,12 +126,14 @@ router.put('/accounts/:id', authAdmin, async (req, res) => {
       const hash = await bcrypt.hash(password, 10);
       await db.query('UPDATE admins SET password_hash=$1 WHERE id=$2', [hash, req.params.id]);
     }
-    if (role || name || email) {
-      const fields = [];
-      const vals = [];
+    const fields = [];
+    const vals = [];
+    if (email) { fields.push(`email=$${vals.length+1}`); vals.push(email.trim().toLowerCase()); }
+    if (isAdmin) {
       if (role)  { fields.push(`role=$${vals.length+1}`);  vals.push(role); }
       if (name)  { fields.push(`name=$${vals.length+1}`);  vals.push(name.trim()); }
-      if (email) { fields.push(`email=$${vals.length+1}`); vals.push(email.trim().toLowerCase()); }
+    }
+    if (fields.length) {
       vals.push(req.params.id);
       await db.query(`UPDATE admins SET ${fields.join(',')} WHERE id=$${vals.length}`, vals);
     }
