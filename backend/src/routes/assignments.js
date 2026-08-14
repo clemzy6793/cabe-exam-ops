@@ -387,6 +387,33 @@ router.delete('/faculty/:facultyId/date/:date', authEditor, async (req, res) => 
   }
 });
 
+router.get('/by-staff', async (req, res) => {
+  const { staff_id, session_id } = req.query;
+  if (!staff_id) return res.status(400).json({ error: 'staff_id required' });
+  let sql = `
+    SELECT ea.id, ea.exam_id, ea.staff_id, ea.role,
+      s.name AS staff_name, s.staff_code,
+      e.course_code, e.course_name,
+      TO_CHAR(e.exam_date, 'YYYY-MM-DD') AS exam_date,
+      e.session_number, e.venue, e.faculty_id AS exam_faculty_id,
+      f.name AS faculty_name, f.code AS faculty_code
+    FROM exam_assignments ea
+    JOIN staff s ON s.id = ea.staff_id
+    JOIN exams e ON e.id = ea.exam_id
+    JOIN faculties f ON f.id = e.faculty_id
+    WHERE ea.staff_id = $1`;
+  const params = [staff_id];
+  if (session_id) { params.push(session_id); sql += ` AND e.session_id = $${params.length}`; }
+  sql += ' ORDER BY e.exam_date, e.session_number';
+  try {
+    const { rows } = await db.query(sql, params);
+    res.json(rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 router.get('/by-date/:date', async (req, res) => {
   try {
     const { rows } = await db.query(`

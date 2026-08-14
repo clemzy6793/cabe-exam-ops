@@ -344,7 +344,7 @@ export default function Assignments() {
       {replaceModal && (
         <ReplaceModal
           staff={staff}
-          days={days}
+          sessionId={sessionId}
           onClose={() => setReplaceModal(false)}
           onDone={() => { setReplaceModal(false); load(); }}
         />
@@ -933,7 +933,7 @@ function formatAssignDate(dateStr) {
   return d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
 }
 
-function ReplaceModal({ staff, days, onClose, onDone }) {
+function ReplaceModal({ staff, sessionId, onClose, onDone }) {
   const [step, setStep] = useState(1);
   const [search, setSearch] = useState('');
   const [oldStaff, setOldStaff] = useState(null);
@@ -946,14 +946,11 @@ function ReplaceModal({ staff, days, onClose, onDone }) {
 
   const loadAssignments = async (staffId) => {
     try {
-      const allAssignments = [];
-      const sessionDates = days.length ? days.map(d => d.date) : [];
-      for (const d of sessionDates) {
-        const { data } = await api.get(`/assignments/by-date/${d}`);
-        allAssignments.push(...data.filter(a => a.staff_id === staffId));
-      }
-      setAssignments(allAssignments);
-      setSelected(allAssignments.map(a => a.id));
+      const params = { staff_id: staffId };
+      if (sessionId) params.session_id = sessionId;
+      const { data } = await api.get('/assignments/by-staff', { params });
+      setAssignments(data);
+      setSelected(data.map(a => a.id));
     } catch { setAssignments([]); }
   };
 

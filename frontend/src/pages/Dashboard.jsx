@@ -26,7 +26,7 @@ const FACULTY_COLORS = {
 export default function Dashboard() {
   const [stats, setStats] = useState(null);
   const nav = useNavigate();
-  const { currentSession } = useSession();
+  const { currentSession, loading: sessionLoading } = useSession();
 
   const loadStats = () => api.get('/timetable/stats').then(r => setStats(r.data)).catch(() => {});
 
@@ -35,6 +35,12 @@ export default function Dashboard() {
     const interval = setInterval(loadStats, 30000);
     return () => clearInterval(interval);
   }, [currentSession?.id]);
+
+  if (sessionLoading) return (
+    <div className="flex items-center justify-center py-24">
+      <div className="w-8 h-8 border-4 border-brand/30 border-t-brand rounded-full animate-spin" />
+    </div>
+  );
 
   if (!currentSession) return (
     <div className="space-y-6">
